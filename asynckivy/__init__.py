@@ -33,28 +33,26 @@ def sleep(duration):
     return args[0]
 
 
-class event:
-    def __init__(self, ed, name, *, filter=None, return_value=None):
-        self.bind_id = None
-        self.ed = ed
-        self.name = name
-        self.filter = filter
-        self.return_value = return_value
+@types.coroutine
+def event(ed, name, *, filter=None, return_value=None):
+    bind_id = None
+    step_coro = None
+    parameter = None
 
-    def bind(self, step_coro):
-        self.bind_id = bind_id = self.ed.fbind(self.name, self.callback)
+    def bind(step_coro_):
+        nonlocal bind_id, step_coro
+        bind_id = ed.fbind(name, callback)
         assert bind_id > 0  # check if binding succeeded
-        self.step_coro = step_coro
+        step_coro = step_coro_
 
-    def callback(self, *args, **kwargs):
-        if (self.filter is not None) and (not self.filter(*args, **kwargs)):
+    def callback(*args, **kwargs):
+        if (filter is not None) and (not filter(*args, **kwargs)):
             return
-        self.parameter = Parameter(args, kwargs, )
-        ed = self.ed
-        ed.unbind_uid(self.name, self.bind_id)
-        self.step_coro()
-        return self.return_value
+        nonlocal parameter
+        parameter = Parameter(args, kwargs, )
+        ed.unbind_uid(name, bind_id)
+        step_coro()
+        return return_value
 
-    def __await__(self):
-        yield self.bind
-        return self.parameter
+    yield bind
+    return parameter
