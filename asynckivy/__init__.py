@@ -1,10 +1,13 @@
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 __all__ = ('start', 'sleep', 'event', )
 
 import types
+from collections import namedtuple
 from functools import partial
 from kivy.clock import Clock
 from inspect import getcoroutinestate, CORO_CLOSED
+
+Parameter = namedtuple('Parameter', ('args', 'kwargs'))
 
 
 def start(coro):
@@ -46,7 +49,7 @@ class event:
     def callback(self, *args, **kwargs):
         if (self.filter is not None) and (not self.filter(*args, **kwargs)):
             return
-        self.parameter = (args, kwargs, )
+        self.parameter = Parameter(args, kwargs, )
         ed = self.ed
         ed.unbind_uid(self.name, self.bind_id)
         self.step_coro()
