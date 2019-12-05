@@ -96,7 +96,7 @@ def _test():
                     n=2
                 )
                 label.text = 'Done! ({} and {} were pressed)'.format(
-                    *[task.result.args[0].text for task in tasks if task.done]
+                    *[task.result[0][0].text for task in tasks if task.done]
                 )
                 await ak.sleep(1)
                 label.text = 'next'

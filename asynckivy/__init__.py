@@ -2,12 +2,9 @@ __version__ = '0.0.2'
 __all__ = ('start', 'sleep', 'event', )
 
 import types
-from collections import namedtuple
 from functools import partial
 from kivy.clock import Clock
 from inspect import getcoroutinestate, CORO_CLOSED
-
-Parameter = namedtuple('Parameter', ('args', 'kwargs'))
 
 
 def start(coro):
@@ -37,7 +34,6 @@ def sleep(duration):
 def event(ed, name, *, filter=None, return_value=None):
     bind_id = None
     step_coro = None
-    parameter = None
 
     def bind(step_coro_):
         nonlocal bind_id, step_coro
@@ -48,11 +44,8 @@ def event(ed, name, *, filter=None, return_value=None):
     def callback(*args, **kwargs):
         if (filter is not None) and (not filter(*args, **kwargs)):
             return
-        nonlocal parameter
-        parameter = Parameter(args, kwargs, )
         ed.unbind_uid(name, bind_id)
-        step_coro()
+        step_coro(*args, **kwargs)
         return return_value
 
-    yield bind
-    return parameter
+    return (yield bind)
