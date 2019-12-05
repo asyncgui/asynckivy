@@ -13,3 +13,25 @@
 ```
 pip install git+https://github.com/gottadiveintopython/asynckivy#egg=asynckivy
 ```
+
+### Usage
+
+```python
+import asynckivy as ak
+
+async def some_task():
+    # wait for 1sec
+    await ak.sleep(1)
+    
+    # wait until the button is pressed
+    await ak.event(button, 'on_press')
+
+    # wait until button.x becomes greater than 100
+    args, __ = await ak.event(button, 'x', filter=lambda __, x: x>100)
+    print(f'button.x is now {args[1]}')
+
+    # wait for the completion of another thread
+    r = await ak.thread(some_heavy_task, 5)
+    print(f'result of the heavy task: {r}')
+ak.start(some_task())
+```
