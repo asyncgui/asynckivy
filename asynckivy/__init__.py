@@ -1,5 +1,5 @@
 __version__ = '0.0.2'
-__all__ = ('start', 'sleep', 'event', )
+__all__ = ('start', 'sleep', 'event', 'thread', )
 
 import types
 from functools import partial
@@ -49,3 +49,17 @@ def event(ed, name, *, filter=None, return_value=None):
         return return_value
 
     return (yield bind)
+
+
+async def thread(func, *args, **kwargs):
+    from threading import Thread
+    return_value = None
+    is_finished = False
+    def wrapper(*args, **kwargs):
+        nonlocal return_value, is_finished
+        return_value = func(*args, **kwargs)
+        is_finished = True
+    Thread(target=wrapper, args=args, kwargs=kwargs).start()
+    while not is_finished:
+        await sleep(3)
+    return return_value
