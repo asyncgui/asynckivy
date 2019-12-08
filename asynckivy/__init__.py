@@ -48,7 +48,7 @@ def event(ed, name, *, filter=None, return_value=None):
         step_coro(*args, **kwargs)
         return return_value
 
-    return (yield bind)
+    return (yield bind)[0]
 
 
 async def thread(func, *args, **kwargs):

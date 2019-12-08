@@ -35,18 +35,16 @@ class TestApp(App):
         async def handle_touch(widget):
             event = asynckivy.event
             while True:
-                args, kwargs = await event(
+                __, touch = await event(
                     widget, 'on_touch_down',
                     filter=lambda w, touch: w.collide_point(*touch.opos) and touch.button == 'left')
                 print('start drawing poly-line')
-                touch = args[1]
                 with widget.canvas:
                     Color(*get_random_color())
                     line = Line(points=[*touch.opos], width=2)
                 while True:
-                    args, kwargs = await event(
+                    __, touch = await event(
                         widget, 'on_touch_down', return_value=True)
-                    touch = args[1]
                     if touch.button == 'left':
                         line.points.extend(touch.pos)
                         line.points = line.points
