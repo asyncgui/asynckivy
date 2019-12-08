@@ -15,8 +15,7 @@ class TestApp(App):
             await sleep(2)
             while True:
                 label.text = 'Touch anywhere'
-                args, kwargs = await event(label, 'on_touch_down')
-                touch = args[1]
+                __, touch = await event(label, 'on_touch_down')
                 opos = label.to_window(*touch.opos)
                 label.text = 'You touched at ' + str(tuple(int(v) for v in opos))
                 await sleep(1)
