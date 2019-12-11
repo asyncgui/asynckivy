@@ -26,12 +26,34 @@ async def some_task():
     # wait until the button is pressed
     await ak.event(button, 'on_press')
 
-    # wait until button.x becomes greater than 100
-    args, __ = await ak.event(button, 'x', filter=lambda __, x: x>100)
-    print(f'button.x is now {args[1]}')
+    # wait until 'button.x' changes
+    __, x = await ak.event(button, 'x')
+    print(f'button.x is now {x}')
 
-    # wait for the completion of another thread
-    r = await ak.thread(some_heavy_task, 5)
-    print(f'result of the heavy task: {r}')
+    # wait until 'button.x' becomes greater than 100
+    if button.x <= 100:
+        __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
+    print(f'button.x is now {button.x}')
+
+    # create a new thread, and run a function on it, then
+    # wait for the completion of that thread
+    r = await ak.thread(some_heavy_task)
+    print(f"result of 'some_heavy_task()': {r}")
+
+    # wait until EITEHR the button is pressed OR 5sec passes
+    tasks = await ak.or_(
+        ak.event(button, 'on_press'),
+        ak.sleep(5),
+    )
+    print("The button was pressed" if tasks[0].done else "5sec passed")
+
+    # wait until BOTH the button is pressed AND 5sec passes"
+    tasks = await ak.and_(
+        ak.event(button, 'on_press'),
+        ak.sleep(5),
+    )
+
+    # wait for the completion of animation
+    await ak.animation(button, width=200, t='in_out_quad', d=.5)
 ak.start(some_task())
 ```
