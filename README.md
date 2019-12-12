@@ -19,7 +19,7 @@ pip install git+https://github.com/gottadiveintopython/asynckivy#egg=asynckivy
 ```python
 import asynckivy as ak
 
-async def some_task():
+async def some_task(button):
     # wait for 1sec
     await ak.sleep(1)
     
@@ -55,5 +55,5 @@ async def some_task():
 
     # wait for the completion of animation
     await ak.animation(button, width=200, t='in_out_quad', d=.5)
-ak.start(some_task())
+ak.start(some_task(some_button))
 ```
