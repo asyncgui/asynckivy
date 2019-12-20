@@ -1,7 +1,7 @@
 __version__ = '0.0.2'
 __all__ = (
     'start', 'sleep', 'event', 'thread', 'gather', 'and_', 'or_',
-    'animation',
+    'animation', 'sleep_forever',
 )
 
 import types
@@ -32,6 +32,11 @@ def sleep(duration):
     args, kwargs = yield lambda step_coro: Clock.schedule_once(
         partial(step_coro), duration)
     return args[0]
+
+
+@types.coroutine
+def sleep_forever():
+    yield lambda step_coro: None
 
 
 @types.coroutine
