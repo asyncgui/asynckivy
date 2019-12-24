@@ -1,7 +1,7 @@
 __version__ = '0.0.2'
 __all__ = (
     'start', 'sleep', 'event', 'thread', 'gather', 'and_', 'or_',
-    'animation', 'sleep_forever',
+    'animation', 'sleep_forever', 'process',
 )
 
 import types
@@ -72,6 +72,13 @@ async def thread(func, *args, **kwargs):
     while not is_finished:
         await sleep(3)
     return return_value
+
+
+async def process(p, *, polling_interval=3):
+    '''wait for the completion of subprocess'''
+    while p.poll() is None:
+        await sleep(polling_interval)
+    return p.returncode
 
 
 class Task:

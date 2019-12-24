@@ -33,12 +33,17 @@ async def some_task(button):
     # wait until 'button.x' becomes greater than 100
     if button.x <= 100:
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
-    print(f'button.x is now {button.x}')
+        print(f'button.x is now {x}')
 
     # create a new thread, and run a function on it, then
     # wait for the completion of that thread
     r = await ak.thread(some_heavy_task)
     print(f"result of 'some_heavy_task()': {r}")
+
+    # wait for the completion of subprocess
+    import subprocess
+    p = subprocess.Popen(...)
+    returncode = await ak.process(p)
 
     # wait until EITEHR the button is pressed OR 5sec passes
     tasks = await ak.or_(
