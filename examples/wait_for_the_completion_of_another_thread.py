@@ -17,11 +17,12 @@ class TestApp(App):
 
     def on_start(self):
         async def some_task():
+            from functools import partial
             button = self.root
             button.text = 'start heavy task'
             await ak.event(button, 'on_press')
             button.text = 'running...'
-            await ak.thread(heavy_task, 5)
+            await ak.thread(partial(heavy_task, 5))
             button.text = 'done'
         ak.start(some_task())
 

@@ -60,17 +60,17 @@ def event(ed, name, *, filter=None, return_value=None):
     return (yield bind)[0]
 
 
-async def thread(func, *args, **kwargs):
+async def thread(func, *, daemon=False, polling_interval=3):
     from threading import Thread
     return_value = None
     is_finished = False
-    def wrapper(*args, **kwargs):
+    def wrapper():
         nonlocal return_value, is_finished
-        return_value = func(*args, **kwargs)
+        return_value = func()
         is_finished = True
-    Thread(target=wrapper, args=args, kwargs=kwargs, daemon=True).start()
+    Thread(target=wrapper, daemon=daemon).start()
     while not is_finished:
-        await sleep(3)
+        await sleep(polling_interval)
     return return_value
 
 
