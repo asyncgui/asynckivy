@@ -53,7 +53,7 @@ class SpringyButton(Label):
         while True:
             __, current_touch = await event(
                 self, 'on_touch_down',
-                filter=lambda w, t: w.collide_point(*t.opos),
+                filter=lambda w, t: w.collide_point(*t.opos) and not t.is_mouse_scrolling,
                 return_value=True,
             )
             self.dispatch('on_press')
