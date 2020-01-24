@@ -1,4 +1,4 @@
-__version__ = '0.0.2'
+__version__ = '0.0.3dev'
 __all__ = (
     'start', 'sleep', 'event', 'thread', 'gather', 'and_', 'or_',
     'animation', 'sleep_forever', 'process',
