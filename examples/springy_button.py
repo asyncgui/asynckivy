@@ -2,6 +2,7 @@ from kivy.properties import ColorProperty, NumericProperty
 from kivy.lang import Builder
 from kivy.uix.label import Label
 
+import asynckivy
 
 KV_CODE = '''
 <SpringyButton>:
@@ -36,8 +37,8 @@ class SpringyButton(Label):
     _background_color = ColorProperty('#999933')
 
     def __init__(self, **kwargs):
-        import asynckivy
         super().__init__(**kwargs)
+        self._coro_blink = None
         asynckivy.start(self.main())
 
     def on_press(self):
@@ -46,47 +47,52 @@ class SpringyButton(Label):
     def on_release(self):
         pass
 
-    async def main(self):
-        import asynckivy
-        from asynckivy import animation, or_, event
+    def start_blinking(self):
+        if self._coro_blink is None:
+            self._coro_blink = self._blink()
+            asynckivy.start(self._coro_blink)
 
-        while True:
-            __, current_touch = await event(
-                self, 'on_touch_down',
-                filter=lambda w, t: w.collide_point(*t.opos) and not t.is_mouse_scrolling,
-                return_value=True,
-            )
-            self.dispatch('on_press')
-            current_touch.grab(self)
-            coro_blink = self._blink()
-            asynckivy.start(coro_blink)
-            await event(self, 'on_touch_up',
-                filter=lambda w, t: t is current_touch and t.grab_current is w,
-                return_value=True,
-            )
-            coro_blink.close()
-            current_touch.ungrab(self)
-            if self.collide_point(*current_touch.pos):
-                self.dispatch('on_release')
-                await animation(self, _scaling=.9, d=.05)
-                await animation(self, _scaling=1, d=.05)
+    def stop_blinking(self):
+        if self._coro_blink is not None:
+            self._coro_blink.close()
+            self._coro_blink = None
+
+    async def main(self):
+        from asynckivy import animation, event, all_touch_moves
+
+        try:
+            while True:
+                __, touch = await event(
+                    self, 'on_touch_down',
+                    filter=lambda w, t: w.collide_point(*t.opos) and not t.is_mouse_scrolling,
+                    return_value=True,
+                )
+                self.dispatch('on_press')
+                self.start_blinking()
+                async for __ in all_touch_moves(self, touch):
+                    if self.collide_point(*touch.pos):
+                        self.start_blinking()
+                    else:
+                        self.stop_blinking()
+                if self.collide_point(*touch.pos):
+                    self.dispatch('on_release')
+                    await animation(self, _scaling=.9, d=.05)
+                    await animation(self, _scaling=1, d=.05)
+                self.stop_blinking()
+        finally:
+            self.stop_blinking()
 
     async def _blink(self):
-        from asynckivy import animation
+        from asynckivy import sleep
         try:
             previous_color = self._border_color
             while True:
-                await animation(
-                    self, d=.1,
-                    _border_color=(.7, .7, .2, 1),
-                )
-                await animation(
-                    self, d=.1,
-                    _border_color=previous_color,
-                )
+                self._border_color = (.7, .7, .2, 1)
+                await sleep(.1)
+                self._border_color = previous_color
+                await sleep(.1)
         finally:
             self._border_color = previous_color
-
 
 
 from kivy.app import App
@@ -95,15 +101,17 @@ from kivy.lang import Builder
 
 KV_CODE = '''
 BoxLayout:
-    padding: 20
-    spacing: 20
+    padding: 40
+    spacing: 40
     SpringyButton:
         text: 'Hello'
-        on_press: print('Hello')
+        on_press: print('on_press: Hello')
+        on_release: print('on_release: Hello')
     RelativeLayout:
         SpringyButton:
             text: 'Kivy'
-            on_release: print('Kivy')
+            on_press: print('on_press: Kivy')
+            on_release: print('on_release: Kivy')
 '''
 
 
