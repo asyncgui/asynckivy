@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "pytest",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["${file}"]
+        },
+        {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
