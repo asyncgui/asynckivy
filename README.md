@@ -62,3 +62,8 @@ async def some_task(button):
     await ak.animation(button, width=200, t='in_out_quad', d=.5)
 ak.start(some_task(some_button))
 ```
+
+### Test Environment
+
+- CPython 3.7.1 + Kivy 1.11.1
+- CPython 3.7.1 + Kivy 2.0.0rc1,git-b1c643c,20200106
