@@ -4,7 +4,7 @@ import types
 
 
 async def _all_touch_moves_simple_ver(widget, touch):
-    '''Returns an async-generator, which yields None when `on_touch_move`
+    '''Returns an async-generator, which yields the touch when `on_touch_move`
     is fired, and ends when `on_touch_up` is fired. Grabs and ungrabs the
     touch automatically.
     '''
@@ -25,7 +25,7 @@ async def _all_touch_moves_simple_ver(widget, touch):
                 ),
             )
             if tasks[0].done:
-                yield
+                yield touch
             else:
                 return
     finally:
@@ -47,7 +47,7 @@ async def _all_touch_moves_complicated_ver(widget, touch):
         while True:
             if await _touch_up_or_touch_move():
                 return
-            yield
+            yield touch
     finally:
         widget.unbind_uid('on_touch_up', uid_up)
         widget.unbind_uid('on_touch_move', uid_move)
