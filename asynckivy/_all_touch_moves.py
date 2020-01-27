@@ -33,8 +33,7 @@ async def _all_touch_moves_simple_ver(widget, touch):
 
 
 async def _all_touch_moves_complicated_ver(widget, touch):
-    '''Does the same thing as `_all_touch_moves_simple_ver` does, but more
-    faster.
+    '''Does the same thing as `_all_touch_moves_simple_ver` does, but faster.
     '''
     touch.grab(widget)
     ctx = {'touch': touch, }
@@ -45,7 +44,7 @@ async def _all_touch_moves_complicated_ver(widget, touch):
     try:
         await _set_step_coro(ctx)
         while True:
-            if await _touch_up_or_touch_move():
+            if await _true_if_touch_up_false_if_touch_move():
                 return
             yield touch
     finally:
@@ -72,9 +71,7 @@ def _set_step_coro(ctx):
 
 
 @types.coroutine
-def _touch_up_or_touch_move() -> bool:
-    '''Returns True if `on_touch_up` is fired, False if `on_touch_move`
-    is fired.'''
+def _true_if_touch_up_false_if_touch_move() -> bool:
     return (yield lambda step_coro: None)[0][0]
 
 

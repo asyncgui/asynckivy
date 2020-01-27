@@ -41,7 +41,7 @@ def test_number_of_on_touch_move_fired(touch_cls, n_touch_move, version):
     assert done
 
 
-def test_complicated_one_is_faster_than_simple_one(touch_cls):
+def test_the_complicated_ver_is_faster_than_the_simple_ver(touch_cls):
     from time import perf_counter
     from kivy.uix.widget import Widget
     import asynckivy as ak
