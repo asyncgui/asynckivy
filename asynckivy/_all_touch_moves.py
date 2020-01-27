@@ -42,7 +42,7 @@ async def _all_touch_moves_complicated_ver(widget, touch):
     assert uid_up
     assert uid_move
     try:
-        await _set_step_coro(ctx)
+        await _save_step_coro(ctx)
         while True:
             if await _true_if_touch_up_false_if_touch_move():
                 return
@@ -66,7 +66,7 @@ def _on_touch_move(ctx, w, t):
 
 
 @types.coroutine
-def _set_step_coro(ctx):
+def _save_step_coro(ctx):
     yield lambda step_coro: (ctx.__setitem__('step_coro', step_coro), step_coro())
 
 
