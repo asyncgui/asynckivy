@@ -81,3 +81,39 @@ def test_complicated_one_is_faster_than_simple_one(touch_cls):
             w.dispatch('on_touch_move', t)
         w.dispatch('on_touch_up', t)
     assert done
+
+
+@pytest.mark.parametrize('version', ['complicated', 'simple', ])
+def test_break_during_a_for_loop(touch_cls, version):
+    from time import perf_counter
+    from kivy.uix.widget import Widget
+    import asynckivy as ak
+
+    async def _test(w, t):
+        from asynckivy import _all_touch_moves, event
+        nonlocal n, done
+        all_touch_moves = getattr(_all_touch_moves, f'_all_touch_moves_{version}_ver')
+        async for __ in all_touch_moves(w, t):
+            n += 1
+            if n == 2:
+                break
+        await event(w, 'on_touch_up')
+        done = True
+
+    n = 0
+    done = False
+    w = Widget()
+    t = touch_cls()
+    ak.start(_test(w, t))
+    w.dispatch('on_touch_move', t)
+    assert n == 1
+    assert not done
+    w.dispatch('on_touch_move', t)
+    assert n == 2
+    assert not done
+    w.dispatch('on_touch_move', t)
+    assert n == 2
+    assert not done
+    w.dispatch('on_touch_up', t)
+    assert n == 2
+    assert done

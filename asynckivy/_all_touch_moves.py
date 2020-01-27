@@ -38,21 +38,24 @@ async def _all_touch_moves_complicated_ver(widget, touch):
     '''
     touch.grab(widget)
     ctx = {'touch': touch, }
-    ctx['uid_up'] = widget.fbind('on_touch_up', _on_touch_up, ctx)
-    ctx['uid_move'] = widget.fbind('on_touch_move', _on_touch_move, ctx)
-
-    await _set_step_coro(ctx)
-    while True:
-        if await _touch_up_or_touch_move():
-            return
-        yield
+    uid_up = widget.fbind('on_touch_up', _on_touch_up, ctx)
+    uid_move = widget.fbind('on_touch_move', _on_touch_move, ctx)
+    assert uid_up
+    assert uid_move
+    try:
+        await _set_step_coro(ctx)
+        while True:
+            if await _touch_up_or_touch_move():
+                return
+            yield
+    finally:
+        widget.unbind_uid('on_touch_up', uid_up)
+        widget.unbind_uid('on_touch_move', uid_move)
 
 
 def _on_touch_up(ctx, w, t):
     if t.grab_current is w and t is ctx['touch']:
         t.ungrab(w)
-        w.unbind_uid('on_touch_up', ctx['uid_up'])
-        w.unbind_uid('on_touch_move', ctx['uid_move'])
         ctx['step_coro'](True)
         return True
 
