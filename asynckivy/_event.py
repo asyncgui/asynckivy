@@ -11,7 +11,7 @@ def event(ed, name, *, filter=None, return_value=None):
     def bind(step_coro_):
         nonlocal bind_id, step_coro
         bind_id = ed.fbind(name, callback)
-        assert bind_id > 0  # check if binding succeeded
+        assert bind_id  # check if binding succeeded
         step_coro = step_coro_
 
     def callback(*args, **kwargs):
