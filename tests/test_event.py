@@ -5,8 +5,10 @@ import pytest
 def ed_cls():
     from kivy.event import EventDispatcher
     class ConcreteEventDispatcher(EventDispatcher):
-        __events__ = ('on_test', )
+        __events__ = ('on_test', 'on_test2', )
         def on_test(self, *args, **kwargs):
+            pass
+        def on_test2(self, *args, **kwargs):
             pass
     return ConcreteEventDispatcher
 
@@ -16,28 +18,28 @@ def ed(ed_cls):
     return ed_cls()
 
 
-def test_properly_unbound():
-    from kivy.uix.button import Button
+def test_properly_unbound(ed):
     import asynckivy as ak
-    b = Button()
     async def _test():
-        b.text = 'A'
-        await ak.event(b, 'on_press')
-        b.text = 'B'
-        await ak.event(b, 'on_release')
-        b.text = 'C'
-        await ak.event(b, 'on_press')
-        b.text = 'D'
+        nonlocal state
+        state = 'A'
+        await ak.event(ed, 'on_test')
+        state = 'B'
+        await ak.event(ed, 'on_test2')
+        state = 'C'
+        await ak.event(ed, 'on_test')
+        state = 'D'
+    state = ''
     ak.start(_test())
-    assert b.text == 'A'
-    b.dispatch('on_press')
-    assert b.text == 'B'
-    b.dispatch('on_press')
-    assert b.text == 'B'
-    b.dispatch('on_release')
-    assert b.text == 'C'
-    b.dispatch('on_press')
-    assert b.text == 'D'
+    assert state == 'A'
+    ed.dispatch('on_test')
+    assert state == 'B'
+    ed.dispatch('on_test')
+    assert state == 'B'
+    ed.dispatch('on_test2')
+    assert state == 'C'
+    ed.dispatch('on_test')
+    assert state == 'D'
 
 
 def test_event_parameter(ed):
