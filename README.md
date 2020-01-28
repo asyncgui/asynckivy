@@ -1,7 +1,5 @@
 # AsyncKivy
 
-(This module was originally created as [GitHub Gist code](https://gist.github.com/gottadiveintopython/5f4a775849f9277081c396de65dc57c1), and moved to here.)
-
 [Youtube](https://youtu.be/rI-gjCsE1YQ)
 
 ### Note
@@ -35,17 +33,17 @@ async def some_task(button):
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
         print(f'button.x is now {x}')
 
-    # create a new thread, and run a function on it, then
-    # wait for the completion of that thread
+    # create a new thread, run a function on it, then
+    # wait for the completion of the thread
     r = await ak.thread(some_heavy_task)
     print(f"result of 'some_heavy_task()': {r}")
 
-    # wait for the completion of subprocess
+    # wait for the completion of a subprocess
     import subprocess
     p = subprocess.Popen(...)
     returncode = await ak.process(p)
 
-    # wait until EITEHR the button is pressed OR 5sec passes
+    # wait until EITHER the button is pressed OR 5sec passes
     tasks = await ak.or_(
         ak.event(button, 'on_press'),
         ak.sleep(5),
@@ -61,6 +59,37 @@ async def some_task(button):
     # wait for the completion of animation
     await ak.animation(button, width=200, t='in_out_quad', d=.5)
 ak.start(some_task(some_button))
+```
+
+You can easily handle `on_touch_xxx` events via `asynckivy.all_touch_moves()`. The following code supports multi touch.
+
+```python
+import asynckivy as ak
+
+class Painter(RelativeLayout):
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.opos):
+            ak.start(self.draw_rect(touch))
+            return True
+    
+    async def draw_rect(self, touch):
+        from kivy.graphics import Line, Color, Rectangle
+        from kivy.utils import get_random_color
+        with self.canvas:
+            Color(*get_random_color())
+            line = Line(width=2)
+        ox, oy = touch.opos
+        async for __ in ak.all_touch_moves(self, touch):
+            # Don't await anything during this async-for-loop or you'll
+            # get an unexpected result.
+            x, y = touch.pos
+            min_x = min(x, ox)
+            min_y = min(y, oy)
+            max_x = max(x, ox)
+            max_y = max(y, oy)
+            line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
+        # If you want to do something when 'on_touch_up' is fired, do it here.
+        do_something_on_touch_up()
 ```
 
 ### Test Environment

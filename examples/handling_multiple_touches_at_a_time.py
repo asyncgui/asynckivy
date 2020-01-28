@@ -20,8 +20,8 @@ class Painter(RelativeLayout):
         ox, oy = touch.opos
         on_touch_move_was_fired = False
         async for __ in ak.all_touch_moves(self, touch):
-            # Don't await anything during this async-for-loop or you will
-            # lose rest of the touch events.
+            # Don't await anything during this async-for-loop or you'll
+            # get an unexpected result.
             on_touch_move_was_fired = True
             x, y = touch.pos
             min_x = min(x, ox)
