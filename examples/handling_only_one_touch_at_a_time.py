@@ -22,13 +22,13 @@ class Painter(RelativeLayout):
             inst_group.add(Color(*get_random_color()))
             line = Line(width=2)
             inst_group.add(line)
-            ox, oy = touch.opos
+            ox, oy = self.to_local(*touch.opos)
             on_touch_move_was_fired = False
             async for __ in ak.all_touch_moves(self, touch):
                 # Don't await anything during this async-for-loop or you'll
                 # get an unexpected result.
                 on_touch_move_was_fired = True
-                x, y = touch.pos
+                x, y = self.to_local(*touch.pos)
                 min_x = min(x, ox)
                 min_y = min(y, oy)
                 max_x = max(x, ox)
