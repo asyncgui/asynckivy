@@ -61,7 +61,7 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-You can easily handle `on_touch_xxx` events via `asynckivy.all_touch_moves()`. The following code supports multi touch.
+You can easily handle `on_touch_xxx` events via `asynckivy.all_touch_moves()`. The following code supports multi touch as well.
 
 ```python
 import asynckivy as ak
