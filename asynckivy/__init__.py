@@ -1,4 +1,4 @@
-__version__ = '0.0.3dev'
+__version__ = '0.0.3'
 
 from ._core import *
 from ._sleep import *
