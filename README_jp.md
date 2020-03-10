@@ -7,7 +7,7 @@
 ### Install方法
 
 ```
-pip install git+https://github.com/gottadiveintopython/asynckivy#egg=asynckivy
+pip install git+https://github.com/gottadiveintopython/asynckivy@stable#egg=asynckivy
 ```
 
 ### 使い方

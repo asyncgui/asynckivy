@@ -10,7 +10,7 @@
 ### Installation
 
 ```
-pip install git+https://github.com/gottadiveintopython/asynckivy#egg=asynckivy
+pip install git+https://github.com/gottadiveintopython/asynckivy@stable#egg=asynckivy
 ```
 
 ### Usage
