@@ -22,8 +22,8 @@ def test_number_of_on_touch_move_fired(touch_cls, n_touch_move, version):
     import asynckivy as ak
 
     async def _test(w, t):
-        from asynckivy import _all_touch_moves 
-        all_touch_moves = getattr(_all_touch_moves, f'_all_touch_moves_{version}_ver')
+        from asynckivy import _rest_of_touch_moves 
+        all_touch_moves = getattr(_rest_of_touch_moves, f'_all_touch_moves_{version}_ver')
         n = 0
         async for __ in all_touch_moves(w, t):
             n += 1
@@ -60,7 +60,7 @@ def test_the_complicated_ver_is_faster_than_the_simple_ver(touch_cls):
         return sum(time_list)
 
     async def _test(w, t, n):
-        from asynckivy._all_touch_moves import (
+        from asynckivy._rest_of_touch_moves import (
             _all_touch_moves_complicated_ver as c_ver,
             _all_touch_moves_simple_ver as s_ver,
         )
@@ -90,9 +90,9 @@ def test_break_during_a_for_loop(touch_cls, version):
     import asynckivy as ak
 
     async def _test(w, t):
-        from asynckivy import _all_touch_moves, event
+        from asynckivy import _rest_of_touch_moves, event
         nonlocal n, done
-        all_touch_moves = getattr(_all_touch_moves, f'_all_touch_moves_{version}_ver')
+        all_touch_moves = getattr(_rest_of_touch_moves, f'_all_touch_moves_{version}_ver')
         async for __ in all_touch_moves(w, t):
             n += 1
             if n == 2:
