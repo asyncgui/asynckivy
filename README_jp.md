@@ -60,7 +60,7 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-`asynckivy.all_touch_moves()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができる。
+`asynckivy.rest_of_touch_moves()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができる。
 
 ```python
 import asynckivy as ak
@@ -78,7 +78,7 @@ class Painter(RelativeLayout):
             Color(*get_random_color())
             line = Line(width=2)
         ox, oy = self.to_local(*touch.opos)
-        async for __ in ak.all_touch_moves(self, touch):
+        async for __ in ak.rest_of_touch_moves(self, touch):
             # 'on_touch_move'時に行いたい処理はここに書く。
             # 注意点としてこのloop内では絶対にawaitを使わないこと。
             x, y = self.to_local(*touch.pos)

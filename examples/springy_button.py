@@ -58,7 +58,7 @@ class SpringyButton(Label):
             self._coro_blink = None
 
     async def main(self):
-        from asynckivy import animation, event, all_touch_moves
+        from asynckivy import animation, event, rest_of_touch_moves
 
         try:
             while True:
@@ -69,7 +69,7 @@ class SpringyButton(Label):
                 )
                 self.dispatch('on_press')
                 self.start_blinking()
-                async for __ in all_touch_moves(self, touch):
+                async for __ in rest_of_touch_moves(self, touch):
                     if self.collide_point(*touch.pos):
                         self.start_blinking()
                     else:
