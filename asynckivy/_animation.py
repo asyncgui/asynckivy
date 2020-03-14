@@ -9,6 +9,7 @@ async def animation(target, **kwargs):
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
+    force_final_value = kwargs.pop('force_final_value', False)
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
     animated_properties = kwargs
@@ -34,23 +35,28 @@ async def animation(target, **kwargs):
         return
 
     start_time = get_current_time()
-    while True:
-        await sleep(step)
+    try:
+        while True:
+            await sleep(step)
 
-        # calculate progression
-        progress = min(1., (get_current_time() - start_time) / duration)
-        t = transition(progress)
+            # calculate progression
+            progress = min(1., (get_current_time() - start_time) / duration)
+            t = transition(progress)
 
-        # apply progression on target
-        for key, values in properties.items():
-            a, b = values
-            value = calculate(a, b, t)
-            setattr(target, key, value)
+            # apply progression on target
+            for key, values in properties.items():
+                a, b = values
+                value = calculate(a, b, t)
+                setattr(target, key, value)
 
-        # time to stop ?
-        if progress >= 1.:
-            return
-
+            # time to stop ?
+            if progress >= 1.:
+                return
+    finally:
+        if force_final_value and progress < 1:
+            for key, values in properties.items():
+                a, b = values
+                setattr(target, key, b)
 
 def _calculate(a, b, t):
     if isinstance(a, list) or isinstance(a, tuple):
