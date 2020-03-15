@@ -5,9 +5,12 @@ verify_ssl = true
 
 [dev-packages]
 pytest = "*"
+trio = "*"
+pytest-trio = "*"
 
 [packages]
 kivy = "*"
+asynckivy = {editable = true,path = "."}
 
 [requires]
 python_version = "3.7"
