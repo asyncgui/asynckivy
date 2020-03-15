@@ -49,8 +49,7 @@ def test_event_parameter(ed):
         assert r == (ed, 1, 2, )
         r = await ak.event(ed, 'on_test')
         assert r == (ed, 3, 4, )  # kwarg is ignored
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     ak.start(_test())
     assert not done
@@ -67,8 +66,7 @@ def test_filter(ed):
             ed, 'on_test',
             filter=lambda *args: args == (ed, 3, 4, )
         )
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     ak.start(_test())
     assert not done
@@ -84,8 +82,7 @@ def test_return_value(ed):
         await ak.event(ed, 'on_test')
         await ak.event(ed, 'on_test', return_value=True)
         await ak.event(ed, 'on_test')
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     n = 0
     def increament(*args):

@@ -28,8 +28,7 @@ def test_number_of_on_touch_move_fired(touch_cls, n_touch_move, version):
         async for __ in rest_of_touch_moves(w, t):
             n += 1
         assert n == n_touch_move
-        nonlocal done
-        done = True
+        nonlocal done;done = True
         
     done = False
     w = Widget()
@@ -67,8 +66,7 @@ def test_the_complicated_ver_is_faster_than_the_simple_ver(touch_cls):
         c_ver_result = await time_multiple_touches(w, t, c_ver, n)
         s_ver_result = await time_multiple_touches(w, t, s_ver, n)
         assert c_ver_result < s_ver_result
-        nonlocal done
-        done = True
+        nonlocal done;done = True
         
     done = False
     n = 100
@@ -91,14 +89,14 @@ def test_break_during_a_for_loop(touch_cls, version):
 
     async def _test(w, t):
         from asynckivy import _rest_of_touch_moves, event
-        nonlocal n, done
+        nonlocal n
         rest_of_touch_moves = getattr(_rest_of_touch_moves, f'_rest_of_touch_moves_{version}_ver')
         async for __ in rest_of_touch_moves(w, t):
             n += 1
             if n == 2:
                 break
         await event(w, 'on_touch_up')
-        done = True
+        nonlocal done;done = True
 
     n = 0
     done = False

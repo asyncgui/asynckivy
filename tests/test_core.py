@@ -22,8 +22,7 @@ def test_gather(ed_cls):
         assert tasks[0].done
         assert not tasks[1].done
         assert tasks[2].done
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     ak.start(_test())
     assert not done
@@ -51,8 +50,7 @@ def test_gather2(ed_cls):
         assert tasks[0].done
         assert not tasks[1].done
         assert tasks[2].done
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     Clock.tick()
     done = False
     ak.start(_test())
@@ -74,8 +72,7 @@ def test_or_(ed_cls):
         assert not tasks[0].done
         assert tasks[1].done
         assert not tasks[2].done
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     ak.start(_test())
     assert not done
@@ -91,8 +88,7 @@ def test_and_(ed_cls):
         assert tasks[0].done
         assert tasks[1].done
         assert tasks[2].done
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     ak.start(_test())
     assert not done

@@ -4,8 +4,7 @@ def test_sleep():
     import asynckivy as ak
     async def _test():
         await ak.sleep(.1)
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     Clock.tick()
     ak.start(_test())
@@ -26,8 +25,7 @@ def test_sleep_free():
     import asynckivy as ak
     async def _test():
         await ak.sleep_free(.1)
-        nonlocal done
-        done = True
+        nonlocal done;done = True
     done = False
     Clock.tick()
     ak.start(_test())
