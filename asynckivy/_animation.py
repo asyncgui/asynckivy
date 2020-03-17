@@ -2,7 +2,6 @@ __all__ = ('animation', )
 
 
 async def animation(target, **kwargs):
-    from time import perf_counter as get_current_time
     from kivy.animation import AnimationTransition
     from ._sleep import sleep
 
@@ -34,13 +33,13 @@ async def animation(target, **kwargs):
             setattr(target, key, b)
         return
 
-    start_time = get_current_time()
     try:
+        time = 0.
         while True:
-            await sleep(step)
+            time += await sleep(step)
 
             # calculate progression
-            progress = min(1., (get_current_time() - start_time) / duration)
+            progress = min(1., time / duration)
             t = transition(progress)
 
             # apply progression on target
