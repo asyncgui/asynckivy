@@ -1,10 +1,9 @@
-__all__ = ('animation', 'animate', )
+__all__ = ('animate', )
+from kivy.animation import AnimationTransition
+from asynckivy import sleep
 
 
-async def animation(target, **kwargs):
-    from kivy.animation import AnimationTransition
-    from ._sleep import sleep
-
+async def animate(target, **kwargs):
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
@@ -76,6 +75,3 @@ def _calculate(a, b, t):
         return d
     else:
         return (a * (1. - t)) + (b * t)
-
-
-animate = animation  # 'animate' might be a better name
