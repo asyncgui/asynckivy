@@ -1,4 +1,4 @@
-__all__ = ('animation', )
+__all__ = ('animation', 'animate', )
 
 
 async def animation(target, **kwargs):
@@ -76,3 +76,6 @@ def _calculate(a, b, t):
         return d
     else:
         return (a * (1. - t)) + (b * t)
+
+
+animate = animation  # 'animate' might be a better name

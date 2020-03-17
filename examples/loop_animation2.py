@@ -21,7 +21,7 @@ class TestApp(App):
 
 
 async def animate(root):
-    from asynckivy import animation as a
+    from asynckivy import animate as a
     l = root.ids.label
     async def _blink_forever():
         while True:

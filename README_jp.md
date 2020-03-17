@@ -56,7 +56,7 @@ async def some_task(button):
     )
 
     # animationの完了を待つ
-    await ak.animation(button, width=200, t='in_out_quad', d=.5)
+    await ak.animate(button, width=200, t='in_out_quad', d=.5)
 ak.start(some_task(some_button))
 ```
 

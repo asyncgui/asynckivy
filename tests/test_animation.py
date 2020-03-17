@@ -29,7 +29,7 @@ def test_skip(point):
     import asynckivy as ak
 
     Clock.tick()
-    coro = ak.animation(point, x=100, d=1, force_final_value=True)
+    coro = ak.animate(point, x=100, d=1, force_final_value=True)
     ak.start(coro)
 
     time.sleep(.2)

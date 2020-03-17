@@ -58,7 +58,7 @@ class SpringyButton(Label):
             self._coro_blink = None
 
     async def main(self):
-        from asynckivy import animation, event, rest_of_touch_moves
+        from asynckivy import animate, event, rest_of_touch_moves
 
         try:
             while True:
@@ -76,8 +76,8 @@ class SpringyButton(Label):
                         self.stop_blinking()
                 if self.collide_point(*touch.pos):
                     self.dispatch('on_release')
-                    await animation(self, _scaling=.9, d=.05)
-                    await animation(self, _scaling=1, d=.05)
+                    await animate(self, _scaling=.9, d=.05)
+                    await animate(self, _scaling=1, d=.05)
                 self.stop_blinking()
         finally:
             self.stop_blinking()
