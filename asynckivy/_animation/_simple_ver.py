@@ -27,9 +27,7 @@ async def animate(target, **kwargs):
 
     if not duration:
         await sleep(0)
-        for key, values in properties.items():
-            a, b = values
-            setattr(target, key, b)
+        _set_final_value(target, properties)
         return
 
     try:
@@ -52,9 +50,13 @@ async def animate(target, **kwargs):
                 return
     finally:
         if force_final_value and progress < 1:
-            for key, values in properties.items():
-                a, b = values
-                setattr(target, key, b)
+            _set_final_value(target, properties)
+
+
+def _set_final_value(target, properties):
+    for key, values in properties.items():
+        setattr(target, key, values[1])
+
 
 def _calculate(a, b, t):
     if isinstance(a, list) or isinstance(a, tuple):

@@ -4,7 +4,7 @@ from functools import partial
 from kivy.clock import Clock
 from kivy.animation import AnimationTransition
 from asynckivy import sleep, sleep_forever
-from ._simple_ver import _calculate
+from ._simple_ver import _calculate, _set_final_value
 
 
 async def animate(target, **kwargs):
@@ -28,9 +28,7 @@ async def animate(target, **kwargs):
 
     if not duration:
         await sleep(0)
-        for key, values in properties.items():
-            a, b = values
-            setattr(target, key, b)
+        _set_final_value(target, properties)
         return
 
     try:
@@ -46,9 +44,7 @@ async def animate(target, **kwargs):
         await sleep_forever()
     except GeneratorExit:
         if force_final_value:
-            for key, values in properties.items():
-                a, b = values
-                setattr(target, key, b)
+            _set_final_value(target, properties)
         raise
     finally:
         clock_event.cancel()
