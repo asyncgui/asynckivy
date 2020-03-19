@@ -98,3 +98,34 @@ def test_and_(ed_cls):
     assert not done
     eds[2].dispatch('on_test')
     assert done
+
+
+class TestEvent:
+    def test_multiple_tasks(self):
+        import asynckivy as ak
+        e = ak.Event()
+        async def _task1():
+            await e.wait()
+            nonlocal task1_done; task1_done = True
+        async def _task2():
+            await e.wait()
+            nonlocal task2_done; task2_done = True
+        task1_done = False
+        task2_done = False
+        ak.start(_task1())
+        ak.start(_task2())
+        assert not task1_done
+        assert not task2_done
+        e.set()
+        assert task1_done
+        assert task2_done
+    def test_set_before_task_starts(self):
+        import asynckivy as ak
+        e = ak.Event()
+        e.set()
+        async def _task():
+            await e.wait()
+            nonlocal done; done = True
+        done = False
+        ak.start(_task())
+        assert done

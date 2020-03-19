@@ -1,4 +1,4 @@
-__all__ = ('start', 'gather', 'or_', 'and_', )
+__all__ = ('start', 'gather', 'or_', 'and_', 'Event', )
 
 import types
 import typing
@@ -62,3 +62,29 @@ async def or_(*coros):
 
 async def and_(*coros):
     return await gather(coros)
+
+
+class Event:
+    '''Equivalent of 'trio.Event'
+    '''
+    __slots__ = ('_flag', '_step_coro_list')
+
+    def __init__(self):
+        self._flag = False
+        self._step_coro_list = []
+
+    def is_set(self):
+        return self._flag
+
+    def set(self):
+        if self._flag:
+            return
+        self._flag = True
+        for step_coro in self._step_coro_list:
+            step_coro()
+        self._step_coro_list.clear()
+
+    @types.coroutine
+    def wait(self):
+        yield (lambda step_coro: step_coro()) if self._flag \
+            else self._step_coro_list.append
