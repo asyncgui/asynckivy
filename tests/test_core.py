@@ -129,3 +129,26 @@ class TestEvent:
         done = False
         ak.start(_task())
         assert done
+    def test_clear(self):
+        import asynckivy as ak
+        e1 = ak.Event()
+        e2 = ak.Event()
+        async def _task():
+            nonlocal task_state
+            task_state = 'A'
+            await e1.wait()
+            task_state = 'B'
+            await e2.wait()
+            task_state = 'C'
+            await e1.wait()
+            task_state = 'D'
+        task_state = None
+        ak.start(_task())
+        assert task_state == 'A'
+        e1.set()
+        assert task_state == 'B'
+        e1.clear()
+        e2.set()
+        assert task_state == 'C'
+        e1.set()
+        assert task_state == 'D'

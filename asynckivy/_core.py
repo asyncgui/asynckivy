@@ -80,9 +80,13 @@ class Event:
         if self._flag:
             return
         self._flag = True
-        for step_coro in self._step_coro_list:
+        step_coro_list = self._step_coro_list
+        self._step_coro_list = []
+        for step_coro in step_coro_list:
             step_coro()
-        self._step_coro_list.clear()
+
+    def clear(self):
+        self._flag = False
 
     @types.coroutine
     def wait(self):
