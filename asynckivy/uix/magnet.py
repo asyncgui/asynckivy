@@ -33,10 +33,12 @@ class AKMagnet(Widget):
             for prop in anim_props
         }
 
-    def on_children(self, *args):
-        if len(self.children) > 1:
+    def add_widget(self, widget, *args, **kwargs):
+        if self.children:
             raise ValueError('AKMagnet can have only one child')
-        self._trigger_start_anim()
+        widget.size = self.size
+        widget.pos = self.pos
+        return super().add_widget(widget, *args, **kwargs)
 
     def _start_anim(self, *args):
         if self._coro is not None:
