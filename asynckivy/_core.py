@@ -37,8 +37,9 @@ class Task:
 def gather(coros:typing.Iterable[typing.Coroutine], *, n:int=None) -> typing.Sequence[Task]:
     coros = tuple(coros)
     n_coros_left = n if n is not None else len(coros)
-    step_coro = None
 
+    def step_coro(*args, **kwargs):
+        nonlocal n_coros_left; n_coros_left -= 1
     def done_callback():
         nonlocal n_coros_left
         n_coros_left -= 1
@@ -47,6 +48,9 @@ def gather(coros:typing.Iterable[typing.Coroutine], *, n:int=None) -> typing.Seq
     tasks = tuple(Task(coro, done_callback=done_callback) for coro in coros)
     for task in tasks:
         start(task._run())
+
+    if n_coros_left <= 0:
+        return tasks
 
     def callback(step_coro_):
         nonlocal step_coro
