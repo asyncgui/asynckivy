@@ -64,40 +64,77 @@ def test_gather2(ed_cls):
     assert done
 
 
-def test_or_(ed_cls):
-    import asynckivy as ak
-    eds = [ed_cls() for __ in range(3)]
-    async def _test():
-        tasks = await ak.or_(*(ak.event(ed, 'on_test') for ed in eds))
-        assert not tasks[0].done
-        assert tasks[1].done
-        assert not tasks[2].done
-        nonlocal done;done = True
-    done = False
-    ak.start(_test())
-    assert not done
-    eds[1].dispatch('on_test')
-    assert done
+class Test_or_:
+    def test_normal(self, ed_cls):
+        import asynckivy as ak
+        eds = [ed_cls() for __ in range(3)]
+        async def _test():
+            tasks = await ak.or_(*(ak.event(ed, 'on_test') for ed in eds))
+            assert not tasks[0].done
+            assert tasks[1].done
+            assert not tasks[2].done
+            nonlocal done;done = True
+        done = False
+        ak.start(_test())
+        assert not done
+        eds[1].dispatch('on_test')
+        assert done
+
+    @pytest.mark.parametrize("n_do_nothing", range(1, 4))
+    def test_some_coroutines_immediately_end(self, n_do_nothing):
+        '''github issue #3'''
+        import asynckivy as ak
+        async def do_nothing():
+            pass
+        async def _test():
+            tasks = await ak.or_(
+                *(do_nothing() for __ in range(n_do_nothing)),
+                *(ak.sleep_forever() for __ in range(3 - n_do_nothing)),
+            )
+            for task in tasks[:n_do_nothing]:
+                assert task.done
+            for task in tasks[n_do_nothing:]:
+                assert not task.done
+            nonlocal done; done = True
+        done = False
+        ak.start(_test())
+        assert done
 
 
-def test_and_(ed_cls):
-    import asynckivy as ak
-    eds = [ed_cls() for __ in range(3)]
-    async def _test():
-        tasks = await ak.and_(*(ak.event(ed, 'on_test') for ed in eds))
-        assert tasks[0].done
-        assert tasks[1].done
-        assert tasks[2].done
-        nonlocal done;done = True
-    done = False
-    ak.start(_test())
-    assert not done
-    eds[1].dispatch('on_test')
-    assert not done
-    eds[0].dispatch('on_test')
-    assert not done
-    eds[2].dispatch('on_test')
-    assert done
+class Test_and_:
+    def test_normal(self, ed_cls):
+        import asynckivy as ak
+        eds = [ed_cls() for __ in range(3)]
+        async def _test():
+            tasks = await ak.and_(*(ak.event(ed, 'on_test') for ed in eds))
+            assert tasks[0].done
+            assert tasks[1].done
+            assert tasks[2].done
+            nonlocal done;done = True
+        done = False
+        ak.start(_test())
+        assert not done
+        eds[1].dispatch('on_test')
+        assert not done
+        eds[0].dispatch('on_test')
+        assert not done
+        eds[2].dispatch('on_test')
+        assert done
+
+    @pytest.mark.parametrize("n_coros", range(1, 4))
+    def test_all_coroutines_immediately_end(self, n_coros):
+        '''github issue #3'''
+        import asynckivy as ak
+        async def do_nothing():
+            pass
+        async def _test():
+            tasks = await ak.and_(*(do_nothing() for __ in range(n_coros)))
+            for task in tasks:
+                assert task.done
+            nonlocal done; done = True
+        done = False
+        ak.start(_test())
+        assert done
 
 
 class TestEvent:
