@@ -52,3 +52,22 @@ class AKMagnet(Widget):
             )
             ak_start(coro)
             self._coro = coro
+
+    def disappear(self):
+        '''(experimental)
+        Silently disappears without ruining the layout.
+        '''
+        child = self.children[0]
+        self.remove_widget(child)
+        for name in _name_of_the_properties_need_to_be_copied:
+            setattr(child, name, getattr(self, name))
+        parent = self.parent
+        if parent:
+            index = parent.children.index(self)
+            parent.remove_widget(self)
+            parent.add_widget(child, index=index)
+
+
+_name_of_the_properties_need_to_be_copied = (
+    'size', 'pos', 'pos_hint', 'size_hint', 'size_hint_min', 'size_hint_max',
+)
