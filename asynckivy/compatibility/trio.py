@@ -6,14 +6,10 @@ import asynckivy
 
 
 async def run_coro_under_trio(coro, *, task_status=trio.TASK_STATUS_IGNORED):
-    '''Run an asynckivy-coroutine under Trio
+    '''Run an asynckivy-flavored coroutine under Trio
     
     Usage:
-        nursery.start_soon(run_coro_under_trio, some_coro1)
-    
-    Warning:
-        If an exception occurs in the underlying asynckivy-coroutine, it's
-        not properly propagated to Trio.
+        nursery.start_soon(run_coro_under_trio, asynckivy_flavored_coro)
     '''
     event = trio.Event()
     async def wrapper():
