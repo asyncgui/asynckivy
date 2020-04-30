@@ -20,8 +20,7 @@ class Painter(RelativeLayout):
         ox, oy = self.to_local(*touch.opos)
         on_touch_move_was_fired = False
         async for __ in ak.rest_of_touch_moves(self, touch):
-            # Don't await anything during this async-for-loop or you'll
-            # get an unexpected result.
+            # Don't await anything during this async-for-loop
             on_touch_move_was_fired = True
             x, y = self.to_local(*touch.pos)
             min_x = min(x, ox)
@@ -39,6 +38,7 @@ class Painter(RelativeLayout):
             )
         else:
             self.canvas.remove(inst_group)
-        print('end drawing')
 
-runTouchApp(Painter())
+
+if __name__ == "__main__":
+    runTouchApp(Painter())

@@ -1,48 +1,28 @@
-from kivy.uix.relativelayout import RelativeLayout
 from kivy.app import runTouchApp
 import asynckivy as ak
 
+try:
+    from .handling_multiple_touches_at_a_time import Painter as OriginalPainter
+except ImportError:
+    from handling_multiple_touches_at_a_time import Painter as OriginalPainter
 
-class Painter(RelativeLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        ak.start(self.draw_rect())
+
+class Painter(OriginalPainter):
+    def on_touch_down(self, touch):
+        pass
+
+    def on_kv_post(self, *args, **kwargs):
+        ak.start(self.keep_watching_touch_events())
     
-    async def draw_rect(self):
-        from kivy.graphics import Line, Color, Rectangle, InstructionGroup
-        from kivy.utils import get_random_color
+    async def keep_watching_touch_events(self):
         while True:
             __, touch = await ak.event(
                 self, 'on_touch_down',
                 filter=lambda w, t: w.collide_point(*t.opos),
                 return_value=True,
             )
-            inst_group = InstructionGroup()
-            self.canvas.add(inst_group)
-            inst_group.add(Color(*get_random_color()))
-            line = Line(width=2)
-            inst_group.add(line)
-            ox, oy = self.to_local(*touch.opos)
-            on_touch_move_was_fired = False
-            async for __ in ak.rest_of_touch_moves(self, touch):
-                # Don't await anything during this async-for-loop or you'll
-                # get an unexpected result.
-                on_touch_move_was_fired = True
-                x, y = self.to_local(*touch.pos)
-                min_x = min(x, ox)
-                min_y = min(y, oy)
-                max_x = max(x, ox)
-                max_y = max(y, oy)
-                line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
-            if on_touch_move_was_fired:
-                inst_group.add(Color(*get_random_color(alpha=.3)))
-                inst_group.add(
-                    Rectangle(
-                        pos=(min_x, min_y),
-                        size=(max_x - min_x, max_y - min_y, ),
-                    )
-                )
-            else:
-                self.canvas.remove(inst_group)
+            await self.draw_rect(touch)
 
-runTouchApp(Painter())
+
+if __name__ == "__main__":
+    runTouchApp(Painter())
