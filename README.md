@@ -24,7 +24,7 @@ async def some_task(button):
     # wait for 1sec
     await ak.sleep(1)
     
-    # wait until the button is pressed
+    # wait until a button is pressed
     await ak.event(button, 'on_press')
 
     # wait until 'button.x' changes
@@ -46,20 +46,20 @@ async def some_task(button):
     p = subprocess.Popen(...)
     returncode = await ak_process(p)
 
-    # wait until EITHER the button is pressed OR 5sec passes
+    # wait until EITHER a button is pressed OR 5sec passes
     tasks = await ak.or_(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
     print("The button was pressed" if tasks[0].done else "5sec passed")
 
-    # wait until BOTH the button is pressed AND 5sec passes"
+    # wait until BOTH a button is pressed AND 5sec passes"
     tasks = await ak.and_(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
 
-    # wait for the completion of animation
+    # wait for the completion of an animation
     await ak.animate(button, width=200, t='in_out_quad', d=.5)
 ak.start(some_task(some_button))
 ```
@@ -83,8 +83,7 @@ class Painter(RelativeLayout):
             line = Line(width=2)
         ox, oy = self.to_local(*touch.opos)
         async for __ in ak.rest_of_touch_moves(self, touch):
-            # Don't await anything during this async-for-loop or you'll
-            # get an unexpected result.
+            # Don't await anything during this async-for-loop
             x, y = self.to_local(*touch.pos)
             min_x = min(x, ox)
             min_y = min(y, oy)
