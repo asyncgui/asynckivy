@@ -35,6 +35,7 @@ async def _rest_of_touch_moves_simple_ver(widget, touch):
 async def _rest_of_touch_moves_complicated_ver(widget, touch):
     '''Does the same thing as `_rest_of_touch_moves_simple_ver` does, but faster.
     '''
+    from asynckivy._core import _save_step_coro
     touch.grab(widget)
     ctx = {'touch': touch, }
     uid_up = widget.fbind('on_touch_up', _on_touch_up, ctx)
@@ -63,11 +64,6 @@ def _on_touch_move(ctx, w, t):
     if t.grab_current is w and t is ctx['touch']:
         ctx['step_coro'](False)
         return True
-
-
-@types.coroutine
-def _save_step_coro(ctx):
-    yield lambda step_coro: (ctx.__setitem__('step_coro', step_coro), step_coro())
 
 
 @types.coroutine

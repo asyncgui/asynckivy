@@ -96,3 +96,8 @@ class Event:
     def wait(self):
         yield (lambda step_coro: step_coro()) if self._flag \
             else self._step_coro_list.append
+
+
+@types.coroutine
+def _save_step_coro(ctx):
+    yield lambda step_coro: (ctx.__setitem__('step_coro', step_coro), step_coro())

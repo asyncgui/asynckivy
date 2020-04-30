@@ -8,6 +8,7 @@ from ._simple_ver import _calculate, _set_final_value
 
 
 async def animate(target, **kwargs):
+    from asynckivy._core import _save_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
@@ -48,11 +49,6 @@ async def animate(target, **kwargs):
         raise
     finally:
         clock_event.cancel()
-
-
-@types.coroutine
-def _save_step_coro(ctx):
-    yield lambda step_coro: (ctx.__setitem__('step_coro', step_coro), step_coro())
 
 
 def _update(ctx, dt):
