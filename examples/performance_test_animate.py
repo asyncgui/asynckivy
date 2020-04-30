@@ -1,43 +1,65 @@
 from kivy.config import Config
 Config.set('graphics', 'maxfps', 0)
 from kivy.clock import Clock
-from kivy.factory import Factory
-from kivy.app import runTouchApp
+from kivy.app import App
+from kivy.lang import Builder
 import asynckivy as ak
+
+
+KV_CODE = '''
+BoxLayout:
+    orientation: 'vertical'
+    padding: 10
+    spacing: 10
+    ToggleButton:
+        text: 'simple ver.'
+        group: 'aaa'
+        on_press:
+            app.reset()
+            if self.state == 'down': app.start_anim(ver='simple')
+    ToggleButton:
+        text: 'complex ver.'
+        group: 'aaa'
+        on_press:
+            app.reset()
+            if self.state == 'down': app.start_anim(ver='complex')
+'''
 
 
 class AnimTarget:
     value = 0.
 
-root = Factory.BoxLayout(padding=10, spacing=10)
-coro = None
-def on_press(b):
-    from importlib import import_module
-    global coro
-    if coro is not None:
-        coro.close()
-    if b.state == 'down':
-        async def anim():
-            target = AnimTarget()
-            animate = import_module(f"asynckivy._animation._{b.text}").animate
-            while True:
-                await animate(target, value=100., d=10.)
-                await animate(target, value=0., d=10.)
-        coro = anim()
-        print(f'start {b.text}')
-        ak.start(coro)
-    else:
-        print(f'end {b.text}')
 
-for text in ('simple_ver', 'complex_ver', ):
-    root.add_widget(Factory.ToggleButton(
-        group='anim_ver',
-        text=text,
-        on_press=on_press,
-    ))
+class SampleApp(App):
+    coro = None
 
-def print_fps(dt):
-    print(Clock.get_fps(), 'fps')
-Clock.schedule_interval(print_fps, 2)
+    def build(self):
+        return Builder.load_string(KV_CODE)
 
-runTouchApp(root)
+    def on_start(self):
+        def print_fps(dt):
+            print(Clock.get_fps(), 'fps')
+        Clock.schedule_interval(print_fps, 2)
+
+    def reset(self):
+        coro = self.coro
+        if coro is not None:
+            coro.close()
+        self.coro = None
+
+    def start_anim(self, ver):
+        self.coro = self._anim(ver)
+        ak.start(self.coro)
+
+    async def _anim(self, ver):
+        from importlib import import_module
+        animate = import_module(f"asynckivy._animation._{ver}_ver").animate
+        target = AnimTarget()
+        print(f'---- start {ver} version ----')
+        while True:
+            await animate(target, value=100., d=10.)
+            await animate(target, value=0., d=10.)
+
+
+if __name__ == '__main__':
+    SampleApp().run()
