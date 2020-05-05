@@ -1,4 +1,4 @@
-__all__ = ('sleep', 'sleep_free', 'sleep_forever', )
+__all__ = ('sleep', 'sleep_free', 'sleep_forever', 'create_sleep', )
 
 import types
 
@@ -33,3 +33,43 @@ def sleep_free(duration):
 @types.coroutine
 def sleep_forever():
     yield lambda step_coro: None
+
+
+async def create_sleep(duration):
+    '''(experimental) Improves the performance by re-using a ClockEvent. 
+
+        sleep_for_1sec = await create_sleep(1)
+        while True:
+            dt = await sleep_for_1sec()
+            # do whatever you want
+
+    WARNING:
+
+        "sleep_for_1sec" must be awaited in the same task that created it.
+        That means the following code is not allowed:
+
+            sleep_for_1sec = await create_sleep(1)
+
+            asynckivy.start(sleep_for_1sec())
+            asynckivy.and_(sleep_for_1sec(), ...)
+            asynckivy.or_(sleep_for_1sec(), ...)
+
+            async def some_fn():
+                await sleep_for_1sec()
+            asynckivy.start(some_fn())
+
+        But the following code is allowed:
+
+            sleep_for_1sec = await create_sleep(1)
+
+            async def some_fn():
+                await sleep_for_1sec()
+            await some_fn()
+    '''
+    from asynckivy._core import _get_step_coro
+    clock_event = Clock.create_trigger(await _get_step_coro(), duration)
+
+    @types.coroutine
+    def sleep():
+        return (yield clock_event)[0][0]
+    return sleep
