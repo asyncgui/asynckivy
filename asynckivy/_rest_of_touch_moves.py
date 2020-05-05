@@ -35,15 +35,14 @@ async def _rest_of_touch_moves_simple_ver(widget, touch):
 async def _rest_of_touch_moves_complicated_ver(widget, touch):
     '''Does the same thing as `_rest_of_touch_moves_simple_ver` does, but faster.
     '''
-    from asynckivy._core import _save_step_coro
+    from asynckivy._core import _get_step_coro
     touch.grab(widget)
-    ctx = {'touch': touch, }
+    ctx = {'touch': touch, 'step_coro': await _get_step_coro(), }
     uid_up = widget.fbind('on_touch_up', _on_touch_up, ctx)
     uid_move = widget.fbind('on_touch_move', _on_touch_move, ctx)
     assert uid_up
     assert uid_move
     try:
-        await _save_step_coro(ctx)
         while True:
             if await _true_if_touch_up_false_if_touch_move():
                 return

@@ -99,5 +99,6 @@ class Event:
 
 
 @types.coroutine
-def _save_step_coro(ctx):
-    yield lambda step_coro: (ctx.__setitem__('step_coro', step_coro), step_coro())
+def _get_step_coro():
+    '''(internal)'''
+    return (yield lambda step_coro: step_coro(step_coro))[0][0]
