@@ -67,7 +67,7 @@ def _calculate(a, b, t):
         return tp([_calculate(a[x], b[x], t) for x in range(len(a))])
     elif isinstance(a, dict):
         d = {}
-        for x in iterkeys(a):
+        for x in a:
             if x not in b:
                 # User requested to animate only part of the dict.
                 # Copy the rest
