@@ -78,11 +78,11 @@ class AKDrawer(RelativeLayout):
 
     warning:
 
-        This widget must be a child of `FloatLayout`.
-        (including its subclasses e.g. `RelativeLayout` `Screen`)
+        This widget needs to be a child of `FloatLayout`.
+        (including its subclasses e.g. `RelativeLayout`, `Screen`)
 
         When you no longer need this widget, you must remove it from
-        the parent, like this:
+        its parent, like this:
 
             drawer.parent.remove_widget(drawer)
         
