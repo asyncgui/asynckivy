@@ -82,6 +82,11 @@ BoxLayout:
                 size: 100, 100
                 background_color: "#002200"
                 Button:
+            AKDrawer:
+                anchor: 'bm'
+                size_hint: None, None
+                size: 2, 10
+                background_color: "#002200"
                 
     Separator:
         size_hint_x: None
