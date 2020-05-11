@@ -1,23 +1,13 @@
 import pytest
 
 
-@pytest.fixture(scope='module')
-def ed_cls():
-    from kivy.event import EventDispatcher
-    class ConcreteEventDispatcher(EventDispatcher):
-        __events__ = ('on_test', )
-        def on_test(self, *args, **kwargs):
-            pass
-    return ConcreteEventDispatcher
-
-
-def test_gather(ed_cls):
+def test_gather():
     import asynckivy as ak
     from asynckivy._core import gather
-    eds = [ed_cls() for __ in range(3)]
+    events = [ak.Event() for __ in range(3)]
     async def _test():
         tasks = await gather(
-            (ak.event(ed, 'on_test') for ed in eds),
+            (event.wait() for event in events),
             n=2,
         )
         assert tasks[0].done
@@ -27,51 +17,20 @@ def test_gather(ed_cls):
     done = False
     ak.start(_test())
     assert not done
-    eds[0].dispatch('on_test')
+    events[0].set()
     assert not done
-    eds[0].dispatch('on_test')
+    events[0].set()
     assert not done
-    eds[2].dispatch('on_test')
-    assert done
-
-
-def test_gather2(ed_cls):
-    import time
-    from kivy.clock import Clock
-    import asynckivy as ak
-    from asynckivy._core import gather
-    eds = [ed_cls() for __ in range(2)]
-    async def _test():
-        tasks = await gather(
-            [
-                *(ak.event(ed, 'on_test') for ed in eds),
-                ak.sleep(.1),
-            ],
-            n=2,
-        )
-        assert tasks[0].done
-        assert not tasks[1].done
-        assert tasks[2].done
-        nonlocal done;done = True
-    Clock.tick()
-    done = False
-    ak.start(_test())
-    assert not done
-    eds[0].dispatch('on_test')
-    assert not done
-    eds[0].dispatch('on_test')
-    assert not done
-    time.sleep(.15)
-    Clock.tick()
+    events[2].set()
     assert done
 
 
 class Test_or_:
-    def test_normal(self, ed_cls):
+    def test_normal(self):
         import asynckivy as ak
-        eds = [ed_cls() for __ in range(3)]
+        events = [ak.Event() for __ in range(3)]
         async def _test():
-            tasks = await ak.or_(*(ak.event(ed, 'on_test') for ed in eds))
+            tasks = await ak.or_(*(event.wait() for event in events))
             assert not tasks[0].done
             assert tasks[1].done
             assert not tasks[2].done
@@ -79,7 +38,7 @@ class Test_or_:
         done = False
         ak.start(_test())
         assert not done
-        eds[1].dispatch('on_test')
+        events[1].set()
         assert done
 
     @pytest.mark.parametrize("n_do_nothing", range(1, 4))
@@ -91,7 +50,7 @@ class Test_or_:
         async def _test():
             tasks = await ak.or_(
                 *(do_nothing() for __ in range(n_do_nothing)),
-                *(ak.sleep_forever() for __ in range(3 - n_do_nothing)),
+                *(ak.Event().wait() for __ in range(3 - n_do_nothing)),
             )
             for task in tasks[:n_do_nothing]:
                 assert task.done
@@ -104,11 +63,11 @@ class Test_or_:
 
 
 class Test_and_:
-    def test_normal(self, ed_cls):
+    def test_normal(self):
         import asynckivy as ak
-        eds = [ed_cls() for __ in range(3)]
+        events = [ak.Event() for __ in range(3)]
         async def _test():
-            tasks = await ak.and_(*(ak.event(ed, 'on_test') for ed in eds))
+            tasks = await ak.and_(*(event.wait() for event in events))
             assert tasks[0].done
             assert tasks[1].done
             assert tasks[2].done
@@ -116,11 +75,11 @@ class Test_and_:
         done = False
         ak.start(_test())
         assert not done
-        eds[1].dispatch('on_test')
+        events[1].set()
         assert not done
-        eds[0].dispatch('on_test')
+        events[0].set()
         assert not done
-        eds[2].dispatch('on_test')
+        events[2].set()
         assert done
 
     @pytest.mark.parametrize("n_coros", range(1, 4))

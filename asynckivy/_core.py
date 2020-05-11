@@ -1,3 +1,5 @@
+'''Everything in this module doesn't depend on Kivy.'''
+
 __all__ = ('start', 'or_', 'and_', 'Event', )
 
 import types
