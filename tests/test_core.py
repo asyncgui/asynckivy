@@ -13,9 +13,10 @@ def ed_cls():
 
 def test_gather(ed_cls):
     import asynckivy as ak
+    from asynckivy._core import gather
     eds = [ed_cls() for __ in range(3)]
     async def _test():
-        tasks = await ak.gather(
+        tasks = await gather(
             (ak.event(ed, 'on_test') for ed in eds),
             n=2,
         )
@@ -38,9 +39,10 @@ def test_gather2(ed_cls):
     import time
     from kivy.clock import Clock
     import asynckivy as ak
+    from asynckivy._core import gather
     eds = [ed_cls() for __ in range(2)]
     async def _test():
-        tasks = await ak.gather(
+        tasks = await gather(
             [
                 *(ak.event(ed, 'on_test') for ed in eds),
                 ak.sleep(.1),

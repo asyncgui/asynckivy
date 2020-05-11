@@ -1,4 +1,4 @@
-__all__ = ('start', 'gather', 'or_', 'and_', 'Event', )
+__all__ = ('start', 'or_', 'and_', 'Event', )
 
 import types
 import typing
@@ -20,6 +20,7 @@ def start(coro):
 
 
 class Task:
+    '''(internal)'''
     __slots__ = ('coro', 'done', 'result', 'done_callback')
     def __init__(self, coro, *, done_callback=None):
         self.coro = coro
@@ -35,6 +36,7 @@ class Task:
 
 @types.coroutine
 def gather(coros:typing.Iterable[typing.Coroutine], *, n:int=None) -> typing.Sequence[Task]:
+    '''(internal)'''
     coros = tuple(coros)
     n_coros_left = n if n is not None else len(coros)
 
