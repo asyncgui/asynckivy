@@ -6,6 +6,9 @@ from inspect import getcoroutinestate, CORO_CLOSED
 
 
 def start(coro):
+    '''Starts a asynckivy-flavored coroutine.
+    Returns the argument itself.
+    '''
     def step_coro(*args, **kwargs):
         try:
             if getcoroutinestate(coro) != CORO_CLOSED:
@@ -17,6 +20,8 @@ def start(coro):
         coro.send(None)(step_coro)
     except StopIteration:
         pass
+
+    return coro
 
 
 class Task:
