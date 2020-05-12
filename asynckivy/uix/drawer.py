@@ -141,12 +141,12 @@ class AKDrawer(RelativeLayout):
         parent = self.parent
         tab = self.ids.tab.__self__
         tab.update(anchor)
-        self.pos_hint = ph = _get_initial_pos_hint_from_anchor(anchor)
+        self.pos_hint = ph = _get_initial_pos_hint(anchor)
         # '_c'-suffix means 'close'.  '_o'-suffix means 'open'.
-        icon_angle_c = _get_initial_icon_angle_from_anchor(anchor)
+        icon_angle_c = _get_initial_icon_angle(anchor)
         icon_angle_o = icon_angle_c + 180.
-        pos_key_c = _anchor2propname_opposite(anchor)
-        pos_key_o = _anchor2propname(anchor)
+        pos_key_c = _anchor_2_opposite_poskey(anchor)
+        pos_key_o = _anchor_2_poskey(anchor)
         ph_value = 0. if moves_forward_direction else 1.
 
         tab.icon_angle = icon_angle_c
@@ -190,12 +190,12 @@ class AKDrawer(RelativeLayout):
 
 
 __ = {'l': 'x', 't': 'top', 'r': 'right', 'b': 'y', }
-def _anchor2propname(anchor, *, __=__):
+def _anchor_2_poskey(anchor, *, __=__):
     return __[anchor[0]]
 
 
 __ = {'l': 'right', 't': 'y', 'r': 'x', 'b': 'top', }
-def _anchor2propname_opposite(anchor, *, __=__):
+def _anchor_2_opposite_poskey(anchor, *, __=__):
     return __[anchor[0]]
 
 
@@ -213,12 +213,12 @@ __ = {
     'lt': {'top': 1., },
     'rt': {'top': 1., },
 }
-def _get_initial_pos_hint_from_anchor(anchor, *, __=__):
+def _get_initial_pos_hint(anchor, *, __=__):
     return __[anchor].copy()
 
 
 __ = {'l': 0., 't': 270., 'r': 180., 'b': 90., }
-def _get_initial_icon_angle_from_anchor(anchor, *, __=__):
+def _get_initial_icon_angle(anchor, *, __=__):
     return __[anchor[0]]
 
 
