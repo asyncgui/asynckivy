@@ -148,6 +148,9 @@ class AKDrawer(RelativeLayout):
         pos_key_c = _anchor_2_opposite_poskey(anchor)
         pos_key_o = _anchor_2_poskey(anchor)
         ph_value = 0. if moves_forward_direction else 1.
+        def _get_pos_value_in_local_coordinates():
+            pos_value = getattr(parent, pos_key_o)
+            return parent.to_local(pos_value, pos_value)[moves_vertically]
 
         tab.icon_angle = icon_angle_c
         ph[pos_key_c] = ph_value
@@ -160,18 +163,18 @@ class AKDrawer(RelativeLayout):
                 parent.add_widget(self)
                 self._is_moving_to_the_top = False
             del ph[pos_key_c]
-            pos_value = getattr(parent, pos_key_o)
-            pos_value = parent.to_local(pos_value, pos_value)[moves_vertically]
-            await ak.animate(self, d=self.duration, **{pos_key_o: pos_value})
+            await ak.animate(
+                self, d=self.duration,
+                **{pos_key_o: _get_pos_value_in_local_coordinates()})
             await ak.animate(tab, d=self.duration, icon_angle=icon_angle_o)
             ph[pos_key_o] = ph_value
             self.dispatch('on_open')
             await ak.event(tab, 'on_press')
             self.dispatch('on_pre_close')
             del ph[pos_key_o]
-            pos_value = getattr(parent, pos_key_o)
-            pos_value = parent.to_local(pos_value, pos_value)[moves_vertically]
-            await ak.animate(self, d=self.duration, **{pos_key_c: pos_value})
+            await ak.animate(
+                self, d=self.duration,
+                **{pos_key_c: _get_pos_value_in_local_coordinates()})
             await ak.animate(tab, d=self.duration, icon_angle=icon_angle_c)
             ph[pos_key_c] = ph_value
             self.dispatch('on_close')
