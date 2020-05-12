@@ -67,7 +67,7 @@ class AKDrawerTab(ButtonBehavior, Label):
         self.font_size = font_size = max(sp(15), 24)
         self.size = self.size_hint_min = (font_size, font_size, )
         self.size_hint = (.4, None) if anchor in 'tb' else (None, .4)
-        self.pos_hint = __[anchor]
+        self.pos_hint = __[anchor].copy()
 
     __ = None
 
