@@ -8,25 +8,16 @@ def unlimit_maxfps(monkeypatch):
 
 
 @pytest.fixture(scope='module')
-def target_cls():
-    from dataclasses import dataclass, field
-    @dataclass
-    class Target:
-        num: int = 0
-        lst: list = field(default_factory=lambda:[0, 0])
-        dct: dict = field(default_factory=lambda:{'key': 0})
-    return Target
-
-
-@pytest.fixture()
-def target(target_cls):
-    return target_cls()
-
-
-@pytest.fixture(scope='module')
 def approx():
     from functools import partial
     return partial(pytest.approx, abs=1)
+
+
+class Target:
+    def __init__(self):
+        self.num = 0
+        self.lst = [0, 0, ]
+        self.dct = {'key': 0, }
 
 
 class Clock:
@@ -45,16 +36,10 @@ class Clock:
         Clock.tick()
 
 
-def test_target_itself(target_cls):
-    a = target_cls()
-    b = target_cls()
-    assert a.lst is not b.lst
-    assert a.dct is not b.dct
-
-
 @pytest.mark.parametrize('force_final_value', (True, False, ))
-def test_cancel(target, approx, force_final_value):
+def test_cancel(approx, force_final_value):
     import asynckivy as ak
+    target = Target()
     coro = ak.animate(
         target, num=100, d=.4, force_final_value=force_final_value)
     clock = Clock()
@@ -71,8 +56,9 @@ def test_cancel(target, approx, force_final_value):
         assert target.num == approx(50)
 
 
-def test_animate_list(target, approx):
+def test_list(approx):
     import asynckivy as ak
+    target = Target()
     coro = ak.animate(target, lst=[100, 200], d=.4)
     clock = Clock()
     ak.start(coro)
@@ -87,8 +73,9 @@ def test_animate_list(target, approx):
     assert target.lst == approx([100, 200])
 
 
-def test_animate_dict(target, approx):
+def test_dict(approx):
     import asynckivy as ak
+    target = Target()
     coro = ak.animate(target, dct={'key': 100}, d=.4)
     clock = Clock()
     ak.start(coro)
