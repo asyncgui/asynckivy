@@ -74,12 +74,12 @@ class AKDrawerTab(ButtonBehavior, Label):
 
 
 class AKDrawer(RelativeLayout):
-    '''(experimental)
-
-    warning:
+    '''A nifty drawer.
 
         This widget needs to be a child of `FloatLayout`.
         (including its subclasses e.g. `RelativeLayout`, `Screen`)
+
+    warning:
 
         When you no longer need this widget, you must remove it from
         its parent, like this:
