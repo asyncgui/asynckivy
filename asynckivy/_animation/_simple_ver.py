@@ -1,6 +1,6 @@
 __all__ = ('animate', )
 from kivy.animation import AnimationTransition
-from asynckivy import sleep
+import asynckivy as ak
 
 
 async def animate(target, **kwargs):
@@ -26,14 +26,15 @@ async def animate(target, **kwargs):
     calculate = _calculate
 
     if not duration:
-        await sleep(0)
+        await ak.sleep(0)
         _set_final_value(target, properties)
         return
 
     try:
         time = 0.
+        sleep = await ak.create_sleep(step)
         while True:
-            time += await sleep(step)
+            time += await sleep()
 
             # calculate progression
             progress = min(1., time / duration)
