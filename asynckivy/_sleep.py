@@ -45,18 +45,19 @@ async def create_sleep(duration):
 
     WARNING:
 
-        "sleep_for_1sec" must be awaited in the same task that created it.
-        That means the following code is not allowed:
+        In the example above, "sleep_for_1sec" must be awaited in the same
+        async-thread that created it. That means the following code is not
+        allowed:
 
             sleep_for_1sec = await create_sleep(1)
 
-            asynckivy.start(sleep_for_1sec())
-            asynckivy.and_(sleep_for_1sec(), ...)
-            asynckivy.or_(sleep_for_1sec(), ...)
+            asynckivy.start(sleep_for_1sec())  # No
+            asynckivy.and_(sleep_for_1sec(), ...)  # No
+            asynckivy.or_(sleep_for_1sec(), ...)  # No
 
             async def some_fn():
                 await sleep_for_1sec()
-            asynckivy.start(some_fn())
+            asynckivy.start(some_fn())  # No
 
         But the following code is allowed:
 
@@ -64,7 +65,7 @@ async def create_sleep(duration):
 
             async def some_fn():
                 await sleep_for_1sec()
-            await some_fn()
+            await some_fn()  # OK
     '''
     from asynckivy._core import _get_step_coro
     clock_event = Clock.create_trigger(await _get_step_coro(), duration)
