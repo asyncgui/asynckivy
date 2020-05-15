@@ -1,6 +1,6 @@
 '''Everything in this module doesn't depend on Kivy.'''
 
-__all__ = ('start', 'or_', 'and_', 'Event', )
+__all__ = ('start', 'or_', 'and_', 'Event', 'CloseableProperty', )
 
 import types
 import typing
@@ -111,3 +111,40 @@ class Event:
 def _get_step_coro():
     '''(internal)'''
     return (yield lambda step_coro: step_coro(step_coro))[0][0]
+
+
+class CloseableProperty:
+    '''A data descriptor, that automatically calls `.close()` method.
+
+    How it works:
+
+        class Owner:
+            coro = CloseableProperty()
+
+        owner = Owner()
+        owner.coro = coro1 = async_fn()
+        owner.coro = coro2 = async_fn()  # 'coro1.close()' will be called.
+        owner.coro = None                # 'coro2.close()' will be called.
+        owner.coro = coro3 = async_fn()
+        del owner.coro                   # 'coro3.close()' will be called.
+    '''
+
+    def __set_name__(self, klass, name):
+        self.name = name
+
+    def __get__(self, obj, klass=None):
+        if obj is None:
+            return self
+        return obj.__dict__.get(self.name)
+
+    def __set__(self, obj, new_value):
+        old_value = obj.__dict__.get(self.name)
+        if old_value is not None:
+            old_value.close()
+        obj.__dict__[self.name] = new_value
+
+    def __delete__(self, obj):
+        value = obj.__dict__.get(self.name)
+        if value is not None:
+            value.close()
+        del obj.__dict__[self.name]
