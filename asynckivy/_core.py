@@ -114,7 +114,8 @@ def _get_step_coro():
 
 
 class AutoCloseProperty:
-    '''A data descriptor, that automatically calls `.close()` method.
+    '''A data descriptor, that automatically calls `.close()` when a new value
+    is set.
 
     How it works:
 
