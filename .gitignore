@@ -5,3 +5,4 @@ bin/
 /.venv/
 /asynckivy.egg-info/
 /.pytest_cache/
+/*kivymd*/
