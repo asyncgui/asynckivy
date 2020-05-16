@@ -3,10 +3,10 @@ import pytest
 
 @pytest.fixture(scope='module')
 def owner_cls():
-    from asynckivy import CloseableProperty
+    from asynckivy import AutoCloseProperty
     class Owner:
-        coro1 = CloseableProperty()
-        coro2 = CloseableProperty()
+        coro1 = AutoCloseProperty()
+        coro2 = AutoCloseProperty()
     return Owner
 
 
@@ -20,9 +20,9 @@ async def async_fn():
 
 
 def test_owner_cls(owner_cls):
-    from asynckivy import CloseableProperty
-    assert type(owner_cls.coro1) is CloseableProperty
-    assert type(owner_cls.coro2) is CloseableProperty
+    from asynckivy import AutoCloseProperty
+    assert type(owner_cls.coro1) is AutoCloseProperty
+    assert type(owner_cls.coro2) is AutoCloseProperty
     assert owner_cls.coro1.name == 'coro1'
     assert owner_cls.coro2.name == 'coro2'
 

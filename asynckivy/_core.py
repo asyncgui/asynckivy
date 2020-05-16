@@ -1,6 +1,6 @@
 '''Everything in this module doesn't depend on Kivy.'''
 
-__all__ = ('start', 'or_', 'and_', 'Event', 'CloseableProperty', )
+__all__ = ('start', 'or_', 'and_', 'Event', 'AutoCloseProperty', )
 
 import types
 import typing
@@ -113,13 +113,13 @@ def _get_step_coro():
     return (yield lambda step_coro: step_coro(step_coro))[0][0]
 
 
-class CloseableProperty:
+class AutoCloseProperty:
     '''A data descriptor, that automatically calls `.close()` method.
 
     How it works:
 
         class Owner:
-            coro = CloseableProperty()
+            coro = AutoCloseProperty()
 
         owner = Owner()
         owner.coro = coro1 = async_fn()
