@@ -110,8 +110,9 @@ class AKDrawer(RelativeLayout):
         'm' stands for 'middle'.
     '''
 
+    _coro = ak.AutoCloseProperty()
+
     def __init__(self, **kwargs):
-        self._coro = None
         self._is_moving_to_the_top = False
         self._trigger_reset = trigger = Clock.create_trigger(self.reset, 0)
         super().__init__(**kwargs)
@@ -126,10 +127,8 @@ class AKDrawer(RelativeLayout):
         self._trigger_reset()
 
     def reset(self, *args, **kwargs):
-        if self._coro is not None:
-            self._coro.close()
-            self._coro = None
         if self.parent is None:
+            self._coro = None
             return
         self._coro = self._main()
         ak.start(self._coro)
