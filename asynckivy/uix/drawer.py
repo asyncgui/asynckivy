@@ -81,12 +81,8 @@ class AKDrawer(RelativeLayout):
 
     warning:
 
-        When you no longer need this widget, you must remove it from
-        its parent, like this:
-
-            drawer.parent.remove_widget(drawer)
-        
-        Otherwise, its internal coroutine would keep holding a reference
+        When you no longer need this widget, you must call '.disappear()'
+        method. Otherwise, its internal coroutine would keep holding a reference
         to it, and prevent it from being garbage-collected.
     '''
     __events__ = ('on_pre_open', 'on_open', 'on_pre_close', 'on_close', )
@@ -132,6 +128,11 @@ class AKDrawer(RelativeLayout):
             return
         self._coro = self._main()
         ak.start(self._coro)
+
+    def disappear(self):
+        parent = self.parent
+        if parent is not None:
+            parent.remove_widget(self)
 
     async def _main(self):
         anchor = self.anchor

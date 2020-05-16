@@ -95,6 +95,9 @@ BoxLayout:
         size_hint_x: .1
         size_hint_min_x: 100
         orientation: 'vertical'
+        Button:
+            text: 'disappear()'
+            on_press: drawer.disappear()
         Label:
             text: 'anchor'
             color: 0, 1, 0, 1
