@@ -128,6 +128,12 @@ class AutoCloseProperty:
         owner.coro = None                # 'coro2.close()' will be called.
         owner.coro = coro3 = async_fn()
         del owner.coro                   # 'coro3.close()' will be called.
+
+    Setting the same value won't trigger '.close()':
+
+        owner = Owner()
+        owner.coro = coro1 = async_fn()
+        owner.coro = coro1               # 'coro1.close()' won't be called.
     '''
 
     def __set_name__(self, klass, name):
