@@ -140,6 +140,8 @@ class AutoCloseProperty:
 
     def __set__(self, obj, new_value):
         old_value = obj.__dict__.get(self.name)
+        if old_value is new_value:
+            return
         if old_value is not None:
             old_value.close()
         obj.__dict__[self.name] = new_value

@@ -47,6 +47,13 @@ def test_set(owner):
     assert owner.__dict__['coro'] is None
 
 
+def test_setting_the_same_value_does_not_trigger_close(owner):
+    from inspect import getcoroutinestate, CORO_CREATED
+    owner.coro = coro1 = async_fn()
+    owner.coro = coro1
+    assert getcoroutinestate(coro1) == CORO_CREATED
+
+
 def test_delete(owner):
     from inspect import getcoroutinestate, CORO_CLOSED, CORO_CREATED
     owner.coro = coro = async_fn()
