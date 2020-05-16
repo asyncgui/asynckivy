@@ -55,7 +55,7 @@ def test_setting_the_same_value_does_not_trigger_close(owner):
 
 
 def test_delete(owner):
-    from inspect import getcoroutinestate, CORO_CLOSED, CORO_CREATED
+    from inspect import getcoroutinestate, CORO_CLOSED
     owner.coro = coro = async_fn()
     del owner.coro
     assert getcoroutinestate(coro) == CORO_CLOSED
