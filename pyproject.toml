@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "asynckivy"
+version = "0.0.4"
+description = "Async library for Kivy"
+authors = ["Nattōsai Mitō <flow4re2c@gmail.com>"]
+license = "MIT"
+readme = 'README.md'
+repository = 'https://github.com/gottadiveintopython/asynckivy'
+homepage = 'https://github.com/gottadiveintopython/asynckivy'
+keywords = ['async', 'kivy']
+classifiers=[
+    'Development Status :: 5 - Production/Stable',
+    'License :: OSI Approved :: MIT License',
+    'Intended Audience :: Developers',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.7',
+    'Topic :: Software Development :: Libraries',
+    'Operating System :: OS Independent',
+]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+kivy = "^1.11.1"
+trio = {version = "^0.15.1", optional = true}
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.4.3"
+pytest-trio = "^0.6.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

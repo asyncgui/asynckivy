@@ -1,5 +1,3 @@
-__version__ = '0.0.4dev'
-
 from ._core import *
 from ._sleep import *
 from ._event import *

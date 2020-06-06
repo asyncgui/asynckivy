@@ -6,4 +6,6 @@ bin/
 /asynckivy.egg-info/
 /.pytest_cache/
 /*kivymd*/
-Pipfile.lock
+/Pipfile.lock
+/poetry.lock
+/dist
