@@ -2,12 +2,10 @@
 
 [Youtube](https://youtu.be/rI-gjCsE1YQ)
 
-[asyncの為の公式のPR](https://github.com/kivy/kivy/pull/6368)は既にmaster branchに取り込まれていているのでそれ以前のversionを使わない限りはこのmoduleの存在意義は低いです。
-
 ### Install方法
 
 ```
-pip install git+https://github.com/gottadiveintopython/asynckivy@stable#egg=asynckivy
+pip install asynckivy
 ```
 
 ### 使い方
@@ -60,7 +58,9 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-`asynckivy.rest_of_touch_moves()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができる。
+#### touch処理
+
+`asynckivy.rest_of_touch_moves()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができます。
 
 ```python
 import asynckivy as ak
@@ -79,7 +79,7 @@ class Painter(RelativeLayout):
             line = Line(width=2)
         ox, oy = self.to_local(*touch.opos)
         async for __ in ak.rest_of_touch_moves(self, touch):
-            # 'on_touch_move'時に行いたい処理はここに書く。
+            # 'on_touch_move'の度にこのloopが繰り返される。
             # 注意点としてこのloop内では絶対にawaitを使わないこと。
             x, y = self.to_local(*touch.pos)
             min_x = min(x, ox)
@@ -91,7 +91,32 @@ class Painter(RelativeLayout):
         do_something_on_touch_up()
 ```
 
+#### 同期
+
+Trioの[Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物があります。
+
+```python
+import asynckivy as ak
+
+async def task_A(e):
+    print('A1')
+    await e.wait()
+    print('A2')
+async def task_B(e):
+    print('B1')
+    await e.wait()
+    print('B2')
+
+e = ak.Event()
+ak.start(task_A(e))
+# A1
+ak.start(task_B(e))
+# B1
+e.set()
+# A2
+# B2
+```
+
 ### Test環境
 
 - CPython 3.7.1 + Kivy 1.11.1
-- CPython 3.7.1 + Kivy 2.0.0rc1,git-b1c643c,20200106

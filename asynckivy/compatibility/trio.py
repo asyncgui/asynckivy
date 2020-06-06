@@ -1,4 +1,3 @@
-'''(experimental)'''
 __all__ = ('run_coro_under_trio', )
 from functools import wraps
 import trio
@@ -6,7 +5,7 @@ import asynckivy
 
 
 async def run_coro_under_trio(coro, *, task_status=trio.TASK_STATUS_IGNORED):
-    '''Run an asynckivy-flavored coroutine under Trio
+    '''(experimental) Run an asynckivy-flavored coroutine under Trio
     
     Usage:
         nursery.start_soon(run_coro_under_trio, asynckivy_flavored_coro)
