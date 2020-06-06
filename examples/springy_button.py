@@ -2,7 +2,7 @@ from kivy.properties import ColorProperty, NumericProperty
 from kivy.lang import Builder
 from kivy.uix.label import Label
 
-import asynckivy
+import asynckivy as ak
 
 KV_CODE = '''
 <SpringyButton>:
@@ -36,10 +36,8 @@ class SpringyButton(Label):
     _scaling = NumericProperty(1)
     _background_color = ColorProperty('#999933')
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._coro_blink = None
-        asynckivy.start(self.main())
+    def on_kv_post(self, *args, **kwargs):
+        ak.start(self._main())
 
     def on_press(self):
         pass
@@ -47,19 +45,16 @@ class SpringyButton(Label):
     def on_release(self):
         pass
 
-    def start_blinking(self):
-        if self._coro_blink is None:
-            self._coro_blink = self._blink()
-            asynckivy.start(self._coro_blink)
+    async def _main(self):
+        from asynckivy import animate, event, rest_of_touch_moves, start
 
-    def stop_blinking(self):
-        if self._coro_blink is not None:
-            self._coro_blink.close()
-            self._coro_blink = None
-
-    async def main(self):
-        from asynckivy import animate, event, rest_of_touch_moves
-
+        coro_blink = None
+        def close_coro_blink():
+            nonlocal coro_blink
+            if coro_blink is None:
+                return
+            coro_blink.close()
+            coro_blink = None
         try:
             while True:
                 __, touch = await event(
@@ -68,29 +63,30 @@ class SpringyButton(Label):
                     return_value=True,
                 )
                 self.dispatch('on_press')
-                self.start_blinking()
+                coro_blink = start(self._blink())
                 async for __ in rest_of_touch_moves(self, touch):
                     if self.collide_point(*touch.pos):
-                        self.start_blinking()
+                        if coro_blink is None:
+                            coro_blink = start(self._blink())
                     else:
-                        self.stop_blinking()
+                        close_coro_blink()
                 if self.collide_point(*touch.pos):
                     self.dispatch('on_release')
                     await animate(self, _scaling=.9, d=.05)
                     await animate(self, _scaling=1, d=.05)
-                self.stop_blinking()
+                close_coro_blink()
         finally:
-            self.stop_blinking()
+            close_coro_blink()
 
     async def _blink(self):
-        from asynckivy import sleep
         try:
             previous_color = self._border_color
+            sleep = await ak.create_sleep(.1)
             while True:
                 self._border_color = (.7, .7, .2, 1)
-                await sleep(.1)
+                await sleep()
                 self._border_color = previous_color
-                await sleep(.1)
+                await sleep()
         finally:
             self._border_color = previous_color
 
@@ -105,13 +101,9 @@ BoxLayout:
     spacing: 40
     SpringyButton:
         text: 'Hello'
-        on_press: print('on_press: Hello')
-        on_release: print('on_release: Hello')
     RelativeLayout:
         SpringyButton:
             text: 'Kivy'
-            on_press: print('on_press: Kivy')
-            on_release: print('on_release: Kivy')
 '''
 
 

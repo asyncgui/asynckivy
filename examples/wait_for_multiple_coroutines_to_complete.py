@@ -39,21 +39,6 @@ def _test():
             label = ids.label
             buttons = list(reversed(ids.layout.children))
             async def test_await_multiple_coroutines():
-                # ----------------------------------------------------
-                # wait for the completion of any number of coroutines
-                # ----------------------------------------------------
-                label.text = f'wait until 2 of {len(buttons)} buttons are pressed'
-                tasks = await ak.gather(
-                    (ak.event(button, 'on_press') for button in buttons),
-                    n=2
-                )
-                label.text = 'Done! ({} and {} were pressed)'.format(
-                    *[task.result[0].text for task in tasks if task.done]
-                )
-                await ak.sleep(1)
-                label.text = 'next'
-                await ak.sleep(1)
-
                 # -----------------------------------------
                 # wait for the completion of one coroutine 
                 # -----------------------------------------
