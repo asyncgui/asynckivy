@@ -36,33 +36,36 @@ async def _rest_of_touch_moves_complicated_ver(widget, touch):
     '''Does the same thing as `_rest_of_touch_moves_simple_ver` does, but faster.
     '''
     from asynckivy._core import _get_step_coro
+    step_coro = await _get_step_coro()
+
+    def _on_touch_up(w, t):
+        if t.grab_current is w and t is touch:
+            t.ungrab(w)
+            step_coro(True)
+            return True
+    def _on_touch_move(w, t):
+        if t.grab_current is w and t is touch:
+            step_coro(False)
+            return True
+
     touch.grab(widget)
-    ctx = {'touch': touch, 'step_coro': await _get_step_coro(), }
-    uid_up = widget.fbind('on_touch_up', _on_touch_up, ctx)
-    uid_move = widget.fbind('on_touch_move', _on_touch_move, ctx)
+    uid_up = widget.fbind('on_touch_up', _on_touch_up)
+    uid_move = widget.fbind('on_touch_move', _on_touch_move)
     assert uid_up
     assert uid_move
+
+    # assigning to a local variable might improve performance
+    true_if_touch_up_false_if_touch_move = \
+        _true_if_touch_up_false_if_touch_move
+
     try:
         while True:
-            if await _true_if_touch_up_false_if_touch_move():
+            if await true_if_touch_up_false_if_touch_move():
                 return
             yield touch
     finally:
         widget.unbind_uid('on_touch_up', uid_up)
         widget.unbind_uid('on_touch_move', uid_move)
-
-
-def _on_touch_up(ctx, w, t):
-    if t.grab_current is w and t is ctx['touch']:
-        t.ungrab(w)
-        ctx['step_coro'](True)
-        return True
-
-
-def _on_touch_move(ctx, w, t):
-    if t.grab_current is w and t is ctx['touch']:
-        ctx['step_coro'](False)
-        return True
 
 
 @types.coroutine
