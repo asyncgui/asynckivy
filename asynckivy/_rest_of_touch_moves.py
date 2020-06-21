@@ -3,23 +3,42 @@ __all__ = ('rest_of_touch_moves', )
 import types
 
 
-async def rest_of_touch_moves(widget, touch):
+async def rest_of_touch_moves(
+        widget, touch, *, eats_touch_move=False, eats_touch_up=False):
     '''Returns an async-generator, which yields the touch when `on_touch_move`
     is fired, and ends when `on_touch_up` is fired. Grabs and ungrabs the
     touch automatically.
+    If `eats_touch_move` is True, `on_touch_move` will never be dispatched
+    further. Same for `eats_touch_up`.
     '''
     from asynckivy._core import _get_step_coro
     step_coro = await _get_step_coro()
 
-    def _on_touch_up(w, t):
-        if t.grab_current is w and t is touch:
-            t.ungrab(w)
-            step_coro(True)
-            return True
-    def _on_touch_move(w, t):
-        if t.grab_current is w and t is touch:
-            step_coro(False)
-            return True
+    if eats_touch_up:
+        def _on_touch_up(w, t):
+            if t is touch:
+                if t.grab_current is w:
+                    t.ungrab(w)
+                    step_coro(True)
+                return True
+    else:
+        def _on_touch_up(w, t):
+            if t.grab_current is w and t is touch:
+                t.ungrab(w)
+                step_coro(True)
+                return True
+
+    if eats_touch_move:
+        def _on_touch_move(w, t):
+            if t is touch:
+                if t.grab_current is w:
+                    step_coro(False)
+                return True
+    else:
+        def _on_touch_move(w, t):
+            if t.grab_current is w and t is touch:
+                step_coro(False)
+                return True
 
     touch.grab(widget)
     uid_up = widget.fbind('on_touch_up', _on_touch_up)
