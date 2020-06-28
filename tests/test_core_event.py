@@ -56,3 +56,45 @@ def test_clear():
     assert task_state == 'C'
     e1.set()
     assert task_state == 'D'
+
+
+def test_pass_argument():
+    import asynckivy as ak
+    e = ak.Event()
+    async def task(e):
+        assert await e.wait() == 'A'
+        nonlocal done; done = True
+    done = False
+    ak.start(task(e))
+    assert not done
+    e.set('A')
+    assert done
+    done = False
+    ak.start(task(e))
+    assert done
+
+
+def test_reset_argument_while_resuming_awaited_coroutines():
+    import asynckivy as ak
+    e = ak.Event()
+
+    async def task1(e):
+        assert await e.wait() == 'A'
+        e.clear()
+        e.set('B')
+        nonlocal done1; done1 = True
+
+    async def task2(e):
+        assert await e.wait() == 'A'
+        assert await e.wait() == 'B'
+        nonlocal done2; done2 = True
+
+    done1 = False
+    done2 = False
+    ak.start(task1(e))
+    ak.start(task2(e))
+    assert not done1
+    assert not done2
+    e.set('A')
+    assert done1
+    assert done2

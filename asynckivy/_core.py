@@ -78,33 +78,47 @@ async def and_(*coros):
 
 
 class Event:
-    '''Equivalent of 'trio.Event'
+    '''Similar to 'trio.Event'. The difference is this one allows the user to
+    pass data:
+
+        import asynckivy as ak
+
+        e = ak.Event()
+        async def task(e):
+            assert await e.wait() == 'A'
+        ak.start(task(e))
+        e.set('A')
     '''
-    __slots__ = ('_flag', '_step_coro_list')
+    __slots__ = ('_value', '_flag', '_step_coro_list', )
 
     def __init__(self):
+        self._value = None
         self._flag = False
         self._step_coro_list = []
 
     def is_set(self):
         return self._flag
 
-    def set(self):
+    def set(self, value=None):
         if self._flag:
             return
         self._flag = True
+        self._value = value
         step_coro_list = self._step_coro_list
         self._step_coro_list = []
         for step_coro in step_coro_list:
-            step_coro()
+            step_coro(value)
 
     def clear(self):
         self._flag = False
 
     @types.coroutine
     def wait(self):
-        yield (lambda step_coro: step_coro()) if self._flag \
-            else self._step_coro_list.append
+        if self._flag:
+            yield lambda step_coro: step_coro()
+            return self._value
+        else:
+            return (yield self._step_coro_list.append)[0][0]
 
 
 @types.coroutine
