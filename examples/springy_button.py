@@ -21,7 +21,7 @@ KV_CODE = '''
             pos: self.pos
             size: self.size
         Color:
-            rgba: self._background_color
+            rgba: self.background_color
         Rectangle:
             pos: self.x + dp(4), self.y + dp(4)
             size: self.width - dp(8), self.height - dp(8)
@@ -32,12 +32,12 @@ Builder.load_string(KV_CODE)
 
 class SpringyButton(Label):
     __events__ = ('on_press', 'on_release', )
+    border_color1 = ColorProperty('#666666')
+    border_color2 = ColorProperty('#AAAA33')
+    background_color = ColorProperty('#999933')
     _border_color = ColorProperty('#666666')
     _scaling = NumericProperty(1)
-    _background_color = ColorProperty('#999933')
-
-    def on_kv_post(self, *args, **kwargs):
-        ak.start(self._main())
+    _ctx = None
 
     def on_press(self):
         pass
@@ -45,50 +45,51 @@ class SpringyButton(Label):
     def on_release(self):
         pass
 
-    async def _main(self):
-        from asynckivy import animate, event, rest_of_touch_moves, start
+    def on_border_color1(self, __, color1):
+        if self._ctx is None:
+            self._border_color = color1
 
-        coro_blink = None
-        def close_coro_blink():
-            nonlocal coro_blink
-            if coro_blink is None:
-                return
-            coro_blink.close()
-            coro_blink = None
+    def on_touch_down(self, touch):
+        if self._ctx is None and self.collide_point(*touch.opos) \
+                and not touch.is_mouse_scrolling:
+            ak.start(self._handle_touch(touch))
+            return True
+        return super().on_touch_down(touch)
+
+    async def _handle_touch(self, touch):
+        from asynckivy import animate, Event, rest_of_touch_moves, start
+        self._ctx = True
+        self.dispatch('on_press')
         try:
-            while True:
-                __, touch = await event(
-                    self, 'on_touch_down',
-                    filter=lambda w, t: w.collide_point(*t.opos) and not t.is_mouse_scrolling,
-                    return_value=True,
-                )
-                self.dispatch('on_press')
-                coro_blink = start(self._blink())
-                async for __ in rest_of_touch_moves(self, touch):
-                    if self.collide_point(*touch.pos):
-                        if coro_blink is None:
-                            coro_blink = start(self._blink())
-                    else:
-                        close_coro_blink()
+            flag_proceed_blinking = Event()
+            flag_proceed_blinking.set()
+            coro_blink = start(self._blink(flag_proceed_blinking))
+            async for __ in rest_of_touch_moves(self, touch):
                 if self.collide_point(*touch.pos):
-                    self.dispatch('on_release')
-                    await animate(self, _scaling=.9, d=.05)
-                    await animate(self, _scaling=1, d=.05)
-                close_coro_blink()
+                    flag_proceed_blinking.set()
+                else:
+                    flag_proceed_blinking.clear()
+            if self.collide_point(*touch.pos):
+                await animate(self, _scaling=.9, d=.05)
+                await animate(self, _scaling=1, d=.05)
+                self.dispatch('on_release')
         finally:
-            close_coro_blink()
+            coro_blink.close()
+            self._ctx = None
 
-    async def _blink(self):
+    async def _blink(self, flag_proceed):
         try:
-            previous_color = self._border_color
+            color1 = self.border_color1
+            color2 = self.border_color2
             sleep = await ak.create_sleep(.1)
             while True:
-                self._border_color = (.7, .7, .2, 1)
+                await flag_proceed.wait()
+                self._border_color = color2
                 await sleep()
-                self._border_color = previous_color
+                self._border_color = color1
                 await sleep()
         finally:
-            self._border_color = previous_color
+            self._border_color = color1
 
 
 from kivy.app import App
@@ -101,9 +102,18 @@ BoxLayout:
     spacing: 40
     SpringyButton:
         text: 'Hello'
+        border_color1: 0, 0, .6, 1
+        border_color2: .3, .4, 1, 1
+        background_color: .6, .3, .6, 1
+        on_press: print('blue: on_press')
+        on_release: print('blue: on_release')
     RelativeLayout:
         SpringyButton:
             text: 'Kivy'
+            size_hint: .8, .3
+            pos_hint: {'center_x': .5, 'center_y': .7, }
+            on_press: print('orange: on_press')
+            on_release: print('orange: on_release')
 '''
 
 
