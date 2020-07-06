@@ -29,16 +29,23 @@ def start(coro):
 class Task:
     '''(internal)'''
     __slots__ = ('coro', 'done', 'result', 'done_callback')
-    def __init__(self, coro, *, done_callback=None):
-        self.coro = coro
+    def __init__(self):
+        self.coro = None
         self.done = False
         self.result = None
+        self.done_callback = None
+    def run(self, coro, *, done_callback=None):
+        if self.coro is not None:
+            raise Exception("'run()' can be called only once.")
         self.done_callback = done_callback
-    async def _run(self):
-        self.result = await self.coro
+        self.coro = start(self._wrapper(coro))
+    async def _wrapper(self, inner_coro):
+        self.result = await inner_coro
         self.done = True
         if self.done_callback is not None:
             self.done_callback()
+    def cancel(self):
+        self.coro.close()
 
 
 @types.coroutine
@@ -54,9 +61,9 @@ def gather(coros:typing.Iterable[typing.Coroutine], *, n:int=None) -> typing.Seq
         n_coros_left -= 1
         if n_coros_left == 0:
             step_coro()
-    tasks = tuple(Task(coro, done_callback=done_callback) for coro in coros)
-    for task in tasks:
-        start(task._run())
+    tasks = tuple(Task() for coro in coros)
+    for task, coro in zip(tasks, coros):
+        task.run(coro, done_callback=done_callback)
 
     if n_coros_left <= 0:
         return tasks
