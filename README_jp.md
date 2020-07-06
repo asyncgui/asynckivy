@@ -5,7 +5,13 @@
 ### Install方法
 
 ```
+# stable version
 pip install asynckivy
+```
+
+```
+# development version
+pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=asynckivy
 ```
 
 ### 使い方
