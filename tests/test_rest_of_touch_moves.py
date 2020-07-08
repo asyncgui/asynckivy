@@ -32,7 +32,13 @@ def test_a_number_of_on_touch_moves_fired(touch_cls, n_touch_moves):
     t = touch_cls()
     ak.start(_test(w, t))
     for __ in range(n_touch_moves):
+        t.grab_current = None
         w.dispatch('on_touch_move', t)
+        t.grab_current = w
+        w.dispatch('on_touch_move', t)
+    t.grab_current = None
+    w.dispatch('on_touch_up', t)
+    t.grab_current = w
     w.dispatch('on_touch_up', t)
     assert done
 
@@ -55,15 +61,16 @@ def test_break_during_a_for_loop(touch_cls):
     w = Widget()
     t = touch_cls()
     ak.start(_test(w, t))
-    w.dispatch('on_touch_move', t)
-    assert n_touch_moves == 1
-    assert not done
-    w.dispatch('on_touch_move', t)
-    assert n_touch_moves == 2
-    assert not done
-    w.dispatch('on_touch_move', t)
-    assert n_touch_moves == 2
-    assert not done
+    for expected in (1, 2, 2, ):
+        t.grab_current = None
+        w.dispatch('on_touch_move', t)
+        t.grab_current = w
+        w.dispatch('on_touch_move', t)
+        assert n_touch_moves == expected
+        assert not done
+    t.grab_current = None
+    w.dispatch('on_touch_up', t)
+    t.grab_current = w
     w.dispatch('on_touch_up', t)
     assert n_touch_moves == 2
     assert done
