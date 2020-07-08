@@ -19,25 +19,25 @@ async def rest_of_touch_moves(
             if t is touch:
                 if t.grab_current is w:
                     t.ungrab(w)
-                    step_coro(True)
+                    step_coro(False)
                 return True
     else:
         def _on_touch_up(w, t):
             if t.grab_current is w and t is touch:
                 t.ungrab(w)
-                step_coro(True)
+                step_coro(False)
                 return True
 
     if eats_touch_move:
         def _on_touch_move(w, t):
             if t is touch:
                 if t.grab_current is w:
-                    step_coro(False)
+                    step_coro(True)
                 return True
     else:
         def _on_touch_move(w, t):
             if t.grab_current is w and t is touch:
-                step_coro(False)
+                step_coro(True)
                 return True
 
     touch.grab(widget)
@@ -47,13 +47,11 @@ async def rest_of_touch_moves(
     assert uid_move
 
     # assigning to a local variable might improve performance
-    true_if_touch_up_false_if_touch_move = \
-        _true_if_touch_up_false_if_touch_move
+    true_if_touch_move_false_if_touch_up = \
+        _true_if_touch_move_false_if_touch_up
 
     try:
-        while True:
-            if await true_if_touch_up_false_if_touch_move():
-                return
+        while await true_if_touch_move_false_if_touch_up():
             yield touch
     finally:
         widget.unbind_uid('on_touch_up', uid_up)
@@ -61,7 +59,7 @@ async def rest_of_touch_moves(
 
 
 @types.coroutine
-def _true_if_touch_up_false_if_touch_move() -> bool:
+def _true_if_touch_move_false_if_touch_up() -> bool:
     return (yield lambda step_coro: None)[0][0]
 
 
