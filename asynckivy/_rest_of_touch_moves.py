@@ -49,6 +49,7 @@ async def rest_of_touch_moves(widget, touch, *, eats_touch=False):
         while await true_if_touch_move_false_if_touch_up():
             yield touch
     finally:
+        touch.ungrab(widget)
         widget.unbind_uid('on_touch_up', uid_up)
         widget.unbind_uid('on_touch_move', uid_move)
 

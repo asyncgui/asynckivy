@@ -3,14 +3,18 @@ import pytest
 
 @pytest.fixture(scope='module')
 def touch_cls():
+    import weakref
     class Touch:
-        __slots__ = ('grab_current', )
+        __slots__ = ('grab_current', 'grab_list', )
         def __init__(self):
             self.grab_current = None
+            self.grab_list = []
         def grab(self, w):
-            self.grab_current = w
+            self.grab_list.append(weakref.ref(w.__self__))
         def ungrab(self, w):
-            pass
+            weak_w = weakref.ref(w.__self__)
+            if weak_w in self.grab_list:
+                self.grab_list.remove(weak_w)
     return Touch
 
 
@@ -48,11 +52,16 @@ def test_break_during_a_for_loop(touch_cls):
     import asynckivy as ak
 
     async def _test(w, t):
+        import weakref
         nonlocal n_touch_moves
+        weak_w = weakref.ref(w)
+        assert weak_w not in t.grab_list
         async for __ in ak.rest_of_touch_moves(w, t):
+            assert weak_w in t.grab_list
             n_touch_moves += 1
             if n_touch_moves == 2:
                 break
+        assert weak_w not in t.grab_list
         await ak.event(w, 'on_touch_up')
         nonlocal done;done = True
 
