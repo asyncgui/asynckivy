@@ -70,21 +70,17 @@ def test_break_during_a_for_loop(touch_cls):
 
 
 @pytest.mark.parametrize(
-    'eats_touch_move, eats_touch_up, expectation', [
-        (True, True, [0, 0, 0, ], ),
-        (True, False, [0, 0, 1, ], ),
-        (False, True, [1, 2, 0, ], ),
-        (False, False, [1, 2, 1, ], ),
+    'eats_touch, expectation', [
+        (True, [0, 0, 0, ], ),
+        (False, [1, 2, 1, ], ),
     ])
-def test_eat_touch_events(touch_cls, eats_touch_move, eats_touch_up, expectation):
+def test_eat_touch_events(touch_cls, eats_touch, expectation):
     from kivy.uix.widget import Widget
     import asynckivy as ak
 
     async def _test(parent, t):
         async for __ in ak.rest_of_touch_moves(
-                parent, t,
-                eats_touch_move=eats_touch_move,
-                eats_touch_up=eats_touch_up):
+                parent, t, eats_touch=eats_touch):
             pass
         nonlocal done;done = True
 
