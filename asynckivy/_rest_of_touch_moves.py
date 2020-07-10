@@ -3,41 +3,40 @@ __all__ = ('rest_of_touch_moves', )
 import types
 
 
-async def rest_of_touch_moves(
-        widget, touch, *, eats_touch_move=False, eats_touch_up=False):
+async def rest_of_touch_moves(widget, touch, *, eats_touch=False):
     '''Returns an async-generator, which yields the touch when `on_touch_move`
     is fired, and ends when `on_touch_up` is fired. Grabs and ungrabs the
-    touch automatically.
-    If `eats_touch_move` is True, `on_touch_move` will never be dispatched
-    further. Same for `eats_touch_up`.
+    touch automatically. If `eats_touch` is True, the touch will never be
+    dispatched further.
     '''
     from asynckivy._core import _get_step_coro
+
+    if touch.time_end != -1:
+        raise ValueError(f"the touch already has ended")
+
     step_coro = await _get_step_coro()
 
-    if eats_touch_up:
+    if eats_touch:
         def _on_touch_up(w, t):
             if t is touch:
                 if t.grab_current is w:
                     t.ungrab(w)
+                    step_coro(False)
+                return True
+        def _on_touch_move(w, t):
+            if t is touch:
+                if t.grab_current is w:
                     step_coro(True)
                 return True
     else:
         def _on_touch_up(w, t):
             if t.grab_current is w and t is touch:
                 t.ungrab(w)
-                step_coro(True)
+                step_coro(False)
                 return True
-
-    if eats_touch_move:
-        def _on_touch_move(w, t):
-            if t is touch:
-                if t.grab_current is w:
-                    step_coro(False)
-                return True
-    else:
         def _on_touch_move(w, t):
             if t.grab_current is w and t is touch:
-                step_coro(False)
+                step_coro(True)
                 return True
 
     touch.grab(widget)
@@ -47,21 +46,20 @@ async def rest_of_touch_moves(
     assert uid_move
 
     # assigning to a local variable might improve performance
-    true_if_touch_up_false_if_touch_move = \
-        _true_if_touch_up_false_if_touch_move
+    true_if_touch_move_false_if_touch_up = \
+        _true_if_touch_move_false_if_touch_up
 
     try:
-        while True:
-            if await true_if_touch_up_false_if_touch_move():
-                return
+        while await true_if_touch_move_false_if_touch_up():
             yield touch
     finally:
+        touch.ungrab(widget)
         widget.unbind_uid('on_touch_up', uid_up)
         widget.unbind_uid('on_touch_move', uid_move)
 
 
 @types.coroutine
-def _true_if_touch_up_false_if_touch_move() -> bool:
+def _true_if_touch_move_false_if_touch_up() -> bool:
     return (yield lambda step_coro: None)[0][0]
 
 

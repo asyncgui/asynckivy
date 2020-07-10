@@ -3,37 +3,47 @@ import pytest
 
 @pytest.fixture(scope='module')
 def touch_cls():
+    import weakref
     class Touch:
-        __slots__ = ('grab_current', )
+        __slots__ = ('grab_current', 'grab_list', 'time_end', )
         def __init__(self):
             self.grab_current = None
+            self.grab_list = []
+            self.time_end = -1
         def grab(self, w):
-            self.grab_current = w
+            self.grab_list.append(weakref.ref(w.__self__))
         def ungrab(self, w):
-            pass
+            weak_w = weakref.ref(w.__self__)
+            if weak_w in self.grab_list:
+                self.grab_list.remove(weak_w)
     return Touch
 
 
-@pytest.mark.parametrize('n_touch_move', [0, 1, 10])
-def test_a_number_of_on_touch_move_fired(touch_cls, n_touch_move):
+@pytest.mark.parametrize('n_touch_moves', [0, 1, 10])
+def test_a_number_of_on_touch_moves_fired(touch_cls, n_touch_moves):
     from time import perf_counter
     from kivy.uix.widget import Widget
     import asynckivy as ak
 
     async def _test(w, t):
-        from asynckivy import rest_of_touch_moves 
         n = 0
-        async for __ in rest_of_touch_moves(w, t):
+        async for __ in ak.rest_of_touch_moves(w, t):
             n += 1
-        assert n == n_touch_move
+        assert n == n_touch_moves
         nonlocal done;done = True
         
     done = False
     w = Widget()
     t = touch_cls()
     ak.start(_test(w, t))
-    for __ in range(n_touch_move):
+    for __ in range(n_touch_moves):
+        t.grab_current = None
         w.dispatch('on_touch_move', t)
+        t.grab_current = w
+        w.dispatch('on_touch_move', t)
+    t.grab_current = None
+    w.dispatch('on_touch_up', t)
+    t.grab_current = w
     w.dispatch('on_touch_up', t)
     assert done
 
@@ -43,51 +53,51 @@ def test_break_during_a_for_loop(touch_cls):
     import asynckivy as ak
 
     async def _test(w, t):
-        from asynckivy import rest_of_touch_moves, event
-        nonlocal n
-        async for __ in rest_of_touch_moves(w, t):
-            n += 1
-            if n == 2:
+        import weakref
+        nonlocal n_touch_moves
+        weak_w = weakref.ref(w)
+        assert weak_w not in t.grab_list
+        async for __ in ak.rest_of_touch_moves(w, t):
+            assert weak_w in t.grab_list
+            n_touch_moves += 1
+            if n_touch_moves == 2:
                 break
-        await event(w, 'on_touch_up')
+        assert weak_w not in t.grab_list
+        await ak.event(w, 'on_touch_up')
         nonlocal done;done = True
 
-    n = 0
+    n_touch_moves = 0
     done = False
     w = Widget()
     t = touch_cls()
     ak.start(_test(w, t))
-    w.dispatch('on_touch_move', t)
-    assert n == 1
-    assert not done
-    w.dispatch('on_touch_move', t)
-    assert n == 2
-    assert not done
-    w.dispatch('on_touch_move', t)
-    assert n == 2
-    assert not done
+    for expected in (1, 2, 2, ):
+        t.grab_current = None
+        w.dispatch('on_touch_move', t)
+        t.grab_current = w
+        w.dispatch('on_touch_move', t)
+        assert n_touch_moves == expected
+        assert not done
+    t.grab_current = None
     w.dispatch('on_touch_up', t)
-    assert n == 2
+    t.grab_current = w
+    w.dispatch('on_touch_up', t)
+    assert n_touch_moves == 2
     assert done
 
 
 @pytest.mark.parametrize(
-    'eats_touch_move, eats_touch_up, expectation', [
-        (True, True, [0, 0, 0, ], ),
-        (True, False, [0, 0, 1, ], ),
-        (False, True, [1, 2, 0, ], ),
-        (False, False, [1, 2, 1, ], ),
+    'eats_touch, expectation', [
+        (True, [0, 0, 0, ], ),
+        (False, [1, 2, 1, ], ),
     ])
-def test_eat_touch_events(touch_cls, eats_touch_move, eats_touch_up, expectation):
+def test_eat_touch_events(touch_cls, eats_touch, expectation):
     from kivy.uix.widget import Widget
     import asynckivy as ak
 
     async def _test(parent, t):
-        from asynckivy import rest_of_touch_moves 
-        async for __ in rest_of_touch_moves(
-                parent, t,
-                eats_touch_move=eats_touch_move,
-                eats_touch_up=eats_touch_up):
+        async for __ in ak.rest_of_touch_moves(
+                parent, t, eats_touch=eats_touch):
             pass
         nonlocal done;done = True
 
