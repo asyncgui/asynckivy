@@ -5,10 +5,11 @@ import pytest
 def touch_cls():
     import weakref
     class Touch:
-        __slots__ = ('grab_current', 'grab_list', )
+        __slots__ = ('grab_current', 'grab_list', 'time_end', )
         def __init__(self):
             self.grab_current = None
             self.grab_list = []
+            self.time_end = -1
         def grab(self, w):
             self.grab_list.append(weakref.ref(w.__self__))
         def ungrab(self, w):

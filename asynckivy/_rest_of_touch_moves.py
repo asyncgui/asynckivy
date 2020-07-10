@@ -10,6 +10,10 @@ async def rest_of_touch_moves(widget, touch, *, eats_touch=False):
     dispatched further.
     '''
     from asynckivy._core import _get_step_coro
+
+    if touch.time_end != -1:
+        raise ValueError(f"the touch already has ended")
+
     step_coro = await _get_step_coro()
 
     if eats_touch:
