@@ -3,16 +3,16 @@ __all__ = ('rest_of_touch_moves', )
 import types
 
 
-async def rest_of_touch_moves(widget, touch, *, eats_touch=False):
+async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
     '''Returns an async-generator, which yields the touch when `on_touch_move`
     is fired, and ends when `on_touch_up` is fired. Grabs and ungrabs the
-    touch automatically. If `eats_touch` is True, the touch will never be
+    touch automatically. If `eat_touch` is True, the touch will never be
     dispatched further.
     '''
     from asynckivy._core import _get_step_coro
     step_coro = await _get_step_coro()
 
-    if eats_touch:
+    if eat_touch:
         def _on_touch_up(w, t):
             if t is touch:
                 if t.grab_current is w:
