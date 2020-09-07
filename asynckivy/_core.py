@@ -1,6 +1,6 @@
 '''Everything in this module doesn't depend on Kivy.'''
 
-__all__ = ('start', 'or_', 'and_', 'Event', )
+__all__ = ('start', 'sleep_forever', 'or_', 'and_', 'Event', )
 
 import types
 import typing
@@ -24,6 +24,11 @@ def start(coro):
         pass
 
     return coro
+
+
+@types.coroutine
+def sleep_forever():
+    yield lambda step_coro: None
 
 
 class Task:

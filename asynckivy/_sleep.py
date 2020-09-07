@@ -1,4 +1,4 @@
-__all__ = ('sleep', 'sleep_free', 'sleep_forever', 'create_sleep', )
+__all__ = ('sleep', 'sleep_free', 'create_sleep', )
 
 import types
 
@@ -28,11 +28,6 @@ def sleep_free(duration):
     args, kwargs = yield \
         lambda step_coro: schedule_once_free(step_coro, duration)
     return args[0]
-
-
-@types.coroutine
-def sleep_forever():
-    yield lambda step_coro: None
 
 
 async def create_sleep(duration):
