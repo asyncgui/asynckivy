@@ -17,6 +17,9 @@ def start(coro):
                 coro.send((args, kwargs, ))(step_coro)
         except StopIteration:
             pass
+    step_coro.ctx = {
+        'root_coro': coro,
+    }
 
     try:
         coro.send(None)(step_coro)

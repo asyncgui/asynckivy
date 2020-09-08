@@ -1,6 +1,41 @@
 import pytest
 
 
+def test_get_the_root_coroutine_from_a_root_coroutine_itself():
+    import asynckivy as ak
+    root_coro = None
+    done = False
+
+    async def root_async_fn():
+        from asynckivy._core import _get_step_coro
+        step_coro = await _get_step_coro()
+        assert root_coro is step_coro.ctx['root_coro']
+        nonlocal done; done = True
+
+    root_coro = root_async_fn()
+    ak.start(root_coro)
+    assert done
+
+
+def test_get_the_root_coroutine_from_its_child():
+    import asynckivy as ak
+    root_coro = None
+    done = False
+
+    async def root_async_fn():
+        await child_async_fn()
+
+    async def child_async_fn():
+        from asynckivy._core import _get_step_coro
+        step_coro = await _get_step_coro()
+        assert root_coro is step_coro.ctx['root_coro']
+        nonlocal done; done = True
+
+    root_coro = root_async_fn()
+    ak.start(root_coro)
+    assert done
+
+
 def test_gather():
     import asynckivy as ak
     from asynckivy._core import gather
