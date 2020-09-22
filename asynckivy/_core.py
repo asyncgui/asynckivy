@@ -1,14 +1,143 @@
 '''Everything in this module doesn't depend on Kivy.'''
 
-__all__ = ('start', 'sleep_forever', 'or_', 'and_', 'Event', )
+__all__ = (
+    'start', 'sleep_forever', 'or_', 'and_', 'Event', 'Task', 'TaskState',
+    'get_current_task',
+)
 
+import itertools
 import types
 import typing
-from inspect import getcoroutinestate, CORO_CLOSED
+from inspect import (
+    getcoroutinestate, CORO_CLOSED, CORO_CREATED,
+    isawaitable,
+)
+import enum
+
+from asynckivy import exceptions
 
 
-def start(coro):
-    '''Starts a asynckivy-flavored coroutine.
+class TaskState(enum.Flag):
+    CREATED = enum.auto()  # CORO_CREATED
+    STARTED = enum.auto()  # CORO_RUNNING or CORO_SUSPENDED
+    CANCELLED = enum.auto()  # CORO_CLOSED by coro.close() or some exception
+    DONE = enum.auto()  # CORO_CLOSED
+    _END = CANCELLED | DONE  # (internal)
+
+
+class Task:
+    '''Similar to asyncio.Task. The main difference is that this one is not
+    awaitable.
+
+    Usage:
+
+        import asynckivy as ak
+
+        async def async_fn():
+            task = ak.Task(some_awaitable, name='my_main_task')
+            ak.start(task)
+            ...
+            ...
+            # wait for the completion of the task.
+            await task.wait(ak.TaskState.DONE)
+    '''
+
+    __slots__ = (
+        'name', '_uid', '_root_coro', '_state', '_result', '_event',
+    )
+
+    _uid_iter = itertools.count()
+
+    def __init__(self, awaitable, *, name=''):
+        if not isawaitable(awaitable):
+            raise ValueError("Not awaitable")
+        self._uid = next(self._uid_iter)
+        self.name:str = name
+        self._root_coro = self._wrapper(awaitable)
+        self._state = TaskState.CREATED
+        self._event = Event()
+
+    def __str__(self):
+        return f'Task(uid={self._uid}, name={self.name!r})'
+
+    @property
+    def uid(self) -> int:
+        return self._uid
+
+    @property
+    def root_coro(self) -> typing.Coroutine:
+        return self._root_coro
+
+    @property
+    def state(self) -> TaskState:
+        return self._state
+
+    @property
+    def done(self) -> bool:
+        return self._state is TaskState.DONE
+
+    @property
+    def cancelled(self) -> bool:
+        return self._state is TaskState.CANCELLED
+
+    @property
+    def result(self):
+        '''Equivalent of asyncio.Future.result()'''
+        state = self._state
+        if state is TaskState.DONE:
+            return self._result
+        elif state is TaskState.CANCELLED:
+            raise exceptions.CancelledError(f"{self} was cancelled")
+        else:
+            raise exceptions.InvalidStateError(f"Result of {self} is not ready")
+
+    async def _wrapper(self, awaitable):
+        try:
+            self._state = TaskState.STARTED
+            self._result = await awaitable
+        except GeneratorExit:
+            self._state = TaskState.CANCELLED
+            raise
+        except:
+            from asynckivy.utils import get_logger
+            logger = get_logger(__name__)
+            logger.critical('Uncaught exception on ' + str(self))
+            self._state = TaskState.CANCELLED
+            raise
+        else:
+            self._state = TaskState.DONE
+        finally:
+            self._event.set(self)
+
+    def cancel(self):
+        self._root_coro.close()
+
+    async def wait(self, wait_for:TaskState=TaskState.DONE):
+        '''Wait for the Task to be cancelled or done.
+
+        'wait_for' must be one of the following:
+
+            TaskState.DONE (default)
+            TaskState.CANCELLED
+            TaskState.CANCELLED | TaskState.DONE
+        '''
+        if wait_for & (~TaskState._END):
+            raise ValueError("'wait_for' is incorrect:", wait_for)
+        await self._event.wait()
+        if self.state & wait_for:
+            return
+        await sleep_forever()
+
+
+Coro_or_Task = typing.Union[typing.Coroutine, Task]
+
+
+def start(coro_or_task:Coro_or_Task) -> Coro_or_Task:
+    '''Starts a asynckivy-flavored coroutine or a Task. It is recommended to
+    pass a Task instead of a coroutine if a coroutine is going to live long
+    time, as Task is flexibler and has information that may be useful for
+    debugging.
+
     Returns the argument itself.
     '''
     def step_coro(*args, **kwargs):
@@ -18,12 +147,24 @@ def start(coro):
         except StopIteration:
             pass
 
+    if isinstance(coro_or_task, Task):
+        task = coro_or_task
+        if task._state is not TaskState.CREATED:
+            raise ValueError(f"{task} was already started")
+        step_coro._task = task
+        coro = task.root_coro
+    else:
+        coro = coro_or_task
+        if getcoroutinestate(coro) != CORO_CREATED:
+            raise ValueError("Coroutine was already started")
+        step_coro._task = None
+
     try:
         coro.send(None)(step_coro)
     except StopIteration:
         pass
 
-    return coro
+    return coro_or_task
 
 
 @types.coroutine
@@ -31,46 +172,29 @@ def sleep_forever():
     yield lambda step_coro: None
 
 
-class Task:
-    '''(internal)'''
-    __slots__ = ('coro', 'done', 'result', 'done_callback')
-    def __init__(self):
-        self.coro = None
-        self.done = False
-        self.result = None
-        self.done_callback = None
-    def run(self, coro, *, done_callback=None):
-        if self.coro is not None:
-            raise Exception("'run()' can be called only once.")
-        self.done_callback = done_callback
-        self.coro = start(self._wrapper(coro))
-    async def _wrapper(self, inner_coro):
-        self.result = await inner_coro
-        self.done = True
-        if self.done_callback is not None:
-            self.done_callback()
-    def cancel(self):
-        self.coro.close()
+Awaitable_or_Task = typing.Union[typing.Awaitable, Task]
 
 
 @types.coroutine
-def gather(coros:typing.Iterable[typing.Coroutine], *, n:int=None) -> typing.Sequence[Task]:
+def gather(aws_and_tasks:typing.Iterable[Awaitable_or_Task], *, n:int=None) \
+        -> typing.Sequence[Task]:
     '''(internal)'''
-    coros = tuple(coros)
-    n_coros_left = n if n is not None else len(coros)
+    tasks = tuple(
+        v if isinstance(v, Task) else Task(v) for v in aws_and_tasks)
+    n_left = n if n is not None else len(tasks)
 
-    def step_coro(*args, **kwargs):
-        nonlocal n_coros_left; n_coros_left -= 1
-    def done_callback():
-        nonlocal n_coros_left
-        n_coros_left -= 1
-        if n_coros_left == 0:
+    def step_coro():
+        pass
+    def done_callback(__):
+        nonlocal n_left
+        n_left -= 1
+        if n_left == 0:
             step_coro()
-    tasks = tuple(Task() for coro in coros)
-    for task, coro in zip(tasks, coros):
-        task.run(coro, done_callback=done_callback)
+    for task in tasks:
+        task._event.add_callback(done_callback)
+        start(task)
 
-    if n_coros_left <= 0:
+    if n_left <= 0:
         return tasks
 
     def callback(step_coro_):
@@ -91,14 +215,14 @@ async def and_(*coros):
 
 class Event:
     '''Similar to 'trio.Event'. The difference is this one allows the user to
-    pass data:
+    pass value:
 
         import asynckivy as ak
 
         e = ak.Event()
-        async def task(e):
+        async def task():
             assert await e.wait() == 'A'
-        ak.start(task(e))
+        ak.start(task())
         e.set('A')
     '''
     __slots__ = ('_value', '_flag', '_step_coro_list', )
@@ -132,8 +256,21 @@ class Event:
         else:
             return (yield self._step_coro_list.append)[0][0]
 
+    def add_callback(self, callback):
+        '''(internal)'''
+        if self._flag:
+            callback(self._value)
+        else:
+            self._step_coro_list.append(callback)
+
 
 @types.coroutine
 def _get_step_coro():
     '''(internal)'''
     return (yield lambda step_coro: step_coro(step_coro))[0][0]
+
+
+@types.coroutine
+def get_current_task() -> typing.Optional[Task]:
+    '''Returns the task currently running. None if no Task is associated.'''
+    return (yield lambda step_coro: step_coro(step_coro._task))[0][0]
