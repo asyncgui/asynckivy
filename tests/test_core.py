@@ -1,6 +1,39 @@
 import pytest
 
 
+def test__get_step_coro():
+    import asynckivy as ak
+    done = False
+    async def job():
+        from asynckivy._core import _get_step_coro
+        step_coro = await _get_step_coro()
+        assert callable(step_coro)
+        nonlocal done;done = True
+    ak.start(job())
+    assert done
+
+
+def test__get_current_task__without_task():
+    import asynckivy as ak
+    done = False
+    async def job():
+        assert await ak.get_current_task() is None
+        nonlocal done;done = True
+    ak.start(job())
+    assert done
+
+
+def test__get_current_task():
+    import asynckivy as ak
+    done = False
+    async def job():
+        assert await ak.get_current_task() is task
+        nonlocal done;done = True
+    task = ak.Task(job())
+    ak.start(task)
+    assert done
+
+
 def test_gather():
     import asynckivy as ak
     from asynckivy._core import gather
