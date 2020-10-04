@@ -22,11 +22,12 @@ class TaskState(enum.Flag):
     STARTED = enum.auto()  # CORO_RUNNING or CORO_SUSPENDED
     CANCELLED = enum.auto()  # CORO_CLOSED by coro.close() or some exception
     DONE = enum.auto()  # CORO_CLOSED
-    _END = CANCELLED | DONE  # (internal)
+    ENDED = CANCELLED | DONE
 
 
 class Task:
-    '''Similar to asyncio.Task. The main difference is that this one is not
+    '''(experimental)
+    Similar to `asyncio.Task`. The main difference is that this one is not
     awaitable.
 
     Usage:
@@ -34,12 +35,23 @@ class Task:
         import asynckivy as ak
 
         async def async_fn():
-            task = ak.Task(some_awaitable, name='my_main_task')
+            task = ak.Task(some_awaitable, name='my_sub_task')
             ak.start(task)
             ...
             ...
-            # wait for the completion of the task.
-            await task.wait(ak.TaskState.DONE)
+            ...
+
+            # case #1 wait for the completion of the task.
+            await task.wait()
+            print(task.result)
+
+            # case #2 wait for the cancellation of the task.
+            await task.wait(ak.TaskState.CANCELLED)
+
+            # case #3 wait for both completion and cancellation of the task.
+            await task.wait(ak.TaskState.ENDED)
+            if task.done:
+                print(task.result)
     '''
 
     __slots__ = (
@@ -50,7 +62,7 @@ class Task:
 
     def __init__(self, awaitable, *, name=''):
         if not isawaitable(awaitable):
-            raise ValueError("Not awaitable")
+            raise ValueError(str(awaitable) + " is not awaitable.")
         self._uid = next(self._uid_iter)
         self.name:str = name
         self._root_coro = self._wrapper(awaitable)
@@ -119,9 +131,9 @@ class Task:
 
             TaskState.DONE (default)
             TaskState.CANCELLED
-            TaskState.CANCELLED | TaskState.DONE
+            TaskState.ENDED
         '''
-        if wait_for & (~TaskState._END):
+        if wait_for & (~TaskState.ENDED):
             raise ValueError("'wait_for' is incorrect:", wait_for)
         await self._event.wait()
         if self.state & wait_for:

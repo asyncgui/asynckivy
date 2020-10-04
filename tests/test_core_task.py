@@ -3,6 +3,10 @@ import asynckivy as ak
 TS = ak.TaskState
 
 
+def test_task_state_ended():
+    assert TS.ENDED is (TS.CANCELLED | TS.DONE)
+
+
 def test_the_state_and_the_result():
     job_state = 'A'
     async def job():
@@ -134,6 +138,9 @@ def test_the_state_and_the_result__ver_uncaught_exception2():
         (TS.STARTED, True, ),
         (TS.DONE, False, ),
         (TS.CANCELLED, False, ),
+        (TS.ENDED, False, ),
+        (TS.ENDED | TS.STARTED, True, ),
+        (TS.DONE | TS.STARTED, True, ),
     ])
 def test_various_wait_flag(wait_for, should_raise):
     task = ak.Task(ak.sleep_forever())
@@ -150,7 +157,7 @@ def test_various_wait_flag(wait_for, should_raise):
     'wait_for, expected',[
         (TS.DONE, TS.STARTED, ),
         (TS.CANCELLED, TS.DONE, ),
-        (TS.DONE | TS.CANCELLED, TS.DONE, ),
+        (TS.ENDED, TS.DONE, ),
     ])
 def test_wait_for_an_already_cancelled_task(wait_for, expected):
     task1 = ak.Task(ak.sleep_forever())
@@ -166,7 +173,7 @@ def test_wait_for_an_already_cancelled_task(wait_for, expected):
     'wait_for, expected',[
         (TS.DONE, TS.DONE, ),
         (TS.CANCELLED, TS.STARTED, ),
-        (TS.DONE | TS.CANCELLED, TS.DONE, ),
+        (TS.ENDED, TS.DONE, ),
     ])
 def test_wait_for_an_already_finished_task(wait_for, expected):
     task1 = ak.Task(ak.sleep_forever())
@@ -197,13 +204,13 @@ def test_cancel_the_waiter_before_the_awaited():
     'wait_for_a, expected_a',[
         (TS.DONE, TS.DONE, ),
         (TS.CANCELLED, TS.STARTED, ),
-        (TS.DONE | TS.CANCELLED, TS.DONE, ),
+        (TS.ENDED, TS.DONE, ),
     ])
 @pytest.mark.parametrize(
     'wait_for_b, expected_b',[
         (TS.DONE, TS.DONE, ),
         (TS.CANCELLED, TS.STARTED, ),
-        (TS.DONE | TS.CANCELLED, TS.DONE, ),
+        (TS.ENDED, TS.DONE, ),
     ])
 def test_multiple_tasks_wait_for_the_same_task_to_complete(
         wait_for_a, expected_a, wait_for_b, expected_b, ):
@@ -223,13 +230,13 @@ def test_multiple_tasks_wait_for_the_same_task_to_complete(
     'wait_for_a, expected_a',[
         (TS.DONE, TS.STARTED, ),
         (TS.CANCELLED, TS.DONE, ),
-        (TS.DONE | TS.CANCELLED, TS.DONE, ),
+        (TS.ENDED, TS.DONE, ),
     ])
 @pytest.mark.parametrize(
     'wait_for_b, expected_b',[
         (TS.DONE, TS.STARTED, ),
         (TS.CANCELLED, TS.DONE, ),
-        (TS.DONE | TS.CANCELLED, TS.DONE, ),
+        (TS.ENDED, TS.DONE, ),
     ])
 def test_multiple_tasks_wait_for_the_same_task_to_be_cancelled(
         wait_for_a, expected_a, wait_for_b, expected_b, ):
