@@ -86,7 +86,6 @@ async def test_cancel_from_trio(nursery):
 
 @pytest.mark.trio
 async def test_cancel_from_asynckivy(nursery):
-    from inspect import getcoroutinestate, CORO_SUSPENDED, CORO_CLOSED
     import trio
     import asynckivy as ak
     from asynckivy.adaptor.to_trio import run_awaitable
@@ -94,7 +93,8 @@ async def test_cancel_from_asynckivy(nursery):
     ak_event = ak.Event()
     trio_event = trio.Event()
     async def trio_func(*, task_status):
-        await run_awaitable(ak_event.wait(), task_status=task_status)
+        with pytest.raises(ak.exceptions.CancelledError):
+            await run_awaitable(ak_event.wait(), task_status=task_status)
         trio_event.set()
 
     with trio.fail_after(1):
@@ -105,7 +105,6 @@ async def test_cancel_from_asynckivy(nursery):
 
 @pytest.mark.trio
 async def test_exception_propagation(nursery):
-    from inspect import getcoroutinestate, CORO_SUSPENDED, CORO_CLOSED
     import trio
     import asynckivy as ak
     from asynckivy.adaptor.to_trio import run_awaitable

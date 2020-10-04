@@ -6,12 +6,16 @@ from inspect import iscoroutinefunction, isawaitable
 from functools import wraps
 import trio
 import asynckivy
+from asynckivy.exceptions import CancelledError
 
 
 async def _ak_awaitable_wrapper(
         outcome:dict, end_signal:asynckivy.Event, ak_awaitable):
     try:
         outcome['return_value'] = await ak_awaitable
+    except GeneratorExit:
+        outcome['cancelled'] = True
+        raise
     except Exception as e:
         outcome['exception'] = e
     finally:
@@ -37,5 +41,8 @@ async def run_awaitable(
         exception = outcome.get('exception', None)
         if exception is not None:
             raise exception
+        if outcome.get('cancelled', False):
+            raise CancelledError("Inner task was cancelled")
+        return outcome['return_value']
     finally:
         wrapper_coro.close()
