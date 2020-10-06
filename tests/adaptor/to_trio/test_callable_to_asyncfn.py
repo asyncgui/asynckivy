@@ -3,6 +3,24 @@ pytest.importorskip('trio')
 
 
 @pytest.mark.trio
+async def test_arguments_and_return_value(nursery):
+    import trio
+    import asynckivy as ak
+    from asynckivy.adaptor.to_trio import callable_to_asyncfn
+
+    async def ak_func(arg, *, kwarg):
+        # ensure this function to be asynckivy-flavored
+        e = ak.Event();e.set()
+        await e.wait()
+
+        assert arg == 'arg'
+        assert kwarg == 'kwarg'
+        return 'return_value'
+
+    await callable_to_asyncfn(ak_func)('arg', kwarg='kwarg') == 'return_value'
+
+
+@pytest.mark.trio
 async def test_nursery_start(nursery):
     from inspect import getcoroutinestate, CORO_SUSPENDED, CORO_CLOSED
     import trio
@@ -29,19 +47,25 @@ async def test_nursery_start_soon(nursery):
     import asynckivy as ak
     from asynckivy.adaptor.to_trio import callable_to_asyncfn
 
+    state = 'A'
     ak_event = ak.Event()
-    trio_event1 = trio.Event()
-    trio_event2 = trio.Event()
+    trio_event = trio.Event()
     async def ak_func():
-        trio_event1.set()
+        nonlocal state
+        assert state == 'B'
+        state = 'C'
+        trio_event.set()
         await ak_event.wait()
-        trio_event2.set()
+        assert state == 'D'
 
     with trio.fail_after(1):
         nursery.start_soon(callable_to_asyncfn(ak_func))
-        await trio_event1.wait()
+        assert state == 'A'
+        state = 'B'
+        await trio_event.wait()
+        assert state == 'C'
+        state = 'D'
         ak_event.set()
-        await trio_event2.wait()
 
 
 @pytest.mark.trio
@@ -92,10 +116,12 @@ async def test_exception_propagation(nursery):
     import asynckivy as ak
     from asynckivy.adaptor.to_trio import callable_to_asyncfn
 
-    ak_event = ak.Event()
     trio_event = trio.Event()
     async def ak_func():
-        await ak_event.wait()
+        # ensure this function to be asynckivy-flavored
+        e = ak.Event();e.set()
+        await e.wait()
+
         raise ZeroDivisionError
     async def trio_func(*, task_status):
         with pytest.raises(ZeroDivisionError):
@@ -104,5 +130,4 @@ async def test_exception_propagation(nursery):
 
     with trio.fail_after(1):
         await nursery.start(trio_func)
-        ak_event.set()
         await trio_event.wait()
