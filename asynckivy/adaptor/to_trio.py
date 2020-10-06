@@ -1,6 +1,6 @@
 '''The entire module is experimental'''
 
-__all__ = ('run_awaitable', 'callable_to_asyncfn', )
+__all__ = ('run_awaitable', 'callable_to_asyncfn', 'awaitable_to_coro', )
 import warnings
 from inspect import iscoroutinefunction, isawaitable
 from functools import wraps
@@ -33,6 +33,8 @@ async def run_awaitable(
     Usage #2:
         return_value = await run_awaitable(an_asynckivy_awaitable)
     '''
+    if not isawaitable(ak_awaitable):
+        raise ValueError(f"{ak_awaitable} is not awaitable")
     end_signal = trio.Event()
     try:
         outcome = {}
@@ -66,3 +68,13 @@ def callable_to_asyncfn(ak_callable):
         return await run_awaitable(
             ak_callable(*args, **kwargs), task_status=task_status, )
     return trio_asyncfn
+
+
+def awaitable_to_coro(ak_awaitable):
+    '''(experimental)
+    Convert an asynckivy-flavored awaitable to a Trio-flavored coroutine.
+
+    Usage:
+        return_value = await awaitable_to_coro(an_asynckivy_awaitable)
+    '''
+    return run_awaitable(ak_awaitable)
