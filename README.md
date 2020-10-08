@@ -125,6 +125,11 @@ e.set()
 # B2
 ```
 
+### planned api break in version 2.0.0
+
+- remove `animation()`, the older name of `animate()`
+- remove `all_touch_moves()`, the older name of `rest_of_touch_moves()`
+
 ### Test Environment
 
 - CPython 3.7.1 + Kivy 1.11.1

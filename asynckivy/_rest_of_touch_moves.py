@@ -1,4 +1,4 @@
-__all__ = ('rest_of_touch_moves', )
+__all__ = ('rest_of_touch_moves', 'all_touch_moves', )
 
 import types
 
@@ -59,4 +59,4 @@ def _true_if_touch_move_false_if_touch_up() -> bool:
     return (yield lambda step_coro: None)[0][0]
 
 
-all_touch_moves = rest_of_touch_moves  # will be removed in the future
+all_touch_moves = rest_of_touch_moves

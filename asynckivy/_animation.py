@@ -1,9 +1,13 @@
-__all__ = ('animate', )
+__all__ = ('animate', 'animation', )
+import types
+from functools import partial
+from kivy.clock import Clock
 from kivy.animation import AnimationTransition
-import asynckivy as ak
+from asynckivy import sleep, sleep_forever
 
 
 async def animate(target, **kwargs):
+    from asynckivy._core import _get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
@@ -22,36 +26,49 @@ async def animate(target, **kwargs):
             original_value = original_value.copy()
         properties[key] = (original_value, value)
 
-    # assigning to a local variable might improve the performance
-    calculate = _calculate
-
     if not duration:
-        await ak.sleep(0)
+        await sleep(0)
         _set_final_value(target, properties)
         return
 
     try:
-        time = 0.
-        sleep = await ak.create_sleep(step)
-        while True:
-            time += await sleep()
-
-            # calculate progression
-            progress = min(1., time / duration)
-            t = transition(progress)
-
-            # apply progression on target
-            for key, values in properties.items():
-                a, b = values
-                value = calculate(a, b, t)
-                setattr(target, key, value)
-
-            # time to stop ?
-            if progress >= 1.:
-                return
-    finally:
-        if force_final_value and progress < 1:
+        ctx = {
+            'target': target,
+            'time': 0.,
+            'duration': duration,
+            'transition': transition,
+            'properties': properties,
+            'step_coro': await _get_step_coro(),
+        }
+        clock_event = Clock.schedule_interval(partial(_update, ctx), step)
+        await sleep_forever()
+    except GeneratorExit:
+        if force_final_value:
             _set_final_value(target, properties)
+        raise
+    finally:
+        clock_event.cancel()
+
+
+def _update(ctx, dt):
+    time = ctx['time'] + dt
+    ctx['time'] = time
+
+    # calculate progression
+    progress = min(1., time / ctx['duration'])
+    t = ctx['transition'](progress)
+
+    # apply progression on target
+    target = ctx['target']
+    for key, values in ctx['properties'].items():
+        a, b = values
+        value = _calculate(a, b, t)
+        setattr(target, key, value)
+
+    # time to stop ?
+    if progress >= 1.:
+        ctx['step_coro']()
+        return False
 
 
 def _set_final_value(target, properties):
@@ -78,3 +95,6 @@ def _calculate(a, b, t):
         return d
     else:
         return (a * (1. - t)) + (b * t)
+
+
+animation = animate
