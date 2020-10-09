@@ -123,7 +123,7 @@ e.set()
 # B2
 ```
 
-### version2.0.0で予定の互換性の無いapi変更
+### version1.0.0で予定の互換性の無いapi変更
 
 - `animate()`の古い名前である`animation()`を削除
 - `rest_of_touch_moves()`の古い名前である`all_touch_moves()`を削除

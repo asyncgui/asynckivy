@@ -125,7 +125,7 @@ e.set()
 # B2
 ```
 
-### planned api break in version 2.0.0
+### planned api break in version 1.0.0
 
 - remove `animation()`, the older name of `animate()`
 - remove `all_touch_moves()`, the older name of `rest_of_touch_moves()`
