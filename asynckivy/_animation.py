@@ -15,8 +15,9 @@ async def animate(target, **kwargs):
     A notable difference is `force_final_value`, which ensures the final-value
     of the animation to be applied even when the animation is cancelled.
 
+        import asynckivy as ak
         widget.x = 0
-        coro = animate(widget, x=100, force_final_value=True)
+        coro = ak.start(ak.animate(widget, x=100, force_final_value=True))
         coro.close()
         assert widget.x == 100
     '''
