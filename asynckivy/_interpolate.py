@@ -10,8 +10,8 @@ async def interpolate(start, end, **kwargs):
 
     Usage:
 
-        async for v in interpolate(0, 1, d=1., s=.2, t='in_cubic'):
-            print(v)
+        async for v in asynckivy.interpolate(0, 100, d=1., s=.3, t='linear'):
+            print(v)  # 0, 30, 60, 90, 100
     
     Available keyword arguments are the same as `animate()`.
 
@@ -24,11 +24,13 @@ async def interpolate(start, end, **kwargs):
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
     if kwargs:
-        raise ValueError(f"unrecognizable keyword-only-arguments: {kwargs}")
+        raise ValueError(f"unrecognizable keyword-arguments: {kwargs}")
 
     if not duration:
         yield end
         return
+    
+    yield start
 
     try:
         ctx = {
@@ -43,6 +45,7 @@ async def interpolate(start, end, **kwargs):
 
         get_current_value = _get_current_value
         while True:
+            # TODO: refactor when drop python 3.7
             value = await get_current_value()
             if value is None:
                 break
