@@ -27,7 +27,7 @@ async def run_awaitable(
         ak_awaitable, *, task_status=trio.TASK_STATUS_IGNORED):
     '''(experimental)
     Run an asynckivy-flavored awaitable under Trio.
-    
+
     Usage #1:
         nursery.start_soon(run_awaitable, an_asynckivy_awaitable)
 
