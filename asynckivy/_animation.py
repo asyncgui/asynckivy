@@ -7,6 +7,20 @@ from asynckivy import sleep, sleep_forever
 
 
 async def animate(target, **kwargs):
+    '''An asynchronous version of `kivy.animation.Animation`.
+
+    Usage:
+        await animate(widget, x=100, d=2, s=.2, t='in_cubic')
+
+    A notable difference is `force_final_value`, which ensures the final-value
+    of an animation to be applied even when it is cancelled.
+
+        import asynckivy as ak
+        widget.x = 0
+        coro = ak.start(ak.animate(widget, x=100, force_final_value=True))
+        coro.close()
+        assert widget.x == 100
+    '''
     from asynckivy._core import _get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))

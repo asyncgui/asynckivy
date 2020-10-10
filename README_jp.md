@@ -59,9 +59,22 @@ async def some_task(button):
         ak.sleep(5),
     )
 
+ak.start(some_task(some_button))
+```
+
+#### animation関連
+
+```python
+import asynckivy as ak
+
+
+async def some_task(button):
     # animationの完了を待つ
     await ak.animate(button, width=200, t='in_out_quad', d=.5)
-ak.start(some_task(some_button))
+
+    # 2秒かけて0から200までを線形補間する。中間値の計算は0.2秒毎に行う。
+    async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
+        print(v)
 ```
 
 #### touch処理

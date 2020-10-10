@@ -61,9 +61,21 @@ async def some_task(button):
         ak.sleep(5),
     )
 
-    # wait for the completion of an animation
-    await ak.animate(button, width=200, t='in_out_quad', d=.5)
 ak.start(some_task(some_button))
+```
+
+#### animation
+
+```python
+import asynckivy as ak
+
+async def some_task(widget):
+    # wait for the completion of an animation
+    await ak.animate(widget, width=200, t='in_out_quad', d=.5)
+
+    # interpolate between the values 0 and 200
+    async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
+        print(v)
 ```
 
 #### touch handling
