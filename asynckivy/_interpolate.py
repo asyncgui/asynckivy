@@ -11,7 +11,11 @@ async def interpolate(start, end, **kwargs):
     Usage:
 
         async for v in asynckivy.interpolate(0, 100, d=1., s=.3, t='linear'):
-            print(v)  # 0, 30, 60, 90, 100
+            print(v)  # prints 0 immediately
+                      # prints 30 after 0.3 seconds
+                      # prints 60 after 0.6 seconds
+                      # prints 90 after 0.9 seconds
+                      # prints 100 after 1.2 seconds
     
     Available keyword arguments are the same as `animate()`.
 
@@ -26,12 +30,10 @@ async def interpolate(start, end, **kwargs):
     if kwargs:
         raise ValueError(f"unrecognizable keyword-arguments: {kwargs}")
 
+    yield start
     if not duration:
         yield end
         return
-    
-    yield start
-
     try:
         ctx = {
             'start': start,

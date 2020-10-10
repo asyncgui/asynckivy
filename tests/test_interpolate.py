@@ -24,8 +24,8 @@ def test_complete_iteration(approx):
         nonlocal done;done = True
     clock = Clock()
     ak.start(job())
-    for __ in range(13):
-        clock.sleep(.1)
+    for __ in range(130):
+        clock.sleep(.01)
     assert done
 
 
@@ -45,9 +45,21 @@ def test_break_during_iteration(approx):
         nonlocal done;done = True
     clock = Clock()
     coro = ak.start(job())
-    for __ in range(13):
-        clock.sleep(.1)
+    for __ in range(130):
+        clock.sleep(.01)
     assert not done
     with pytest.raises(StopIteration):
         coro.send(None)
+    assert done
+
+
+def test_zero_duration(approx):
+    import asynckivy as ak
+
+    done = False
+    async def job():
+        l = [v async for v in ak.interpolate(start=0, end=100, step=.3, d=0)]
+        assert l == approx([0, 100])
+        nonlocal done;done = True
+    ak.start(job())
     assert done

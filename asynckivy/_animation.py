@@ -13,7 +13,7 @@ async def animate(target, **kwargs):
         await animate(widget, x=100, d=2, s=.2, t='in_cubic')
 
     A notable difference is `force_final_value`, which ensures the final-value
-    of the animation to be applied even when the animation is cancelled.
+    of an animation to be applied even when it is cancelled.
 
         import asynckivy as ak
         widget.x = 0
