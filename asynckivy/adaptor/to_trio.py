@@ -1,4 +1,5 @@
-'''The entire module is experimental'''
+'''This module provides the way to excute asynckivy-flavored code under Trio.
+'''
 
 __all__ = ('run_awaitable', 'callable_to_asyncfn', 'awaitable_to_coro', )
 import warnings
