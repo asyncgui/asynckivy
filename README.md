@@ -73,9 +73,11 @@ async def some_task(widget):
     # wait for the completion of an animation
     await ak.animate(widget, width=200, t='in_out_quad', d=.5)
 
-    # interpolate between the values 0 and 200
+    # Interpolate between the values 0 and 200.
+    # Do not await anything during the iteration.
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
+        await ak.sleep(1)  # not allowed
 ```
 
 #### touch handling
