@@ -32,6 +32,7 @@ def test_the_state_and_the_result():
     with pytest.raises(StopIteration):
         root_coro.send(None)
     assert task.state is TS.DONE
+    assert task.exception is None
     assert task.done
     assert not task.cancelled
     assert task.result == 'result'
@@ -61,6 +62,7 @@ def test_the_state_and_the_result__ver_cancel():
 
     root_coro.close()
     assert task.state is TS.CANCELLED
+    assert task.exception is None
     assert not task.done
     assert task.cancelled
     with pytest.raises(ak.CancelledError):
@@ -93,6 +95,7 @@ def test_the_state_and_the_result__ver_uncaught_exception():
     with pytest.raises(ZeroDivisionError):
         root_coro.send(None)
     assert task.state is TS.CANCELLED
+    assert type(task.exception) is ZeroDivisionError
     job_state = 'C'
     assert not task.done
     assert task.cancelled
@@ -125,6 +128,7 @@ def test_the_state_and_the_result__ver_uncaught_exception2():
     with pytest.raises(ZeroDivisionError):
         root_coro.throw(ZeroDivisionError)
     assert task.state is TS.CANCELLED
+    assert type(task.exception) is ZeroDivisionError
     job_state = 'B'
     assert not task.done
     assert task.cancelled
@@ -249,3 +253,18 @@ def test_multiple_tasks_wait_for_the_same_task_to_be_cancelled(
     task1.cancel()
     assert task2a.state is expected_a
     assert task2b.state is expected_b
+
+
+@pytest.mark.parametrize('surpresses_exception', (True, False, ), )
+def test_surpresses_exception(surpresses_exception):
+    async def job():
+        raise ZeroDivisionError
+    task = ak.Task(
+        job(), name='pytest', surpresses_exception=surpresses_exception)
+    if surpresses_exception:
+        ak.start(task)
+    else:
+        with pytest.raises(ZeroDivisionError):
+            ak.start(task)
+    assert task.state is TS.CANCELLED
+    assert type(task.exception) is ZeroDivisionError
