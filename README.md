@@ -1,6 +1,6 @@
 # AsyncKivy
 
-[Youtube](https://youtu.be/rI-gjCsE1YQ)  
+[Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)  
 [日本語doc](README_jp.md)  
 
 ### Installation
@@ -74,10 +74,9 @@ async def some_task(widget):
     await ak.animate(widget, width=200, t='in_out_quad', d=.5)
 
     # Interpolate between the values 0 and 200.
-    # Do not await anything during the iteration.
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
-        await ak.sleep(1)  # not allowed
+        # await ak.sleep(1)  # Do not await anything during the iteration
 ```
 
 #### touch handling
@@ -102,13 +101,14 @@ class Painter(RelativeLayout):
         ox, oy = self.to_local(*touch.opos)
         async for __ in ak.rest_of_touch_moves(self, touch):
             # This part is iterated everytime 'on_touch_move' is fired.
-            # Don't await anything during this iteration.
             x, y = self.to_local(*touch.pos)
             min_x = min(x, ox)
             min_y = min(y, oy)
             max_x = max(x, ox)
             max_y = max(y, oy)
             line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
+            # await ak.sleep(1)  # Do not await anything during the iteration
+
         # If you want to do something when 'on_touch_up' is fired, do it here.
         do_something_on_touch_up()
 ```

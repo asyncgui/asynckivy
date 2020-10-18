@@ -1,6 +1,6 @@
 # AsyncKivy
 
-[Youtube](https://youtu.be/rI-gjCsE1YQ)
+[Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)
 
 ### Install方法
 
@@ -73,10 +73,9 @@ async def some_task(button):
     await ak.animate(button, width=200, t='in_out_quad', d=.5)
 
     # 2秒かけて0から200までを線形補間する。中間値の計算は0.2秒毎に行う。
-    # 繰り返し中にawaitは使ってはいけない
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
-        await sk.sleep(1)  # 駄目
+        # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
 ```
 
 #### touch処理
@@ -108,6 +107,8 @@ class Painter(RelativeLayout):
             max_x = max(x, ox)
             max_y = max(y, oy)
             line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
+            # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
+
         # 'on_touch_up'時に行いたい処理はここに書く
         do_something_on_touch_up()
 ```
