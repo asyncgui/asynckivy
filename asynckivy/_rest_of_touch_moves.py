@@ -4,13 +4,26 @@ import types
 
 
 async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
-    '''Returns an async-generator, which yields the touch when `on_touch_move`
-    is fired, and ends when `on_touch_up` is fired. Grabs and ungrabs the
-    touch automatically. If `eat_touch` is True, the touch will never be
-    dispatched further.
+    '''Returns an async-generator, which yields the given touch when
+    `on_touch_move` is fired, and ends when `on_touch_up` is fired. Grabs and
+    ungrabs the touch automatically. If `eat_touch` is True, the touch
+    will never be dispatched further i.e. the next widget will never get this
+    touch until the generator ends. If `on_touch_up` from the touch was
+    already fired, `MotionEventAlreadyEndedError` will be raised.
     '''
     from asyncgui import get_step_coro
+    from asynckivy import or_, sleep, event
+    from asynckivy.exceptions import MotionEventAlreadyEndedError
+
     step_coro = await get_step_coro()
+    if touch.time_end != -1:
+        # `on_touch_up` might be already fired. If so raise an exception.
+        tasks = await or_(sleep(.1), event(widget, 'on_touch_up'))
+        if tasks[0].done:
+            raise MotionEventAlreadyEndedError(
+                f"MotionEvent(uid={touch.uid}) has already ended")
+        else:
+            return
 
     if eat_touch:
         def _on_touch_up(w, t):
