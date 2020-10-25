@@ -21,7 +21,7 @@ async def animate(target, **kwargs):
         coro.close()
         assert widget.x == 100
     '''
-    from asynckivy._core import _get_step_coro
+    from asyncgui import get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
@@ -52,7 +52,7 @@ async def animate(target, **kwargs):
             'duration': duration,
             'transition': transition,
             'properties': properties,
-            'step_coro': await _get_step_coro(),
+            'step_coro': await get_step_coro(),
         }
         clock_event = Clock.schedule_interval(partial(_update, ctx), step)
         await sleep_forever()

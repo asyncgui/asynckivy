@@ -21,7 +21,7 @@ async def interpolate(start, end, **kwargs):
 
     Inspired by wasabi2d.
     '''
-    from asynckivy._core import _get_step_coro
+    from asyncgui import get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
@@ -41,7 +41,7 @@ async def interpolate(start, end, **kwargs):
             'time': 0.,
             'duration': duration,
             'transition': transition,
-            'step_coro': await _get_step_coro(),
+            'step_coro': await get_step_coro(),
         }
         clock_event = Clock.schedule_interval(partial(_update, ctx), step)
 
