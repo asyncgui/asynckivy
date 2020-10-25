@@ -9,8 +9,8 @@ async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
     touch automatically. If `eat_touch` is True, the touch will never be
     dispatched further.
     '''
-    from asynckivy._core import _get_step_coro
-    step_coro = await _get_step_coro()
+    from asyncgui import get_step_coro
+    step_coro = await get_step_coro()
 
     if eat_touch:
         def _on_touch_up(w, t):

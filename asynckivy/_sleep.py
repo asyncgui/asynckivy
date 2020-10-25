@@ -31,7 +31,7 @@ def sleep_free(duration):
 
 
 async def create_sleep(duration):
-    '''(experimental) Improves the performance by re-using a ClockEvent. 
+    '''(internal) Improves the performance by re-using a ClockEvent. 
 
         sleep_for_1sec = await create_sleep(1)
         while True:
@@ -62,8 +62,8 @@ async def create_sleep(duration):
                 await sleep_for_1sec()
             await some_fn()  # OK
     '''
-    from asynckivy._core import _get_step_coro
-    clock_event = Clock.create_trigger(await _get_step_coro(), duration)
+    from asyncgui import get_step_coro
+    clock_event = Clock.create_trigger(await get_step_coro(), duration)
 
     @types.coroutine
     def sleep():
