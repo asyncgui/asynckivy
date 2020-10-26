@@ -18,7 +18,6 @@ pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=
 
 ```python
 import asynckivy as ak
-from asynckivy.process_and_thread import thread as ak_thread
 
 async def some_task(button):
     # 1秒待つ
@@ -37,7 +36,7 @@ async def some_task(button):
         print(f'button.x の現在の値は {x} です')
 
     # 新しくthreadを作ってそこで渡された関数を実行し、その完了を待つ
-    r = await ak_thread(some_heavy_task)
+    r = await ak.run_in_thread(some_heavy_task)
     print(f"'some_heavy_task()'の戻り値: {r}")
 
     # buttonが押されるか5秒経つまで待つ
@@ -137,6 +136,7 @@ e.set()
 
 - `animate()`の古い名前である`animation()`を削除
 - `rest_of_touch_moves()`の古い名前である`all_touch_moves()`を削除
+- `run_in_thread()`の古い名前である`process_and_thread.thread()`を削除
 
 ### Test環境
 

@@ -19,7 +19,6 @@ pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=
 
 ```python
 import asynckivy as ak
-from asynckivy.process_and_thread import thread as ak_thread
 
 async def some_task(button):
     # wait for 1sec
@@ -39,7 +38,7 @@ async def some_task(button):
 
     # create a new thread, run a function on it, then
     # wait for the completion of that thread
-    r = await ak_thread(some_heavy_task)
+    r = await ak.run_in_thread(some_heavy_task)
     print(f"result of 'some_heavy_task()': {r}")
 
     # wait until EITHER a button is pressed OR 5sec passes
@@ -137,6 +136,7 @@ e.set()
 
 - remove `animation()`, the older name of `animate()`
 - remove `all_touch_moves()`, the older name of `rest_of_touch_moves()`
+- remove `process_and_thread.thread()`, the older name of `run_in_thread()`
 
 ### Test Environment
 

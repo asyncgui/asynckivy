@@ -6,10 +6,7 @@
 
 ## Normal Priority
 
-- adapter for `asyncio` and `trio`
-
 ## Low Priority
 
 - implement `asyncio.Queue()` equivalent
-- implement `asyncio.as_completed()` equivalent
 - implement `trio.Semaphore` equivalent
