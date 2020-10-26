@@ -18,8 +18,7 @@ pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=
 
 ```python
 import asynckivy as ak
-from asynckivy.process_and_thread import \
-    thread as ak_thread, process as ak_process
+from asynckivy.process_and_thread import thread as ak_thread
 
 async def some_task(button):
     # 1秒待つ
@@ -40,11 +39,6 @@ async def some_task(button):
     # 新しくthreadを作ってそこで渡された関数を実行し、その完了を待つ
     r = await ak_thread(some_heavy_task)
     print(f"'some_heavy_task()'の戻り値: {r}")
-
-    # subprocessの完了を待つ
-    import subprocess
-    p = subprocess.Popen(...)
-    returncode = await ak_process(p)
 
     # buttonが押されるか5秒経つまで待つ
     tasks = await ak.or_(

@@ -1,4 +1,4 @@
-__all__ = ('thread', 'process', )
+__all__ = ('thread', )
 
 
 async def thread(func, *, daemon=False, polling_interval=3):
@@ -17,13 +17,3 @@ async def thread(func, *, daemon=False, polling_interval=3):
         await sleep()
     return return_value
 
-
-async def process(p, *, polling_interval=3):
-    '''wait for the completion of subprocess'''
-    from ._sleep import create_sleep
-
-    sleep = await create_sleep(polling_interval)
-    poll = p.poll
-    while poll() is None:
-        await sleep()
-    return p.returncode
