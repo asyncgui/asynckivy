@@ -1,4 +1,5 @@
-__all__ = ('interpolate', )
+__all__ = ('interpolate', 'fade_transition', )
+from contextlib import asynccontextmanager
 import types
 from functools import partial
 from kivy.clock import Clock
@@ -17,7 +18,7 @@ async def interpolate(start, end, **kwargs):
                       # prints 90 after 0.9 seconds
                       # prints 100 after 1.2 seconds
     
-    Available keyword arguments are the same as `animate()`.
+    Available keyword-only arguments are the same as `animate()`.
 
     Inspired by wasabi2d.
     '''
@@ -77,3 +78,27 @@ def _update(ctx, dt):
 @types.coroutine
 def _get_current_value() -> int:
     return (yield lambda step_coro: None)[0][0]
+
+
+@asynccontextmanager
+async def fade_transition(*widgets, **kwargs):
+    '''Fade out/in given widgets.
+
+    Available keyword-only arguments are 'd', 'duration', 's', and 'step'.
+    '''
+    half_d = kwargs.pop('d', kwargs.pop('duration', 1.)) / 2.
+    s = kwargs.pop('s', kwargs.pop('step', 0))
+    if kwargs:
+        raise ValueError("surplus keyword-only arguments were given:", kwargs)
+    base_opacity = widgets[0].opacity if widgets else 0.
+    try:
+        async for v in interpolate(base_opacity, 0., d=half_d, s=s):
+            for w in widgets:
+                w.opacity = v
+        yield
+        async for v in interpolate(0., base_opacity, d=half_d, s=s):
+            for w in widgets:
+                w.opacity = v
+    finally:
+        for w in widgets:
+            w.opacity = base_opacity

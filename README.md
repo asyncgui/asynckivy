@@ -70,6 +70,11 @@ async def some_task(widget):
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
         # await ak.sleep(1)  # Do not await anything during the iteration
+
+    # change the text of Label with fade-transition
+    label = Label(...)
+    async with ak.fade_transition(label):
+        label.text = 'new text'
 ```
 
 #### touch handling
