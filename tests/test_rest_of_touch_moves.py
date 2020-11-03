@@ -5,10 +5,12 @@ import pytest
 def touch_cls():
     import weakref
     class Touch:
-        __slots__ = ('grab_current', 'grab_list', )
+        __slots__ = ('grab_current', 'grab_list', 'time_end', 'uid', )
         def __init__(self):
             self.grab_current = None
             self.grab_list = []
+            self.time_end = -1
+            self.uid = 0
         def grab(self, w):
             self.grab_list.append(weakref.ref(w.__self__))
         def ungrab(self, w):
@@ -141,4 +143,40 @@ def test_eat_touch_events(touch_cls, eat_touch, expectation):
     t.grab_current = parent
     parent.dispatch('on_touch_up', t)
     assert n_touches['up'] == expectation[2]
+    assert done
+
+
+@pytest.mark.parametrize('actually_ended', (True, False))
+def test_the_touch_that_might_already_ended(touch_cls, actually_ended):
+    import time
+    from kivy.clock import Clock
+    from kivy.uix.widget import Widget
+    import asynckivy as ak
+    from asynckivy.exceptions import MotionEventAlreadyEndedError
+    Clock.tick()
+
+    async def job(w, t):
+        if actually_ended:
+            with pytest.raises(MotionEventAlreadyEndedError):
+                async for __ in ak.rest_of_touch_moves(w, t):
+                    pass
+        else:
+            async for __ in ak.rest_of_touch_moves(w, t):
+                pass
+        nonlocal done;done = True
+
+    done = False
+    w = Widget()
+    t = touch_cls()
+    t.time_end = 1  # something other than -1
+    ak.start(job(w, t))
+
+    if actually_ended:
+        time.sleep(.2)
+        Clock.tick()
+    else:
+        t.grab_current = None
+        w.dispatch('on_touch_up', t)
+        t.grab_current = w
+        w.dispatch('on_touch_up', t)
     assert done
