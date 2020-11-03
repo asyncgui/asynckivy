@@ -18,7 +18,10 @@ async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
     step_coro = await get_step_coro()
     if touch.time_end != -1:
         # `on_touch_up` might be already fired. If so raise an exception.
-        tasks = await or_(sleep(.1), event(widget, 'on_touch_up'))
+        tasks = await or_(
+            sleep(.1),
+            event(widget, 'on_touch_up', filter=lambda w, t: t is touch),
+        )
         if tasks[0].done:
             raise MotionEventAlreadyEndedError(
                 f"MotionEvent(uid={touch.uid}) has already ended")
