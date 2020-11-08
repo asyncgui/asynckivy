@@ -49,12 +49,7 @@ def test_a_number_of_on_touch_moves_fired(touch_cls, n_touch_moves):
     assert done
 
 
-@pytest.mark.parametrize(
-    'holds_a_ref', [
-        False,
-        pytest.param(True, marks=pytest.mark.xfail),
-    ])
-def test_break_during_a_for_loop(touch_cls, holds_a_ref):
+def test_break_during_a_for_loop(touch_cls):
     from kivy.uix.widget import Widget
     import asynckivy as ak
 
@@ -63,20 +58,12 @@ def test_break_during_a_for_loop(touch_cls, holds_a_ref):
         nonlocal n_touch_moves
         weak_w = weakref.ref(w)
         assert weak_w not in t.grab_list
-        if holds_a_ref:
-            agen = ak.rest_of_touch_moves(w, t)
-            async for __ in agen:
-                assert weak_w in t.grab_list
-                n_touch_moves += 1
-                if n_touch_moves == 2:
-                    break
-        else:
-            async for __ in ak.rest_of_touch_moves(w, t):
-                assert weak_w in t.grab_list
-                n_touch_moves += 1
-                if n_touch_moves == 2:
-                    break
-        assert weak_w not in t.grab_list  # fails if holds_a_ref is True
+        async for __ in ak.rest_of_touch_moves(w, t):
+            assert weak_w in t.grab_list
+            n_touch_moves += 1
+            if n_touch_moves == 2:
+                break
+        assert weak_w not in t.grab_list
         await ak.event(w, 'on_touch_up')
         nonlocal done;done = True
 
