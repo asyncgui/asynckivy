@@ -3,7 +3,7 @@
 [Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)  
 [日本語doc](README_jp.md)  
 
-### Installation
+## Installation
 
 ```
 # stable version
@@ -15,7 +15,7 @@ pip install asynckivy
 pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=asynckivy
 ```
 
-### Usage
+## Usage
 
 ```python
 import asynckivy as ak
@@ -57,7 +57,7 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-#### animation
+### animation
 
 ```python
 import asynckivy as ak
@@ -77,7 +77,7 @@ async def some_task(widget):
         label.text = 'new text'
 ```
 
-#### touch handling
+### touch handling
 
 You can easily handle `on_touch_xxx` events via `asynckivy.rest_of_touch_moves()`.
 
@@ -111,7 +111,7 @@ class Painter(RelativeLayout):
         do_something_on_touch_up()
 ```
 
-#### synchronization primitive
+### synchronization primitive
 
 There is a Trio's [Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event) equivalent.
 
@@ -137,12 +137,21 @@ e.set()
 # B2
 ```
 
-### planned api break in version 1.0.0
+### Misc
+
+```python
+import asynckivy as ak
+
+# schedule a coroutine/Task to start after the next frame
+ak.start_soon(coro_or_task)
+```
+
+## planned api break in version 1.0.0
 
 - remove `animation()`, the older name of `animate()`
 - remove `all_touch_moves()`, the older name of `rest_of_touch_moves()`
 - remove `process_and_thread.thread()`, the older name of `run_in_thread()`
 
-### Test Environment
+## Test Environment
 
 - CPython 3.7.1 + Kivy 1.11.1
