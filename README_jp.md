@@ -2,7 +2,7 @@
 
 [Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)
 
-### Install方法
+## Install方法
 
 ```
 # stable version
@@ -14,7 +14,7 @@ pip install asynckivy
 pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=asynckivy
 ```
 
-### 使い方
+## 使い方
 
 ```python
 import asynckivy as ak
@@ -55,7 +55,7 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-#### animation関連
+### animation関連
 
 ```python
 import asynckivy as ak
@@ -76,9 +76,9 @@ async def some_task(button):
         pass
 ```
 
-#### touch処理
+### touch処理
 
-`asynckivy.rest_of_touch_moves()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができます。
+`asynckivy.rest_of_touch_moves()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができる。
 
 ```python
 import asynckivy as ak
@@ -111,9 +111,9 @@ class Painter(RelativeLayout):
         do_something_on_touch_up()
 ```
 
-#### 同期
+### 同期
 
-Trioの[Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物があります。
+Trioの[Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物。
 
 ```python
 import asynckivy as ak
@@ -137,12 +137,21 @@ e.set()
 # B2
 ```
 
-### version1.0.0で予定の互換性の無いapi変更
+### その他
+
+```python
+import asynckivy as ak
+
+# 次のframeでcoroutine/Taskが始まるように予約
+ak.start_soon(coro_or_task)
+```
+
+## version1.0.0で予定の互換性の無いapi変更
 
 - `animate()`の古い名前である`animation()`を削除
 - `rest_of_touch_moves()`の古い名前である`all_touch_moves()`を削除
 - `run_in_thread()`の古い名前である`process_and_thread.thread()`を削除
 
-### Test環境
+## Test環境
 
 - CPython 3.7.1 + Kivy 1.11.1
