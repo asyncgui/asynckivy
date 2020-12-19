@@ -146,7 +146,7 @@ import asynckivy as ak
 ak.start_soon(coro_or_task)
 ```
 
-## planned api break in version 1.0.0
+## planned api break
 
 - remove `animation()`, the older name of `animate()`
 - remove `all_touch_moves()`, the older name of `rest_of_touch_moves()`
@@ -154,4 +154,7 @@ ak.start_soon(coro_or_task)
 
 ## Test Environment
 
-- CPython 3.7.1 + Kivy 1.11.1
+- CPython 3.7 + Kivy 1.11.1
+- CPython 3.7 + Kivy 2.0.0
+- CPython 3.8 + Kivy 2.0.0
+- CPython 3.9 + Kivy 2.0.0
