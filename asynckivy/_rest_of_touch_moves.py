@@ -35,6 +35,7 @@ async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
                     t.ungrab(w)
                     step_coro(False)
                 return True
+
         def _on_touch_move(w, t):
             if t is touch:
                 if t.grab_current is w:
@@ -46,6 +47,7 @@ async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
                 t.ungrab(w)
                 step_coro(False)
                 return True
+
         def _on_touch_move(w, t):
             if t.grab_current is w and t is touch:
                 step_coro(True)

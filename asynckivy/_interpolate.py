@@ -17,7 +17,7 @@ async def interpolate(start, end, **kwargs):
                       # prints 60 after 0.6 seconds
                       # prints 90 after 0.9 seconds
                       # prints 100 after 1.2 seconds
-    
+
     Available keyword-only arguments are the same as `animate()`.
 
     Inspired by wasabi2d.

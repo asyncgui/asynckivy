@@ -7,10 +7,12 @@ async def run_in_thread(func, *, daemon=False, polling_interval=3):
 
     return_value = None
     is_finished = False
+
     def wrapper():
         nonlocal return_value, is_finished
         return_value = func()
         is_finished = True
+
     Thread(target=wrapper, daemon=daemon).start()
     sleep = await create_sleep(polling_interval)
     while not is_finished:

@@ -4,11 +4,15 @@ import types
 
 from kivy.clock import Clock
 schedule_once = Clock.schedule_once
+
+
 def _raise_exception_for_free_type_clock_not_being_available(*args, **kwargs):
     raise Exception(
         "'Clock.schedule_once_free()' is not available."
         " Use a non-default clock."
     )
+
+
 schedule_once_free = getattr(
     Clock, 'schedule_once_free',
     _raise_exception_for_free_type_clock_not_being_available
@@ -31,7 +35,7 @@ def sleep_free(duration):
 
 
 async def create_sleep(duration):
-    '''(internal) Improves the performance by re-using a ClockEvent. 
+    '''(internal) Improves the performance by re-using a ClockEvent.
 
         sleep_for_1sec = await create_sleep(1)
         while True:

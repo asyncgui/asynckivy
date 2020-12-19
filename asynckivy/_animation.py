@@ -1,5 +1,4 @@
 __all__ = ('animate', 'animation', )
-import types
 from functools import partial
 from kivy.clock import Clock
 from kivy.animation import AnimationTransition
