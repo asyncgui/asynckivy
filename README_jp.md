@@ -146,7 +146,7 @@ import asynckivy as ak
 ak.start_soon(coro_or_task)
 ```
 
-## version1.0.0で予定の互換性の無いapi変更
+## 予定している互換性の無いapi変更
 
 - `animate()`の古い名前である`animation()`を削除
 - `rest_of_touch_moves()`の古い名前である`all_touch_moves()`を削除
@@ -154,4 +154,7 @@ ak.start_soon(coro_or_task)
 
 ## Test環境
 
-- CPython 3.7.1 + Kivy 1.11.1
+- CPython 3.7 + Kivy 1.11.1
+- CPython 3.7 + Kivy 2.0.0
+- CPython 3.8 + Kivy 2.0.0
+- CPython 3.9 + Kivy 2.0.0
