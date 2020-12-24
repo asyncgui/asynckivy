@@ -1,5 +1,6 @@
 from kivy.properties import ColorProperty, NumericProperty
 from kivy.lang import Builder
+from kivy.clock import Clock
 from kivy.uix.label import Label
 
 import asynckivy as ak
@@ -35,9 +36,10 @@ class SpringyButton(Label):
     border_color1 = ColorProperty('#666666')
     border_color2 = ColorProperty('#AAAA33')
     background_color = ColorProperty('#999933')
+    blinking_interval = NumericProperty(.1)
     _border_color = ColorProperty('#666666')
     _scaling = NumericProperty(1)
-    _ctx = None
+    _is_blinking = False
 
     def on_press(self):
         pass
@@ -46,51 +48,47 @@ class SpringyButton(Label):
         pass
 
     def on_border_color1(self, __, color1):
-        if self._ctx is None:
+        if not self._is_blinking:
             self._border_color = color1
 
     def on_touch_down(self, touch):
-        if self._ctx is None and self.collide_point(*touch.opos) \
+        if (not self._is_blinking) and self.collide_point(*touch.opos) \
                 and not touch.is_mouse_scrolling:
             ak.start(self._handle_touch(touch))
             return True
         return super().on_touch_down(touch)
 
     async def _handle_touch(self, touch):
-        from asynckivy import animate, Event, rest_of_touch_moves, start
-        self._ctx = True
+        from functools import partial
+        from itertools import cycle
+        from asynckivy import animate, rest_of_touch_moves
+        self._is_blinking = True
+        self._border_color = self.border_color2
+        blink_ev = Clock.schedule_interval(
+            partial(
+                self._change_border_color,
+                color_iter=cycle((self.border_color1, self.border_color2)),
+            ), self.blinking_interval
+        )
         self.dispatch('on_press')
         try:
-            flag_proceed_blinking = Event()
-            flag_proceed_blinking.set()
-            coro_blink = start(self._blink(flag_proceed_blinking))
             async for __ in rest_of_touch_moves(self, touch):
                 if self.collide_point(*touch.pos):
-                    flag_proceed_blinking.set()
+                    blink_ev()
                 else:
-                    flag_proceed_blinking.clear()
+                    blink_ev.cancel()
             if self.collide_point(*touch.pos):
                 await animate(self, _scaling=.9, d=.05)
                 await animate(self, _scaling=1, d=.05)
                 self.dispatch('on_release')
         finally:
-            coro_blink.close()
-            self._ctx = None
+            self._is_blinking = False
+            blink_ev.cancel()
+            self._border_color = self.border_color1
 
-    async def _blink(self, flag_proceed):
-        try:
-            color1 = self.border_color1
-            color2 = self.border_color2
-            sleep = await ak.create_sleep(.1)
-            while True:
-                await flag_proceed.wait()
-                self._border_color = color2
-                await sleep()
-                self._border_color = color1
-                await sleep()
-        finally:
-            self._border_color = color1
-
+    def _change_border_color(self, dt, *, color_iter):
+        self._border_color = next(color_iter)
+        
 
 from kivy.app import App
 from kivy.lang import Builder
