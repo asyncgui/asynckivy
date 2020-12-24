@@ -19,7 +19,7 @@ async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
     if touch.time_end != -1:
         # `on_touch_up` might be already fired. If so raise an exception.
         tasks = await or_(
-            sleep(.1),
+            sleep(0),
             event(widget, 'on_touch_up', filter=lambda w, t: t is touch),
         )
         if tasks[0].done:
