@@ -159,7 +159,6 @@ def test_the_touch_that_might_already_ended(touch_cls, actually_ended):
     ak.start(job(w, t))
 
     if actually_ended:
-        time.sleep(0)
         Clock.tick()
     else:
         t.grab_current = None
