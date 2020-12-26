@@ -23,9 +23,10 @@ class TestApp(App):
                 await sleep(1)
         label = self.root
         coro = animate_label(label)
+
         def on_touch_down(*__):
             coro.close()
-            label.text = 'The animation was cancelled.'            
+            label.text = 'The animation was cancelled.'
         label.bind(on_touch_down=on_touch_down)
         asynckivy.start(coro)
 

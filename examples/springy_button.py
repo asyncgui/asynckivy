@@ -2,6 +2,7 @@ from kivy.properties import ColorProperty, NumericProperty
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.label import Label
+from kivy.app import App
 
 import asynckivy as ak
 
@@ -88,10 +89,6 @@ class SpringyButton(Label):
 
     def _change_border_color(self, dt, *, color_iter):
         self._border_color = next(color_iter)
-        
-
-from kivy.app import App
-from kivy.lang import Builder
 
 
 KV_CODE = '''

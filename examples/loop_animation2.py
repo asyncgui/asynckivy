@@ -22,11 +22,13 @@ class TestApp(App):
 
 async def animate(root):
     from asynckivy import animate as a
-    l = root.ids.label
+    l = root.ids.label  # noqa: E741
+
     async def _blink_forever():
         while True:
             await a(l, color=(0, .3, 0, 1, ), t='out_quad')
             await a(l, color=(1, 1, 1, 1, ), t='in_quad')
+
     async def _round():
         await a(l, right=root.right)
         await a(l, top=root.top)

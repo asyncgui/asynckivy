@@ -13,7 +13,7 @@ class Painter(OriginalPainter):
 
     def on_kv_post(self, *args, **kwargs):
         ak.start(self.keep_watching_touch_events())
-    
+
     async def keep_watching_touch_events(self):
         while True:
             __, touch = await ak.event(

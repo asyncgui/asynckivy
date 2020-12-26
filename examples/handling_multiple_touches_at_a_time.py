@@ -8,7 +8,7 @@ class Painter(RelativeLayout):
         if self.collide_point(*touch.opos):
             ak.start(self.draw_rect(touch))
             return True
-    
+
     async def draw_rect(self, touch):
         from kivy.graphics import Line, Color, Rectangle, InstructionGroup
         from kivy.utils import get_random_color

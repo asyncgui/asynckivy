@@ -1,6 +1,5 @@
 from kivy.lang import Builder
 from kivy.app import App
-from kivy.uix.button import Button
 import asynckivy as ak
 
 
@@ -15,9 +14,11 @@ BoxLayout:
         font_size: 50
 '''
 
+
 class TestApp(App):
     def build(self):
         return Builder.load_string(KV_CODE)
+
     def on_start(self):
         async def some_task():
             label = self.root.ids.label
@@ -30,7 +31,7 @@ class TestApp(App):
                 ak.event(button, 'on_press'),
                 spinning(label),
             )
-            tasks[1].coro.close()  # 'tasks[1].cancel()' is preferable
+            tasks[1].cancel()
             self.root.remove_widget(button)
             label.text = 'fin.'
         ak.start(some_task())
@@ -39,7 +40,7 @@ class TestApp(App):
 async def spinning(label):
     import itertools
     sleep_for_10th_of_a_second = await ak.create_sleep(.1)
-    for stick in itertools.cycle('\ | / --'.split()):
+    for stick in itertools.cycle(r'\ | / --'.split()):
         label.text = stick
         await sleep_for_10th_of_a_second()
 

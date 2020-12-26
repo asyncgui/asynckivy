@@ -1,12 +1,8 @@
-import asynckivy as ak
-
-
 def _test():
     import textwrap
     from kivy.app import App
     from kivy.lang import Builder
-    from kivy.factory import Factory
-    
+
     KV_CODE = textwrap.dedent('''
     <Label>:
         font_size: '24sp'
@@ -28,19 +24,20 @@ def _test():
             Button:
                 text: 'C'
     ''')
-    
+
     class TestApp(App):
         def build(self):
             return Builder.load_string(KV_CODE)
+
         def on_start(self):
-            import itertools
             import asynckivy as ak
             ids = self.root.ids
             label = ids.label
             buttons = list(reversed(ids.layout.children))
+
             async def test_await_multiple_coroutines():
                 # -----------------------------------------
-                # wait for the completion of one coroutine 
+                # wait for the completion of one coroutine
                 # -----------------------------------------
                 label.text = "wait until button'A' is pressed or 5s passes"
                 tasks = await ak.or_(
@@ -66,10 +63,9 @@ def _test():
                 await ak.sleep(2)
 
             ak.start(test_await_multiple_coroutines())
-            
+
     TestApp().run()
 
 
 if __name__ == '__main__':
     _test()
-    
