@@ -63,7 +63,7 @@ ak.start(some_task(some_button))
 import asynckivy as ak
 
 async def some_task(widget):
-    # wait for the completion of an animation
+    # start an animation and wait for its completion
     await ak.animate(widget, width=200, t='in_out_quad', d=.5)
 
     # Interpolate between the values 0 and 200.

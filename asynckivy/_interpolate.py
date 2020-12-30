@@ -7,20 +7,34 @@ from kivy.animation import AnimationTransition
 
 
 async def interpolate(start, end, **kwargs):
-    '''Interpolate between the values start and end.
+    '''
+    interpolate
+    ===========
 
-    Usage:
+    Interpolates between the values start and end in an async-manner.
+    Inspired by wasabi2d's interpolate_.
 
-        async for v in asynckivy.interpolate(0, 100, d=1., s=.3, t='linear'):
-            print(v)  # prints 0 immediately
-                      # prints 30 after 0.3 seconds
-                      # prints 60 after 0.6 seconds
-                      # prints 90 after 0.9 seconds
-                      # prints 100 after 1.2 seconds
+    Usage
+    -----
 
-    Available keyword-only arguments are the same as `animate()`.
+    .. code-block:: python
 
-    Inspired by wasabi2d.
+       async for v in asynckivy.interpolate(0, 100, d=1., s=.3, t='linear'):
+           print(int(v))
+
+    The code above prints as follows:
+
+    =========== =====
+    progress    print
+    =========== =====
+    0 sec       0
+    0.3 sec     30
+    0.6 sec     60
+    0.9 sec     90
+    **1.2 sec** 100
+    =========== =====
+
+    .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate  # noqa: E501
     '''
     from asyncgui import get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
