@@ -10,7 +10,7 @@ def unlimit_maxfps(monkeypatch):
 @pytest.fixture(scope='module')
 def approx():
     from functools import partial
-    return partial(pytest.approx, abs=1)
+    return partial(pytest.approx, abs=2)
 
 
 def test_complete_iteration(approx):
