@@ -1,10 +1,16 @@
+'''
+Springy Button
+==============
+
+* can handle only one touch at a time
+'''
+
 from kivy.properties import ColorProperty, NumericProperty
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.label import Label
 from kivy.app import App
 
-import asynckivy as ak
 
 KV_CODE = '''
 <SpringyButton>:
@@ -37,10 +43,8 @@ class SpringyButton(Label):
     border_color1 = ColorProperty('#666666')
     border_color2 = ColorProperty('#AAAA33')
     background_color = ColorProperty('#999933')
-    blinking_interval = NumericProperty(.1)
     _border_color = ColorProperty('#666666')
     _scaling = NumericProperty(1)
-    _is_blinking = False
 
     def on_press(self):
         pass
@@ -48,47 +52,44 @@ class SpringyButton(Label):
     def on_release(self):
         pass
 
-    def on_border_color1(self, __, color1):
-        if not self._is_blinking:
-            self._border_color = color1
+    def on_kv_post(self, *args, **kwargs):
+        import asynckivy
+        asynckivy.start(self._async_main())
 
-    def on_touch_down(self, touch):
-        if (not self._is_blinking) and self.collide_point(*touch.opos) \
-                and not touch.is_mouse_scrolling:
-            ak.start(self._handle_touch(touch))
-            return True
-        return super().on_touch_down(touch)
+    async def _async_main(self):
+        from asynckivy import animate, rest_of_touch_moves, event
 
-    async def _handle_touch(self, touch):
-        from functools import partial
-        from itertools import cycle
-        from asynckivy import animate, rest_of_touch_moves
-        self._is_blinking = True
-        self._border_color = self.border_color2
-        blink_ev = Clock.schedule_interval(
-            partial(
-                self._change_border_color,
-                color_iter=cycle((self.border_color1, self.border_color2)),
-            ), self.blinking_interval
-        )
-        self.dispatch('on_press')
-        try:
+        def will_accept_touch(w, t) -> bool:
+            return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
+
+        def color_iter(w):
+            while True:
+                yield w.border_color2
+                yield w.border_color1
+        color_iter = color_iter(self)
+
+        def change_border_color(dt):
+            self._border_color = next(color_iter)
+        blink_ev = Clock.create_trigger(change_border_color, .1, interval=True)
+
+        while True:
+            __, touch = await event(
+                self, 'on_touch_down', filter=will_accept_touch,
+                return_value=True)
+            self.dispatch('on_press')
+            blink_ev()
             async for __ in rest_of_touch_moves(self, touch):
                 if self.collide_point(*touch.pos):
                     blink_ev()
                 else:
                     blink_ev.cancel()
+                    self._border_color = self.border_color1
             if self.collide_point(*touch.pos):
                 await animate(self, _scaling=.9, d=.05)
                 await animate(self, _scaling=1, d=.05)
                 self.dispatch('on_release')
-        finally:
-            self._is_blinking = False
             blink_ev.cancel()
             self._border_color = self.border_color1
-
-    def _change_border_color(self, dt, *, color_iter):
-        self._border_color = next(color_iter)
 
 
 KV_CODE = '''
