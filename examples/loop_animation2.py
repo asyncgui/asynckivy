@@ -4,10 +4,11 @@ import asynckivy as ak
 
 
 KV_CODE = r'''
-Widget:
+FloatLayout:
     Label:
         id: label
         font_size: 60.0
+        size_hint: None, None
         size: self.texture_size
 '''
 
@@ -39,7 +40,9 @@ async def animate(root):
         l.text = 'Hello'
         await _round()
         await a(l, center=root.center)
+        l.pos_hint['center'] = (.5, .5, )
         await a(l, font_size=100.0, s=.1)
+        l.pos_hint.clear()
         l.text = 'Kivy'
         await a(l, pos=root.pos)
         await _round()
