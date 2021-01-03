@@ -6,15 +6,15 @@ async def run_in_thread(func, *, daemon=False, polling_interval=3):
     from ._sleep import create_sleep
 
     return_value = None
-    is_finished = False
+    done = False
 
     def wrapper():
-        nonlocal return_value, is_finished
+        nonlocal return_value, done
         return_value = func()
-        is_finished = True
+        done = True
 
     Thread(target=wrapper, daemon=daemon).start()
     sleep = await create_sleep(polling_interval)
-    while not is_finished:
+    while not done:
         await sleep()
     return return_value
