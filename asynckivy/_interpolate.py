@@ -11,7 +11,7 @@ async def interpolate(start, end, **kwargs):
     interpolate
     ===========
 
-    Interpolates between the values start and end in an async-manner.
+    Interpolates between the values ``start`` and ``end`` in an async-manner.
     Inspired by wasabi2d's interpolate_.
 
     Usage

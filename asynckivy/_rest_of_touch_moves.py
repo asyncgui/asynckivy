@@ -4,7 +4,7 @@ import types
 
 
 async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
-    '''Returns an async-generator, which yields the given touch when
+    '''Returns an async-generator that yields the given touch when
     `on_touch_move` is fired, and ends when `on_touch_up` is fired. Grabs and
     ungrabs the touch automatically. If `eat_touch` is True, the touch
     will never be dispatched further i.e. the next widget will never get this

@@ -50,8 +50,7 @@ def event(ed, name, *, filter=None, return_value=None):
                    widget, 'x',
                    filter=lambda widget, x: x > 100)
 
-    ``return_value`` is useful when the return-value of callbacks is important
-    like ``on_touch_xxx``.
+    ``return_value`` is useful when you want to stop event-dispatching.
 
     .. code-block:: python
 
