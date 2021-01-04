@@ -1,3 +1,7 @@
+'''
+A simple loop-animation.
+'''
+
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex
@@ -16,8 +20,8 @@ class TestApp(App):
     def on_start(self):
         async def animate_label(label):
             sleep = asynckivy.sleep
-            event = asynckivy.event
-            await sleep(1.5)
+            await sleep(0)
+            await sleep(1)
             while True:
                 label.outline_color = get_color_from_hex('#FFFFFF')
                 label.text = 'Do'
@@ -32,12 +36,6 @@ class TestApp(App):
                 label.outline_color = get_color_from_hex('#FF5555')
                 label.text = 'Answer me!'
                 await sleep(2)
-
-                label.outline_color = get_color_from_hex('#FFFF00')
-                label.text = 'Left-click to replay'
-                await event(
-                    label, 'on_touch_down',
-                    filter=lambda __, touch: touch.button == 'left')
         asynckivy.start(animate_label(self.root))
 
 

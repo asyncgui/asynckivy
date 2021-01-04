@@ -1,3 +1,7 @@
+'''
+Nothing is special. It just cancels a coroutine from outside of it.
+'''
+
 from kivy.app import App
 from kivy.uix.label import Label
 import asynckivy

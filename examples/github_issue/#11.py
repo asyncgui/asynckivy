@@ -39,10 +39,9 @@ class TestApp(App):
 
 async def spinning(label):
     import itertools
-    sleep_for_10th_of_a_second = await ak.create_sleep(.1)
     for stick in itertools.cycle(r'\ | / --'.split()):
         label.text = stick
-        await sleep_for_10th_of_a_second()
+        await ak.sleep(.1)
 
 
 if __name__ == '__main__':
