@@ -63,7 +63,7 @@ class SpringyButton(Label):
             return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
 
         # 'itertools.cycle()' is no use here because it cannot react to
-        # the property changes. There might be a better way, though.
+        # the property changes. There might be a better way than this, though.
         def color_iter(w):
             while True:
                 yield w.border_color2
