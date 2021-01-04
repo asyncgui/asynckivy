@@ -1,3 +1,7 @@
+'''
+A simple example of using ``asynckivy.run_in_thread()``.
+'''
+
 from kivy.app import App
 from kivy.uix.button import Button
 import asynckivy as ak

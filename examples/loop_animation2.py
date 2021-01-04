@@ -1,3 +1,7 @@
+'''
+A little bit complex loop-animation.
+'''
+
 from kivy.app import App
 from kivy.lang import Builder
 import asynckivy as ak

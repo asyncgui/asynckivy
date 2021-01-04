@@ -1,3 +1,7 @@
+'''
+A simple usucase of ``asynckivy.interpolate()``.
+'''
+
 from kivy.app import App
 from kivy.uix.label import Label
 import asynckivy as ak

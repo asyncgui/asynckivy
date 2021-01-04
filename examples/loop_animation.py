@@ -1,3 +1,7 @@
+'''
+A simple loop-animation.
+'''
+
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex

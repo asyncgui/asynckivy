@@ -2,7 +2,7 @@
 Painter
 =======
 
-* can draw only rectangles
+* can only draw rectangles
 * can handle only one touch at a time
 '''
 

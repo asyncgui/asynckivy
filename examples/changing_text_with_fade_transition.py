@@ -1,3 +1,7 @@
+'''
+A simple usecase of ``asynckivy.fade_transition()``.
+'''
+
 from kivy.app import App
 from kivy.uix.label import Label
 import asynckivy as ak
