@@ -1,5 +1,5 @@
 '''
-It just shows how ``asynckivy.or_()`` and ``asynckivy.and_()`` work.
+Just shows how ``asynckivy.or_()`` and ``asynckivy.and_()`` work.
 '''
 
 
