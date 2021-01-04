@@ -3,7 +3,7 @@ Painter
 =======
 
 * can only draw rectangles
-* can handle only one touch at a time
+* can only handle one touch at a time
 '''
 
 from kivy.uix.relativelayout import RelativeLayout

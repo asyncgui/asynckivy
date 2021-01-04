@@ -2,7 +2,7 @@
 Quiz Show
 =========
 
-A real-world example where ``ak.or_()`` shines.
+A real-world example where ``aynckivy.or_()`` shines.
 '''
 
 from kivy.app import App
@@ -66,9 +66,6 @@ quizzes = [
 class QuizScreen(Screen):
     def on_enter(self):
         self._main_coro = ak.start_soon(self._async_main())
-
-    def on_pre_leave(self):
-        Clock.schedule_once(lambda __: self._main_coro.close())
 
     async def _async_main(self):
         ids = self.ids

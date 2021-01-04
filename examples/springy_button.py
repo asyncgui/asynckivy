@@ -2,7 +2,7 @@
 Springy Button
 ==============
 
-* can handle only one touch at a time
+* can only handle one touch at a time
 '''
 
 from kivy.properties import ColorProperty, NumericProperty
@@ -62,6 +62,8 @@ class SpringyButton(Label):
         def will_accept_touch(w, t) -> bool:
             return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
 
+        # 'itertools.cycle()' is no use here because it cannot react to
+        # the property changes. There might be a better way, though.
         def color_iter(w):
             while True:
                 yield w.border_color2

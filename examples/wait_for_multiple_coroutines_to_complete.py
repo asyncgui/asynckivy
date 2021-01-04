@@ -2,6 +2,7 @@
 It just shows how ``asynckivy.or_()`` and ``asynckivy.and_()`` work.
 '''
 
+
 def _test():
     import textwrap
     from kivy.app import App
