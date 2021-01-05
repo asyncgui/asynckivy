@@ -7,14 +7,21 @@ async def run_in_thread(func, *, daemon=False, polling_interval=3):
 
     return_value = None
     done = False
+    exception = None
 
     def wrapper():
-        nonlocal return_value, done
-        return_value = func()
-        done = True
+        nonlocal return_value, done, exception
+        try:
+            return_value = func()
+        except Exception as e:
+            exception = e
+        finally:
+            done = True
 
     Thread(target=wrapper, daemon=daemon).start()
     sleep = await create_sleep(polling_interval)
     while not done:
         await sleep()
+    if exception is not None:
+        raise exception
     return return_value
