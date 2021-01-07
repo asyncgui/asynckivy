@@ -159,3 +159,20 @@ ak.start_soon(coro_or_task)
 - CPython 3.7 + Kivy 2.0.0
 - CPython 3.8 + Kivy 2.0.0
 - CPython 3.9 + Kivy 2.0.0
+
+## Why this does exist
+
+Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio], from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing]. Actually, I started developing this library just for learning how async/await works so it *was* initially `reinventing the wheel`.
+
+But after playing with Trio and Kivy for a while, I noticed that Trio is not suitable for the situation where fast reactions are required e.g. touch events. The same is true of asyncio. You can see why by running `examples/misc/why_xxx_is_not_suitable_for_handling_touch_events.py`, and masshing a mouse button. You'll see sometimes the printed `up` and `down` aren't paired. You'll see the printed coordinates aren't relative to the `RelativeLayout` even though the `target` belongs to it.
+
+The cause of those problems is that calling `trio.Event.set()` / `asyncio.Event.set()` doesn't *immediately* resume the tasks that are waiting for the `Event` to be set. It just schedules the tasks to resume.
+Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`. Yes, Trio has `nursery.start()`, which immediately starts a task, but it's an async-function so it cannot be called from synchronous code, which means it's no use here.
+
+Trio and asyncio are async **I/O** libraries after all. They probably don't need the functionality that immediately resumes/starts tasks, which is necessary for Kivy's touch handling.
+Thier core design may not be suitable for GUI in the first place.
+That's why I'm still developing this `asynckivy` library to this day.
+
+[asyncio]:https://docs.python.org/3/library/asyncio.html
+[trio]:https://trio.readthedocs.io/en/stable/
+[reinventing]:https://en.wikipedia.org/wiki/Reinventing_the_wheel
