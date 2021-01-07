@@ -51,6 +51,7 @@ class SampleApp(App):
 
     def start_ver_schedule_interval(self):
         print('---- start ver schedule_interval() ----')
+
         async def async_fn():
             clock_event = Clock.schedule_interval(lambda __: None, 0)
             try:
@@ -62,6 +63,7 @@ class SampleApp(App):
 
     def start_ver_sleep(self):
         print('---- start ver sleep() ----')
+
         async def async_fn():
             sleep = ak.sleep
             while True:
@@ -71,6 +73,7 @@ class SampleApp(App):
 
     def start_ver_create_sleep(self):
         print('---- start ver create_sleep() ----')
+
         async def async_fn():
             sleep = await ak.create_sleep(0)
             while True:
