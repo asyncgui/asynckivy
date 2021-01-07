@@ -155,7 +155,6 @@ ak.start_soon(coro_or_task)
 
 ## Test Environment
 
-- CPython 3.7 + Kivy 1.11.1
 - CPython 3.7 + Kivy 2.0.0
 - CPython 3.8 + Kivy 2.0.0
 - CPython 3.9 + Kivy 2.0.0
