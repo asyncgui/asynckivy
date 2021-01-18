@@ -147,12 +147,6 @@ import asynckivy as ak
 ak.start_soon(coro_or_task)
 ```
 
-## planned api break
-
-- remove `animation()`, the older name of `animate()`
-- remove `all_touch_moves()`, the older name of `rest_of_touch_moves()`
-- remove `process_and_thread.thread()`, the older name of `run_in_thread()`
-
 ## Test Environment
 
 - CPython 3.7 + Kivy 2.0.0

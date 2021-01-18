@@ -1,4 +1,4 @@
-__all__ = ('animate', 'animation', )
+__all__ = ('animate', )
 from functools import partial
 from kivy.clock import Clock
 from kivy.animation import AnimationTransition
@@ -172,6 +172,3 @@ def _calculate(a, b, t):
         return d
     else:
         return (a * (1. - t)) + (b * t)
-
-
-animation = animate
