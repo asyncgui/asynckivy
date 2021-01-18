@@ -101,3 +101,26 @@ def test_stop_dispatching(ed):
     ed.dispatch('on_test')
     assert n == 2
     assert done
+
+
+def test_cancel(ed):
+    import asynckivy as ak
+
+    async def _test(ed):
+        def filter_func(*args):
+            nonlocal called; called = True
+            return True
+        await ak.event(ed, 'on_test', filter=filter_func)
+        nonlocal done;done = True
+
+    called = False
+    done = False
+    coro = ak.start(_test(ed))
+    assert not done
+    assert not called
+    coro.close()
+    assert not done
+    assert not called
+    ed.dispatch('on_test')
+    assert not done
+    assert not called

@@ -74,10 +74,12 @@ def event(ed, name, *, filter=None, stop_dispatching=False):
         step_coro = step_coro_
 
     def callback(*args, **kwargs):
-        if (filter is not None) and (not filter(*args, **kwargs)):
-            return
-        ed.unbind_uid(name, bind_id)
-        step_coro(*args, **kwargs)
-        return stop_dispatching
+        if (filter is None) or filter(*args, **kwargs):
+            step_coro(*args, **kwargs)
+            return stop_dispatching
 
-    return (yield bind)[0]
+    try:
+        return (yield bind)[0]
+    finally:
+        if bind_id:
+            ed.unbind_uid(name, bind_id)
