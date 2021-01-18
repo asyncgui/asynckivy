@@ -36,7 +36,8 @@ class Painter(RelativeLayout):
         inst_group.add(line)
         ox, oy = self.to_local(*touch.opos)
         on_touch_move_was_fired = False
-        async for __ in ak.rest_of_touch_moves(self, touch):
+        async for __ in ak.rest_of_touch_moves(
+                self, touch, stop_dispatching=True):
             # Don't await anything during the iteration
             on_touch_move_was_fired = True
             x, y = self.to_local(*touch.pos)

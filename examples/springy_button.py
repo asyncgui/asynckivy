@@ -80,7 +80,8 @@ class SpringyButton(Label):
                 stop_dispatching=True)
             self.dispatch('on_press')
             blink_ev()
-            async for __ in rest_of_touch_moves(self, touch):
+            async for __ in rest_of_touch_moves(
+                    self, touch, stop_dispatching=True):
                 if self.collide_point(*touch.pos):
                     blink_ev()
                 else:
