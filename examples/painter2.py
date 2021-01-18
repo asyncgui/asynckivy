@@ -26,7 +26,7 @@ class Painter(RelativeLayout):
         while True:
             __, touch = await event(
                 self, 'on_touch_down', filter=will_accept_touch,
-                return_value=True)
+                stop_dispatching=True)
             inst_group = InstructionGroup()
             self.canvas.add(inst_group)
             inst_group.add(Color(*get_random_color()))
