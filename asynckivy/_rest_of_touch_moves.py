@@ -3,10 +3,10 @@ __all__ = ('rest_of_touch_moves', )
 import types
 
 
-async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
+async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False):
     '''Returns an async-generator that yields the given touch when
     `on_touch_move` is fired, and ends when `on_touch_up` is fired. Grabs and
-    ungrabs the touch automatically. If `eat_touch` is True, the touch
+    ungrabs the touch automatically. If `stop_dispatching` is True, the touch
     will never be dispatched further i.e. the next widget will never get this
     touch until the generator ends. If `on_touch_up` was already fired,
     `MotionEventAlreadyEndedError` will be raised.
@@ -28,7 +28,7 @@ async def rest_of_touch_moves(widget, touch, *, eat_touch=False):
         else:
             return
 
-    if eat_touch:
+    if stop_dispatching:
         def _on_touch_up(w, t):
             if t is touch:
                 if t.grab_current is w:
