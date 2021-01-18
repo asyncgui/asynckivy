@@ -77,7 +77,7 @@ class SpringyButton(Label):
         while True:
             __, touch = await event(
                 self, 'on_touch_down', filter=will_accept_touch,
-                return_value=True)
+                stop_dispatching=True)
             self.dispatch('on_press')
             blink_ev()
             async for __ in rest_of_touch_moves(self, touch):

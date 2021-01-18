@@ -76,11 +76,11 @@ def test_filter(ed):
     assert done
 
 
-def test_return_value(ed):
+def test_stop_dispatching(ed):
     import asynckivy as ak
     async def _test():
         await ak.event(ed, 'on_test')
-        await ak.event(ed, 'on_test', return_value=True)
+        await ak.event(ed, 'on_test', stop_dispatching=True)
         await ak.event(ed, 'on_test')
         nonlocal done;done = True
     done = False

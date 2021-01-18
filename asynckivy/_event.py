@@ -4,7 +4,7 @@ import types
 
 
 @types.coroutine
-def event(ed, name, *, filter=None, return_value=None):
+def event(ed, name, *, filter=None, stop_dispatching=False):
     '''
     event
     =====
@@ -50,7 +50,7 @@ def event(ed, name, *, filter=None, return_value=None):
                    widget, 'x',
                    filter=lambda widget, x: x > 100)
 
-    ``return_value`` is useful when you want to stop event-dispatching.
+    ``stop_dispatching`` is useful when you want to stop event-dispatching.
 
     .. code-block:: python
 
@@ -60,7 +60,7 @@ def event(ed, name, *, filter=None, return_value=None):
            # wait for a label to get touched inside of it, and stop the
            # event-dispatching when it happened.
            await ak.event(
-               label, 'on_touch_down', return_value=True,
+               label, 'on_touch_down', stop_dispatching=True,
                filter=lambda label, touch: label.collide_point(*touch.opos),
            )
     '''
@@ -78,6 +78,6 @@ def event(ed, name, *, filter=None, return_value=None):
             return
         ed.unbind_uid(name, bind_id)
         step_coro(*args, **kwargs)
-        return return_value
+        return stop_dispatching
 
     return (yield bind)[0]
