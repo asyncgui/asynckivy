@@ -145,6 +145,9 @@ import asynckivy as ak
 
 # 次のframeでcoroutine/Taskが始まるように予約
 ak.start_soon(coro_or_task)
+
+# 次のframeでcoroutine/Taskを閉じるように予約
+ak.close_soon(coro_or_task)
 ```
 
 ## Test環境
