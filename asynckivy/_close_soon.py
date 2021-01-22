@@ -14,12 +14,12 @@ def _close(dt):
         coro_or_task.close()
 
 
-_trigger_close = Clock.create_trigger(_close, 0)
+_trigger_close = Clock.create_trigger(_close, -1)
 
 
 def close_soon(coro_or_task):
     '''
-    Schedules a coroutine/Task to close after the next frame.
+    Schedules a coroutine/Task to close before the next frame.
     '''
     _waiting.append(coro_or_task)
     _trigger_close()
