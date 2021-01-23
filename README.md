@@ -10,10 +10,10 @@
 pip install asynckivy
 ```
 
-```
-# development version
-pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=asynckivy
-```
+## Pin the minor version
+
+If you use this module, it's recommended to pin the minor version, because if
+it changed, it usually means some breaking changes occurred.
 
 ## Usage
 
