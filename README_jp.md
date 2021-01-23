@@ -9,10 +9,11 @@
 pip install asynckivy
 ```
 
-```
-# development version
-pip install git+https://github.com/gottadiveintopython/asynckivy.git@master#egg=asynckivy
-```
+## このmoduleを使う際の注意点
+
+このmoduleのminor versionが変わった時は何らかの互換性の無い変更が加えられた可能性が
+高いので、このmoduleを使う際はminor versionを固定してください。少なくともmajor version
+が0の間はminor versionが互換性の目安となっています。
 
 ## 使い方
 
