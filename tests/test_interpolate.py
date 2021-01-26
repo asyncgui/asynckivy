@@ -44,12 +44,12 @@ def test_break_during_iteration(approx):
         await ak.sleep_forever()
         nonlocal done;done = True
     clock = Clock()
-    coro = ak.start(job())
+    task = ak.start(job())
     for __ in range(130):
         clock.sleep(.01)
     assert not done
     with pytest.raises(StopIteration):
-        coro.send(None)
+        task.root_coro.send(None)
     assert done
 
 

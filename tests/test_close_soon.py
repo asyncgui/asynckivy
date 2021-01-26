@@ -20,16 +20,16 @@ def test_normaly():
             nonlocal job2_done;job2_done = True
             raise
 
-    coro1 = ak.start(job1())
-    coro2 = ak.start(job2())
+    task1 = ak.start(job1())
+    task2 = ak.start(job2())
     assert not job1_done
     assert not job2_done
     assert _close_soon._waiting == []
-    ak.close_soon(coro1)
-    ak.close_soon(coro2)
+    ak.close_soon(task1)
+    ak.close_soon(task2)
     assert not job1_done
     assert not job2_done
-    assert _close_soon._waiting == [coro1, coro2, ]
+    assert _close_soon._waiting == [task1, task2, ]
     Clock.tick()
     assert job1_done
     assert job2_done
@@ -48,7 +48,7 @@ def test_schedule_another_during_a_scheduled_one():
         try:
             await ak.sleep_forever()
         except GeneratorExit:
-            ak.close_soon(coro2)
+            ak.close_soon(task2)
             nonlocal job1_done; job1_done = True
             raise
 
@@ -59,19 +59,19 @@ def test_schedule_another_during_a_scheduled_one():
             nonlocal job2_done;job2_done = True
             raise
 
-    coro1 = ak.start(job1())
-    coro2 = ak.start(job2())
+    task1 = ak.start(job1())
+    task2 = ak.start(job2())
     assert not job1_done
     assert not job2_done
     assert _close_soon._waiting == []
-    ak.close_soon(coro1)
+    ak.close_soon(task1)
     assert not job1_done
     assert not job2_done
-    assert _close_soon._waiting == [coro1, ]
+    assert _close_soon._waiting == [task1, ]
     Clock.tick()
     assert job1_done
     assert not job2_done
-    assert _close_soon._waiting == [coro2, ]
+    assert _close_soon._waiting == [task2, ]
     Clock.tick()
     assert job1_done
     assert job2_done

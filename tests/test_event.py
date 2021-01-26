@@ -115,10 +115,10 @@ def test_cancel(ed):
 
     called = False
     done = False
-    coro = ak.start(_test(ed))
+    task = ak.start(_test(ed))
     assert not done
     assert not called
-    coro.close()
+    task.close()
     assert not done
     assert not called
     ed.dispatch('on_test')

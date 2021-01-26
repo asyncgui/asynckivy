@@ -38,8 +38,8 @@ async def animate(target, **kwargs):
        import asynckivy as ak
 
        widget.x = 0
-       coro = ak.start(ak.animate(widget, x=100, force_final_value=True))
-       coro.close()  # cancels immediately
+       task = ak.start(ak.animate(widget, x=100, force_final_value=True))
+       task.cancel()  # cancels immediately
        assert widget.x == 100  # but the final-value is applied
 
     I believe this is useful when you want an animation to be skippable.
