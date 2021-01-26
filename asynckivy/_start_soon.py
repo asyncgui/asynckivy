@@ -1,7 +1,7 @@
 __all__ = ('start_soon', )
 
 from kivy.clock import Clock
-
+from asynckivy import Awaitable_or_Task, Task
 
 _waiting = []
 
@@ -11,18 +11,24 @@ def _start(dt):
     global _waiting
     waiting = _waiting
     _waiting = []
-    for coro_or_task in waiting:
-        start(coro_or_task)
+    for task in waiting:
+        start(task)
 
 
 _trigger_start = Clock.create_trigger(_start, 0)
 
 
-def start_soon(coro_or_task):
+def start_soon(awaitable_or_task: Awaitable_or_Task) -> Task:
     '''
-    Schedules a coroutine/Task to start after the next frame.
-    Returns the argument itself.
+    Schedules a awaitable/Task to start after the next frame.
+
+    If the argument is a Task, itself will be returned. If it's an awaitable,
+    it will be wrapped in a Task, and the Task will be returned.
     '''
-    _waiting.append(coro_or_task)
+    if isinstance(awaitable_or_task, Task):
+        task = awaitable_or_task
+    else:
+        task = Task(awaitable_or_task)
+    _waiting.append(task)
     _trigger_start()
-    return coro_or_task
+    return task
