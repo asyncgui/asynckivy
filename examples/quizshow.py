@@ -6,7 +6,6 @@ A real-world example that ``asynckivy.or_()`` shines.
 '''
 
 from kivy.app import App
-from kivy.clock import Clock
 from kivy.lang import Builder
 import asynckivy as ak
 from kivy.uix.screenmanager import NoTransition, Screen
@@ -65,10 +64,10 @@ quizzes = [
 
 class QuizScreen(Screen):
     def on_enter(self):
-        self._main_coro = ak.start_soon(self._async_main())
+        self._main_task = ak.start_soon(self._async_main())
 
     def on_pre_leave(self):
-        Clock.schedule_once(lambda __: self._main_coro.close())
+        ak.close_soon(self._main_task)
 
     async def _async_main(self):
         ids = self.ids
