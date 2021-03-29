@@ -69,6 +69,7 @@ import asynckivy as ak
 
 async def some_task(button):
     # animationの完了を待つ
+    # 第一引数を除く全ての引数は `kivy.animation.Animation` と同じ
     await ak.animate(button, width=200, t='in_out_quad', d=.5)
 
     # d秒かけて0から200までを線形補間する。中間値の計算はs秒毎に行う。
