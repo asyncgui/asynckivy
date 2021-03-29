@@ -57,6 +57,10 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
+`and_`と`or_`は[構造化][sc]されている。
+なので上のcodeの中の`ak.event(...)`と`ak.sleep(...)`は`and_`と`or_`より長生きする事は絶対に無い(もしあれば不具合)。
+この振る舞いが気に入らない場合は代わりに`unstructured_and`と`unstructured_or`を用いると良い.
+
 ### animation関連
 
 ```python
@@ -156,3 +160,5 @@ ak.close_soon(coro_or_task)
 - CPython 3.7 + Kivy 2.0.0
 - CPython 3.8 + Kivy 2.0.0
 - CPython 3.9 + Kivy 2.0.0
+
+[sc]:https://ja.wikipedia.org/wiki/%E6%A7%8B%E9%80%A0%E5%8C%96%E3%81%95%E3%82%8C%E3%81%9F%E4%B8%A6%E8%A1%8C%E6%80%A7
