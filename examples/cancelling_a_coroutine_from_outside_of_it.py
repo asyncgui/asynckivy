@@ -26,13 +26,12 @@ class TestApp(App):
                 label.text = 'by touching the screen.'
                 await sleep(1)
         label = self.root
-        coro = animate_label(label)
 
         def on_touch_down(*__):
-            coro.close()
+            task.cancel()
             label.text = 'The animation was cancelled.'
         label.bind(on_touch_down=on_touch_down)
-        asynckivy.start(coro)
+        task = asynckivy.start(animate_label(label))
 
 
 if __name__ == '__main__':
