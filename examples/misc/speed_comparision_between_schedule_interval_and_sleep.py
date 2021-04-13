@@ -15,25 +15,22 @@ BoxLayout:
         text: 'Clock.schedule_interval(lambda __: None, 0)'
         group: 'aaa'
         on_press:
-            app.reset()
             if self.state == 'down': app.start_ver_schedule_interval()
     ToggleButton:
         text:'while True:\\n    await sleep(0)'
         group: 'aaa'
         on_press:
-            app.reset()
             if self.state == 'down': app.start_ver_sleep()
     ToggleButton:
         text: 'sleep = await create_sleep(0)\\nwhile True:\\n    await sleep()'
         group: 'aaa'
         on_press:
-            app.reset()
             if self.state == 'down': app.start_ver_create_sleep()
 '''
 
 
 class SampleApp(App):
-    coro = None
+    coro = ak.sleep_forever()
 
     def build(self):
         return Builder.load_string(KV_CODE)
@@ -42,12 +39,6 @@ class SampleApp(App):
         def print_fps(dt):
             print(Clock.get_fps(), 'fps')
         Clock.schedule_interval(print_fps, 1)
-
-    def reset(self):
-        coro = self.coro
-        if coro is not None:
-            coro.close()
-        self.coro = None
 
     def start_ver_schedule_interval(self):
         print('---- start ver schedule_interval() ----')
@@ -58,8 +49,8 @@ class SampleApp(App):
                 await ak.sleep_forever()
             finally:
                 clock_event.cancel()
-        self.coro = async_fn()
-        ak.start(self.coro)
+        self.coro.close()
+        self.coro = ak.raw_start(async_fn())
 
     def start_ver_sleep(self):
         print('---- start ver sleep() ----')
@@ -68,8 +59,8 @@ class SampleApp(App):
             sleep = ak.sleep
             while True:
                 await sleep(0)
-        self.coro = async_fn()
-        ak.start(self.coro)
+        self.coro.close()
+        self.coro = ak.raw_start(async_fn())
 
     def start_ver_create_sleep(self):
         print('---- start ver create_sleep() ----')
@@ -78,8 +69,8 @@ class SampleApp(App):
             sleep = await ak.create_sleep(0)
             while True:
                 await sleep()
-        self.coro = async_fn()
-        ak.start(self.coro)
+        self.coro.close()
+        self.coro = ak.raw_start(async_fn())
 
 
 if __name__ == '__main__':
