@@ -56,6 +56,10 @@ async def animate(target, **kwargs):
            )
            tasks[0].cancel()
 
+    .. warning::
+
+        ``force_final_value`` might be removed in the future.
+
     Sequence and Parallel
     ---------------------
 
