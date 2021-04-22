@@ -104,15 +104,15 @@ async def fade_transition(*widgets, **kwargs):
     s = kwargs.pop('s', kwargs.pop('step', 0))
     if kwargs:
         raise ValueError("surplus keyword-only arguments were given:", kwargs)
-    base_opacity = widgets[0].opacity if widgets else 0.
+    original_opacities = tuple(w.opacity for w in widgets)
     try:
-        async for v in interpolate(base_opacity, 0., d=half_d, s=s):
-            for w in widgets:
-                w.opacity = v
+        async for v in interpolate(1.0, 0.0, d=half_d, s=s):
+            for w, o in zip(widgets, original_opacities):
+                w.opacity = v * o
         yield
-        async for v in interpolate(0., base_opacity, d=half_d, s=s):
-            for w in widgets:
-                w.opacity = v
+        async for v in interpolate(0.0, 1.0, d=half_d, s=s):
+            for w, o in zip(widgets, original_opacities):
+                w.opacity = v * o
     finally:
-        for w in widgets:
-            w.opacity = base_opacity
+        for w, o in zip(widgets, original_opacities):
+            w.opacity = o
