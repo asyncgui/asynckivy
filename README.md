@@ -58,8 +58,9 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
+<!--
 Both `and_` and `or_` are [structured][njs_sc], meaning `ak.event(...)` and `ak.sleep(...)`in the example above cannot outlive their parent (`and_` and `or_`). If you don't like this behavior, use `unstructured_and` and `unstructured_or` instead.
-
+-->
 
 ### animation
 

@@ -12,8 +12,8 @@ pip install asynckivy
 ## このmoduleを使う際の注意点
 
 このmoduleのminor versionが変わった時は何らかの互換性の無い変更が加えられた可能性が
-高いので、このmoduleを使う際はminor versionを固定してください。少なくともmajor version
-が0の間はminor versionが互換性の目安となっています。
+高いので、使う際はminor versionを固定してください。
+少なくともmajor versionが0の間はminor versionが互換性の目安となっています。
 
 ## 使い方
 
@@ -57,9 +57,11 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
+<!--
 `and_`と`or_`は[構造化][sc]されている。
 なので上のcodeの中の`ak.event(...)`と`ak.sleep(...)`は`and_`と`or_`より長生きする事は絶対に無い(もしあれば不具合)。
 この振る舞いが気に入らない場合は代わりに`unstructured_and`と`unstructured_or`を用いると良い.
+-->
 
 ### animation関連
 
