@@ -67,7 +67,7 @@ class QuizScreen(Screen):
         self._main_task = ak.start_soon(self._async_main())
 
     def on_pre_leave(self):
-        ak.close_soon(self._main_task)
+        self._main_task.cancel()
 
     async def _async_main(self):
         ids = self.ids

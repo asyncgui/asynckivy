@@ -151,9 +151,6 @@ import asynckivy as ak
 
 # schedule a coroutine/Task to start after the next frame
 ak.start_soon(coro_or_task)
-
-# schedule a coroutine/Task to close before the next frame
-ak.close_soon(coro_or_task)
 ```
 
 ## Test Environment
