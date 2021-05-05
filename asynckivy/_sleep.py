@@ -3,34 +3,22 @@ __all__ = ('sleep', 'sleep_free', 'create_sleep', )
 import types
 
 from kivy.clock import Clock
-schedule_once = Clock.schedule_once
-
-
-def _raise_exception_for_free_type_clock_not_being_available(*args, **kwargs):
-    raise Exception(
-        "'Clock.schedule_once_free()' is not available."
-        " Use a non-default clock."
-    )
-
-
-schedule_once_free = getattr(
-    Clock, 'schedule_once_free',
-    _raise_exception_for_free_type_clock_not_being_available
-)
+create_trigger = Clock.create_trigger
+create_trigger_free = getattr(Clock, 'create_trigger_free', None)
 
 
 @types.coroutine
 def sleep(duration):
-    args, kwargs = yield \
-        lambda step_coro: schedule_once(step_coro, duration)
+    args, kwargs = yield lambda step_coro: \
+        create_trigger(step_coro, duration, release_ref=False)()
     return args[0]
 
 
 @types.coroutine
 def sleep_free(duration):
     '''(experimental)'''
-    args, kwargs = yield \
-        lambda step_coro: schedule_once_free(step_coro, duration)
+    args, kwargs = yield lambda step_coro: \
+        create_trigger_free(step_coro, duration, release_ref=False)()
     return args[0]
 
 
@@ -67,7 +55,8 @@ async def create_sleep(duration):
             await some_fn()  # OK
     '''
     from asyncgui import get_step_coro
-    clock_event = Clock.create_trigger(await get_step_coro(), duration)
+    clock_event = Clock.create_trigger(
+        await get_step_coro(), duration, release_ref=False)
 
     @types.coroutine
     def sleep():

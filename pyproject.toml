@@ -22,7 +22,7 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = "^3.7"
-asyncgui = "~0.4"
+asyncgui = "~0.5"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.3"
