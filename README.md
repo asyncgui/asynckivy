@@ -3,6 +3,49 @@
 [Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)  
 [日本語doc](README_jp.md)  
 
+`asynckivy` is an async library that saves you from ugly callback-based code,
+just like other async libraries do.
+Let's say you want to do:
+
+1. `print('A')`
+1. wait for 1sec
+1. `print('B')`
+1. wait for a button to be pressed
+1. `print('C')`
+
+in that order.
+Your code would look like this:
+
+```python
+from kivy.clock import Clock
+
+def what_you_want_to_do(button):
+    print('A')
+
+    def one_sec_later(__):
+        print('B')
+        button.bind(on_press=on_button_press)
+    Clock.schedule_once(one_sec_later, 1)
+
+    def on_button_press(button):
+        button.unbind(on_press=on_button_press)
+        print('C')
+```
+
+It's barely readable, but not easy to understand.
+If you use `asynckivy`, the code above will become like this:
+
+```python
+import asynckivy as ak
+
+async def what_you_want_to_do(button):
+    print('A')
+    await ak.sleep(1)
+    print('B')
+    await ak.event(button, 'on_press')
+    print('C')
+```
+
 ## Installation
 
 ```
@@ -37,11 +80,6 @@ async def some_task(button):
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
         print(f'button.x is now {x}')
 
-    # create a new thread, run a function on it, then
-    # wait for the completion of that thread
-    r = await ak.run_in_thread(some_heavy_task)
-    print(f"result of 'some_heavy_task()': {r}")
-
     # wait until EITHER a button is pressed OR 5sec passes
     tasks = await ak.or_(
         ak.event(button, 'on_press'),
@@ -58,22 +96,18 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-<!--
-Both `and_` and `or_` are [structured][njs_sc], meaning `ak.event(...)` and `ak.sleep(...)`in the example above cannot outlive their parent (`and_` and `or_`). If you don't like this behavior, use `unstructured_and` and `unstructured_or` instead.
--->
-
 ### animation
 
 ```python
 import asynckivy as ak
 
 async def some_task(widget):
-    # start an animation and wait for its completion
-    # The arguments are the same as `kivy.animation.Animation`
-    # except for the first one.
+    # start an animation and wait for the completion.
+    # the keyword-arguments are the same as kivy.animation.Animation's.
     await ak.animate(widget, width=200, t='in_out_quad', d=.5)
 
-    # Interpolate between the values 0 and 200.
+    # interpolate between the values 0 and 200.
+    # the keyword-arguments are the same as kivy.animation.Animation's.
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
         # await ak.sleep(1)  # Do not await anything during the iteration
@@ -118,6 +152,45 @@ class Painter(RelativeLayout):
         do_something_on_touch_up()
 ```
 
+### threading
+
+`asynckivy` currently does not have any I/O primitives like Trio and asyncio do,
+thus threads are the only way to perform them without blocking the main-thread:
+
+```python
+from concurrent.futures import ThreadPoolExecuter
+import asynckivy as ak
+
+executer = ThreadPoolExecuter()
+
+async def some_task():
+    # create a new thread, run a function inside it, then
+    # wait for the completion of that thread
+    r = await ak.run_in_thread(thread_blocking_operation)
+    print("return value:", r)
+
+    # run a function inside a ThreadPoolExecuter, and wait for the completion
+    r = await ak.run_in_executer(thread_blocking_operation, executer)
+    print("return value:", r)
+```
+
+Exceptions(not BaseExceptions) are propagated to the caller,
+so you can handle them like you do in synchronous code:
+
+```python
+import requests
+from requests.exceptions import Timeout
+import asynckivy as ak
+
+async def some_task():
+    try:
+        r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
+    except Timeout:
+        print("TIMEOUT!")
+    else:
+        print('GOT A RESPONSE')
+```
+
 ### synchronization primitive
 
 There is a Trio's [Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event) equivalent.
@@ -144,7 +217,7 @@ e.set()
 # B2
 ```
 
-### Misc
+### misc
 
 ```python
 import asynckivy as ak
@@ -152,6 +225,17 @@ import asynckivy as ak
 # schedule a coroutine/Task to start after the next frame
 ak.start_soon(coro_or_task)
 ```
+
+## Structured Concurrency
+
+Both `asynckivy.and_()` and `asynckivy.or_()` follow the concept of "structured concurrency".
+What does that mean?
+They promise two things:
+
+* The tasks passed into them never outlive them.
+* Exceptions occured in the tasks are propagated to the caller.
+
+If you don't see the point, please read [this post][njs_sc].
 
 ## Test Environment
 
@@ -169,7 +253,7 @@ The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()`
 Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
 
 Trio and asyncio are async **I/O** libraries after all. They probably don't need the functionality that immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
-Thier core design may not be suitable for GUI in the first place.
+Their core design may not be suitable for GUI in the first place.
 That's why I'm still developing this `asynckivy` library to this day.
 
 [asyncio]:https://docs.python.org/3/library/asyncio.html

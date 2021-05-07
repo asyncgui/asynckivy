@@ -2,6 +2,49 @@
 
 [Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)
 
+`asynckivy`はKivy用のlibraryで、
+よくあるasync libraryと同じでcallback関数だらけの醜いcodeを読みやすくしてくれる。
+例えば
+
+1. `A`を出力
+1. 一秒待機
+1. `B`を出力して
+1. buttonが押されるまで待機
+1. `C`を出力
+
+といった事を普通にやろうとするとcodeは
+
+```python
+from kivy.clock import Clock
+
+def what_you_want_to_do(button):
+    print('A')
+
+    def one_sec_later(__):
+        print('B')
+        button.bind(on_press=on_button_press)
+    Clock.schedule_once(one_sec_later, 1)
+
+    def on_button_press(button):
+        button.unbind(on_press=on_button_press)
+        print('C')
+```
+
+のように読みにくい物となりますが、`asynckivy`を用いることで
+
+```python
+import asynckivy as ak
+
+async def what_you_want_to_do(button):
+    print('A')
+    await ak.sleep(1)
+    print('B')
+    await ak.event(button, 'on_press')
+    print('C')
+```
+
+と分かりやすく書ける。
+
 ## Install方法
 
 ```
@@ -37,10 +80,6 @@ async def some_task(button):
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
         print(f'button.x の現在の値は {x} です')
 
-    # 新しくthreadを作ってそこで渡された関数を実行し、その完了を待つ
-    r = await ak.run_in_thread(some_heavy_task)
-    print(f"'some_heavy_task()'の戻り値: {r}")
-
     # buttonが押されるか5秒経つまで待つ
     tasks = await ak.or_(
         ak.event(button, 'on_press'),
@@ -57,11 +96,7 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-<!--
-`and_`と`or_`は[構造化][sc]されている。
-なので上のcodeの中の`ak.event(...)`と`ak.sleep(...)`は`and_`と`or_`より長生きする事は絶対に無い(もしあれば不具合)。
-この振る舞いが気に入らない場合は代わりに`unstructured_and`と`unstructured_or`を用いると良い.
--->
+`and_`と`or_`は[構造化][sc]されているため上のcodeの中の`ak.event(...)`と`ak.sleep(...)`は`and_`と`or_`より長生きする事は絶対に無い(もしあれば不具合)。
 
 ### animation関連
 
@@ -70,11 +105,12 @@ import asynckivy as ak
 
 
 async def some_task(button):
-    # animationの完了を待つ
-    # 第一引数を除く全ての引数は `kivy.animation.Animation` と同じ
+    # animationの完了を待つ。
+    # keyword引数は全て `kivy.animation.Animation` と同じ。
     await ak.animate(button, width=200, t='in_out_quad', d=.5)
 
     # d秒かけて0から200までを線形補間する。中間値の計算はs秒毎に行う。
+    # keyword引数は全て `kivy.animation.Animation` と同じ。
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
         # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
@@ -118,6 +154,45 @@ class Painter(RelativeLayout):
 
         # 'on_touch_up'時に行いたい処理はここに書く
         do_something_on_touch_up()
+```
+
+### thread
+
+`asynckivy`はTrioやasyncioのような入出力機能を持たないので、main threadを停めずにそれをしたければ別のthreadで行うしかない。今のところ次の二つの方法がある。
+
+```python
+from concurrent.futures import ThreadPoolExecuter
+import asynckivy as ak
+
+executer = ThreadPoolExecuter()
+
+async def some_task():
+    # 方法その一
+    # 新しくthreadを作ってそこで渡された関数を実行し、その完了を待つ
+    r = await ak.run_in_thread(thread_blocking_operation)
+    print("return value:", r)
+
+    # 方法そのニ
+    # ThreadPoolExecuterで渡された関数を実行し、その完了を待つ
+    r = await ak.run_in_executer(thread_blocking_operation, executer)
+    print("return value:", r)
+```
+
+thread内で起きた例外(BaseExceptionは除く)は呼び出し元に運ばれるので、
+以下のように通常の同期codeを書く感覚で例外を捌ける。
+
+```python
+import requests
+from requests.exceptions import Timeout
+import asynckivy as ak
+
+async def some_task():
+    try:
+        r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
+    except Timeout:
+        print("制限時間内に応答せず")
+    else:
+        print('通信成功')
 ```
 
 ### 同期

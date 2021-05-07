@@ -30,7 +30,7 @@ async def animate(target, **kwargs):
     ----------------------------------------
 
     One notable difference is ``force_final_value``, which ensures the
-    final-value of the animation to be applied even when the animation is
+    final-value of an animation to be applied even when the animation is
     cancelled.
 
     .. code-block:: python
@@ -48,13 +48,11 @@ async def animate(target, **kwargs):
 
        import asynckivy as ak
 
-       async def skippable_animation(label):
-           # can be skipped by 'on_touch_down'.
-           tasks = await ak.or_(
-               ak.animate(label, x=100, force_final_value=True),
-               ak.event(label, 'on_touch_down')
-           )
-           tasks[0].cancel()
+       # animation that can be skipped by touching the screen
+       await ak.or_(
+           ak.animate(widget, x=100, force_final_value=True),
+           ak.event(root_widget, 'on_touch_down', stop_dispatching=True)
+       )
 
     .. warning::
 
@@ -81,12 +79,14 @@ async def animate(target, **kwargs):
        def kivy_way_of_doing_parallel_animation(widget):
            anim = Animation(x=100) & Animation(y=100, d=2)
            anim.start(widget)
+           anim.bind(on_complete=lambda *args: print("completed"))
 
        async def asynckivy_way_of_doing_parallel_animation(widget):
            await ak.and_(
                ak.animate(widget, x=100),
                ak.animate(widget, y=100, d=2),
            )
+           print("completed")
     '''
     from asyncgui import get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
