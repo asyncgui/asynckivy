@@ -113,6 +113,7 @@ async def fade_transition(*widgets, **kwargs):
         async for v in interpolate(0.0, 1.0, d=half_d, s=s):
             for w, o in zip(widgets, original_opacities):
                 w.opacity = v * o
-    finally:
+    except GeneratorExit:
         for w, o in zip(widgets, original_opacities):
             w.opacity = o
+        raise
