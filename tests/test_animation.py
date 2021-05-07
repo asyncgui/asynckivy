@@ -3,6 +3,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def unlimit_maxfps(monkeypatch):
+    '''not sure this fixture actually works'''
     from kivy.clock import Clock
     monkeypatch.setattr(Clock, '_max_fps', 0)
 
@@ -43,7 +44,7 @@ def test_cancel(approx, force_final_value):
     coro = ak.animate(
         target, num=100, d=.4, force_final_value=force_final_value)
     clock = Clock()
-    ak.start(coro)
+    ak.raw_start(coro)
 
     clock.sleep(.1)
     assert target.num == approx(25)

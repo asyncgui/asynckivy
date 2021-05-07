@@ -93,9 +93,13 @@ async def animate(target, **kwargs):
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
     force_final_value = kwargs.pop('force_final_value', False)
+    animated_properties = kwargs
+    if not duration:
+        for key, value in animated_properties.items():
+            setattr(target, key, value)
+        return
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
-    animated_properties = kwargs
 
     # get current values
     properties = {}
@@ -106,11 +110,6 @@ async def animate(target, **kwargs):
         elif isinstance(original_value, dict):
             original_value = original_value.copy()
         properties[key] = (original_value, value)
-
-    if not duration:
-        await sleep(0)
-        _set_final_value(target, properties)
-        return
 
     try:
         ctx = {
@@ -125,7 +124,8 @@ async def animate(target, **kwargs):
         await sleep_forever()
     except GeneratorExit:
         if force_final_value:
-            _set_final_value(target, properties)
+            for key, values in properties.items():
+                setattr(target, key, values[1])
         raise
     finally:
         clock_event.cancel()
@@ -150,11 +150,6 @@ def _update(ctx, dt):
     if progress >= 1.:
         ctx['step_coro']()
         return False
-
-
-def _set_final_value(target, properties):
-    for key, values in properties.items():
-        setattr(target, key, values[1])
 
 
 def _calculate(a, b, t):
