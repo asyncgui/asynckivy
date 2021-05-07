@@ -1,27 +1,41 @@
-__all__ = ('run_in_thread', )
+__all__ = ('run_in_thread', 'run_in_executer', )
+from threading import Thread
+from kivy.clock import Clock
+import asynckivy
 
 
-async def run_in_thread(func, *, daemon=False, polling_interval=3):
-    from threading import Thread
-    from ._sleep import create_sleep
+def _wrapper(func, event):
+    ret = None
+    exc = None
+    try:
+        ret = func()
+    except Exception as e:
+        exc = e
+    finally:
+        Clock.schedule_once(lambda __: event.set((ret, exc, )))
 
-    return_value = None
-    done = False
-    exception = None
 
-    def wrapper():
-        nonlocal return_value, done, exception
-        try:
-            return_value = func()
-        except Exception as e:
-            exception = e
-        finally:
-            done = True
+async def run_in_thread(func, *, daemon=False):
+    event = asynckivy.Event()
+    Thread(
+        name='asynckivy.run_in_thread',
+        target=_wrapper, daemon=daemon, args=(func, event, ),
+    ).start()
+    ret, exc = await event.wait()
+    if exc is not None:
+        raise exc
+    return ret
 
-    Thread(target=wrapper, daemon=daemon).start()
-    sleep = await create_sleep(polling_interval)
-    while not done:
-        await sleep()
-    if exception is not None:
-        raise exception
-    return return_value
+
+async def run_in_executer(func, executer):
+    event = asynckivy.Event()
+    future = executer.submit(_wrapper, func, event)
+    try:
+        ret, exc = await event.wait()
+    except GeneratorExit:
+        future.cance()
+        raise
+    assert future.done()
+    if exc is not None:
+        raise exc
+    return ret
