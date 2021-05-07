@@ -2,48 +2,43 @@ def test_sleep():
     import time
     from kivy.clock import Clock
     import asynckivy as ak
-    async def _test():
-        await ak.sleep(.1)
-        nonlocal done;done = True
-    done = False
+
     Clock.tick()
-    ak.start(_test())
-    assert not done
+    task = ak.start(ak.sleep(.1))
+    assert not task.done
     Clock.tick()
-    assert not done
+    assert not task.done
     time.sleep(.07)
     Clock.tick()
-    assert not done
+    assert not task.done
     time.sleep(.07)
     Clock.tick()
-    assert done
+    assert task.done
 
 
 def test_sleep_free():
     import time
     from kivy.clock import Clock
     import asynckivy as ak
-    async def _test():
-        await ak.sleep_free(.1)
-        nonlocal done;done = True
-    done = False
+
     Clock.tick()
-    ak.start(_test())
-    assert not done
+    task = ak.start(ak.sleep_free(.1))
+    assert not task.done
     Clock.tick()
-    assert not done
+    assert not task.done
     time.sleep(.07)
     Clock.tick()
-    assert not done
+    assert not task.done
     time.sleep(.07)
     Clock.tick()
-    assert done
+    assert task.done
 
 
 def test_create_sleep():
     import time
     from kivy.clock import Clock
     import asynckivy as ak
+
     async def _task():
         nonlocal task_state
         sleep = await ak.create_sleep(.5)
@@ -52,6 +47,7 @@ def test_create_sleep():
         task_state = 'B'
         await sleep()
         task_state = 'C'
+
     task_state = None
     Clock.tick()
     ak.start(_task())

@@ -44,63 +44,63 @@ def test_properly_unbound(ed):
 
 def test_event_parameter(ed):
     import asynckivy as ak
+
     async def _test():
         r = await ak.event(ed, 'on_test')
         assert r == (ed, 1, 2, )
         r = await ak.event(ed, 'on_test')
         assert r == (ed, 3, 4, )  # kwarg is ignored
-        nonlocal done;done = True
-    done = False
-    ak.start(_test())
-    assert not done
+
+    task = ak.start(_test())
+    assert not task.done
     ed.dispatch('on_test', 1, 2)
-    assert not done
+    assert not task.done
     ed.dispatch('on_test', 3, 4, kwarg='A')
-    assert done
+    assert task.done
 
 
 def test_filter(ed):
     import asynckivy as ak
+
     async def _test():
         await ak.event(
             ed, 'on_test',
             filter=lambda *args: args == (ed, 3, 4, )
         )
-        nonlocal done;done = True
-    done = False
-    ak.start(_test())
-    assert not done
+
+    task = ak.start(_test())
+    assert not task.done
     ed.dispatch('on_test', 1, 2)
-    assert not done
+    assert not task.done
     ed.dispatch('on_test', 3, 4)
-    assert done
+    assert task.done
 
 
 def test_stop_dispatching(ed):
     import asynckivy as ak
+
     async def _test():
         await ak.event(ed, 'on_test')
         await ak.event(ed, 'on_test', stop_dispatching=True)
         await ak.event(ed, 'on_test')
-        nonlocal done;done = True
-    done = False
+
     n = 0
     def increament(*args):
         nonlocal n
         n += 1
     ed.bind(on_test=increament)
-    ak.start(_test())
+    task = ak.start(_test())
     assert n == 0
-    assert not done
+    assert not task.done
     ed.dispatch('on_test')
     assert n == 1
-    assert not done
+    assert not task.done
     ed.dispatch('on_test')
     assert n == 1
-    assert not done
+    assert not task.done
     ed.dispatch('on_test')
     assert n == 2
-    assert done
+    assert task.done
 
 
 def test_cancel(ed):
@@ -111,16 +111,14 @@ def test_cancel(ed):
             nonlocal called; called = True
             return True
         await ak.event(ed, 'on_test', filter=filter_func)
-        nonlocal done;done = True
 
     called = False
-    done = False
     task = ak.start(_test(ed))
-    assert not done
+    assert not task.done
     assert not called
     task.close()
-    assert not done
+    assert not task.done
     assert not called
     ed.dispatch('on_test')
-    assert not done
+    assert not task.done
     assert not called

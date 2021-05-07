@@ -3,22 +3,18 @@ def test_normaly():
     import asynckivy as ak
     from asynckivy import _start_soon
 
-    job1_done = False
-    async def job1():
-        nonlocal job1_done;job1_done = True    
-    job2_done = False
-    async def job2():
-        nonlocal job2_done;job2_done = True    
+    async def do_nothing():
+        pass
 
-    task1 = ak.start_soon(job1())
-    task2 = ak.start_soon(job2())
+    task1 = ak.start_soon(do_nothing())
+    task2 = ak.start_soon(do_nothing())
     assert _start_soon._waiting == [task1, task2, ]
-    assert not job1_done
-    assert not job2_done
+    assert not task1.done
+    assert not task2.done
     Clock.tick()
     assert _start_soon._waiting == []
-    assert job1_done
-    assert job2_done
+    assert task1.done
+    assert task2.done
 
 
 def test_schedule_another_during_a_scheduled_one():
@@ -28,24 +24,22 @@ def test_schedule_another_during_a_scheduled_one():
 
     task2 = None
 
-    job1_done = False
     async def job1():
         nonlocal task2
         task2 = ak.start_soon(job2())
-        nonlocal job1_done;job1_done = True    
-    job2_done = False
+
     async def job2():
-        nonlocal job2_done;job2_done = True    
+        pass   
 
     task1 = ak.start_soon(job1())
     assert _start_soon._waiting == [task1, ]
-    assert not job1_done
-    assert not job2_done
+    assert not task1.done
+    assert task2 is None
     Clock.tick()
     assert _start_soon._waiting == [task2, ]
-    assert job1_done
-    assert not job2_done
+    assert task1.done
+    assert not task2.done
     Clock.tick()
     assert _start_soon._waiting == []
-    assert job1_done
-    assert job2_done
+    assert task1.done
+    assert task2.done

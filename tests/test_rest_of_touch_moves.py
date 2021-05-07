@@ -31,12 +31,10 @@ def test_a_number_of_on_touch_moves_fired(touch_cls, n_touch_moves):
         async for __ in ak.rest_of_touch_moves(w, t):
             n += 1
         assert n == n_touch_moves
-        nonlocal done;done = True
         
-    done = False
     w = Widget()
     t = touch_cls()
-    ak.start(_test(w, t))
+    task = ak.start(_test(w, t))
     for __ in range(n_touch_moves):
         t.grab_current = None
         w.dispatch('on_touch_move', t)
@@ -46,7 +44,7 @@ def test_a_number_of_on_touch_moves_fired(touch_cls, n_touch_moves):
     w.dispatch('on_touch_up', t)
     t.grab_current = w
     w.dispatch('on_touch_up', t)
-    assert done
+    assert task.done
 
 
 def test_break_during_a_for_loop(touch_cls):
@@ -65,26 +63,24 @@ def test_break_during_a_for_loop(touch_cls):
                 break
         assert weak_w not in t.grab_list
         await ak.event(w, 'on_touch_up')
-        nonlocal done;done = True
 
     n_touch_moves = 0
-    done = False
     w = Widget()
     t = touch_cls()
-    ak.start(_test(w, t))
+    task = ak.start(_test(w, t))
     for expected in (1, 2, 2, ):
         t.grab_current = None
         w.dispatch('on_touch_move', t)
         t.grab_current = w
         w.dispatch('on_touch_move', t)
         assert n_touch_moves == expected
-        assert not done
+        assert not task.done
     t.grab_current = None
     w.dispatch('on_touch_up', t)
     t.grab_current = w
     w.dispatch('on_touch_up', t)
     assert n_touch_moves == 2
-    assert done
+    assert task.done
 
 
 @pytest.mark.parametrize(
@@ -100,9 +96,6 @@ def test_stop_dispatching(touch_cls, stop_dispatching, expectation):
         async for __ in ak.rest_of_touch_moves(
                 parent, t, stop_dispatching=stop_dispatching):
             pass
-        nonlocal done;done = True
-
-    done = False
 
     n_touches = {'move': 0, 'up': 0, }
     def on_touch_move(*args):
@@ -117,7 +110,7 @@ def test_stop_dispatching(touch_cls, stop_dispatching, expectation):
     )
     parent.add_widget(child)
     t = touch_cls()
-    ak.start(_test(parent, t))
+    task = ak.start(_test(parent, t))
 
     for i in range(2):
         t.grab_current = None
@@ -130,7 +123,7 @@ def test_stop_dispatching(touch_cls, stop_dispatching, expectation):
     t.grab_current = parent
     parent.dispatch('on_touch_up', t)
     assert n_touches['up'] == expectation[2]
-    assert done
+    assert task.done
 
 
 @pytest.mark.parametrize('actually_ended', (True, False))
@@ -150,13 +143,11 @@ def test_the_touch_that_might_already_ended(touch_cls, actually_ended):
         else:
             async for __ in ak.rest_of_touch_moves(w, t):
                 pass
-        nonlocal done;done = True
 
-    done = False
     w = Widget()
     t = touch_cls()
     t.time_end = 1  # something other than -1
-    ak.start(job(w, t))
+    task = ak.start(job(w, t))
 
     if actually_ended:
         Clock.tick()
@@ -165,4 +156,4 @@ def test_the_touch_that_might_already_ended(touch_cls, actually_ended):
         w.dispatch('on_touch_up', t)
         t.grab_current = w
         w.dispatch('on_touch_up', t)
-    assert done
+    assert task.done
