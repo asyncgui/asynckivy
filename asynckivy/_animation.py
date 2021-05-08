@@ -2,10 +2,10 @@ __all__ = ('animate', )
 from functools import partial
 from kivy.clock import Clock
 from kivy.animation import AnimationTransition
-from asynckivy import sleep, sleep_forever
+from asynckivy import sleep_forever
 
 
-async def animate(target, **kwargs):
+async def animate(target, **kwargs):  # noqa:C901
     '''
     animate
     =======

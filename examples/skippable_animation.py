@@ -22,6 +22,7 @@ RelativeLayout:
         font_size: '80sp'
 '''
 
+
 class TestApp(App):
     def build(self):
         return Builder.load_string(KV_CODE)
