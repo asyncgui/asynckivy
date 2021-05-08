@@ -13,6 +13,7 @@ import asynckivy as ak
 
 class Painter(RelativeLayout):
     def on_kv_post(self, *args, **kwargs):
+        super().on_kv_post(*args, **kwargs)
         self._ud_key = 'Painter.' + str(self.uid)
 
     def will_accept_touch(self, touch) -> bool:

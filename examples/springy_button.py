@@ -54,6 +54,7 @@ class SpringyButton(Label):
 
     def on_kv_post(self, *args, **kwargs):
         import asynckivy
+        super().on_kv_post(*args, **kwargs)
         asynckivy.start(self._async_main())
 
     async def _async_main(self):

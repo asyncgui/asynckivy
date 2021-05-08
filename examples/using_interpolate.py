@@ -1,5 +1,5 @@
 '''
-A simple usucase of ``asynckivy.interpolate()``.
+A simple usecase of ``asynckivy.interpolate()``.
 '''
 
 from kivy.app import App
