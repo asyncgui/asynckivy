@@ -52,3 +52,27 @@ def test_no_exception():
         assert not task.done
         Clock.tick()
         assert task.done
+
+
+def test_cancel_before_getting_excuted():
+    import time
+    from kivy.clock import Clock
+    import asynckivy as ak
+
+    flag = ak.Event()
+
+    async def job(executer):
+        await ak.run_in_executer(flag.set, executer)
+
+    with ThreadPoolExecutor(max_workers=1) as executer:
+        executer.submit(time.sleep, .1)
+        task = ak.start(job(executer))
+        time.sleep(.02)
+        assert not task.done
+        assert not flag.is_set()
+        Clock.tick()
+        task.cancel()
+        assert task.cancelled
+        assert not flag.is_set()
+        time.sleep(.2)
+        assert not flag.is_set()

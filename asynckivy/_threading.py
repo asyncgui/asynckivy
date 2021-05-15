@@ -33,7 +33,7 @@ async def run_in_executer(func, executer):
     try:
         ret, exc = await event.wait()
     except GeneratorExit:
-        future.cance()
+        future.cancel()
         raise
     assert future.done()
     if exc is not None:
