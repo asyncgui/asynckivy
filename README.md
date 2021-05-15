@@ -32,7 +32,7 @@ def what_you_want_to_do(button):
         print('C')
 ```
 
-It's barely readable, but not easy to understand.
+It's barely readable and not easy to understand.
 If you use `asynckivy`, the code above will become like this:
 
 ```python
@@ -233,9 +233,9 @@ What does that mean?
 They promise two things:
 
 * The tasks passed into them never outlive them.
-* Exceptions occured in the tasks are propagated to the caller.
+* Exceptions occured in the tasks are propagated to the parent task.
 
-If you don't see the point, please read [this post][njs_sc].
+Read [this post][njs_sc] if you want to know more about "structured concurrency".
 
 ## Test Environment
 
