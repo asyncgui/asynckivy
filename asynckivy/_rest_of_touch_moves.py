@@ -19,7 +19,11 @@ async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False):
     if touch.time_end != -1:
         # `on_touch_up` might be already fired. If so raise an exception.
         tasks = await or_(
-            sleep(0),
+            # If a widget like ScrollView is in the parent-stack,
+            # touch events are simulated and delayed than the real ones.
+            # So we need to wait for enough time before we decide whether
+            # to raise a MotionEventAlreadyEndedError or not.
+            sleep(1.),
             event(widget, 'on_touch_up', filter=lambda w, t: t is touch),
         )
         if tasks[0].done:
