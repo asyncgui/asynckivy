@@ -3,23 +3,25 @@ __all__ = ('rest_of_touch_moves', )
 import types
 
 
-async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False):
-    '''Returns an async-generator that yields the given touch when
+async def rest_of_touch_moves(
+        widget, touch, *, stop_dispatching=False, timeout=1.):
+    '''
+    Returns an async-generator that iterates the number of times
     `on_touch_move` is fired, and ends when `on_touch_up` is fired. Grabs and
     ungrabs the touch automatically. If `stop_dispatching` is True, the touch
     will never be dispatched further i.e. the next widget will never get this
     touch until the generator ends. If `on_touch_up` was already fired,
     `MotionEventAlreadyEndedError` will be raised.
     '''
-    from asyncgui import get_step_coro
-    from asynckivy import or_, sleep, event
-    from asynckivy.exceptions import MotionEventAlreadyEndedError
+    from asynckivy import (
+        or_, sleep, event, get_step_coro, MotionEventAlreadyEndedError,
+    )
 
-    step_coro = await get_step_coro()
     if touch.time_end != -1:
-        # `on_touch_up` might be already fired. If so raise an exception.
+        # `on_touch_up` might have been already fired so we need to find out
+        # it actually was or not.
         tasks = await or_(
-            sleep(0),
+            sleep(timeout),
             event(widget, 'on_touch_up', filter=lambda w, t: t is touch),
         )
         if tasks[0].done:
@@ -28,6 +30,7 @@ async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False):
         else:
             return
 
+    step_coro = await get_step_coro()
     if stop_dispatching:
         def _on_touch_up(w, t):
             if t is touch:
