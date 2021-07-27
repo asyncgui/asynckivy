@@ -58,6 +58,14 @@ pip install asynckivy
 If you use this module, it's recommended to pin the minor version, because if
 it changed, it usually means some breaking changes occurred.
 
+```text
+# poetry
+asynckivy@~0.5
+
+# pip
+asynckivy>=0.5,<0.6
+```
+
 ## Usage
 
 ```python
@@ -147,9 +155,8 @@ class Painter(RelativeLayout):
             max_y = max(y, oy)
             line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
             # await ak.sleep(1)  # Do not await anything during the iteration
-
-        # If you want to do something when 'on_touch_up' is fired, do it here.
-        do_something_on_touch_up()
+        else:
+            print("'on_touch_up' was fired")
 ```
 
 ### threading
@@ -179,13 +186,12 @@ so you can handle them like you do in synchronous code:
 
 ```python
 import requests
-from requests.exceptions import Timeout
 import asynckivy as ak
 
 async def some_task():
     try:
         r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
-    except Timeout:
+    except requests.Timeout:
         print("TIMEOUT!")
     else:
         print('GOT A RESPONSE')

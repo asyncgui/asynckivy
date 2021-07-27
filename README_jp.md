@@ -8,7 +8,7 @@
 
 1. `A`を出力
 1. 一秒待機
-1. `B`を出力して
+1. `B`を出力
 1. buttonが押されるまで待機
 1. `C`を出力
 
@@ -52,11 +52,17 @@ async def what_you_want_to_do(button):
 pip install asynckivy
 ```
 
-## このmoduleを使う際の注意点
+## minor versionまでを固定して
 
-このmoduleのminor versionが変わった時は何らかの互換性の無い変更が加えられた可能性が
-高いので、使う際はminor versionを固定してください。
-少なくともmajor versionが0の間はminor versionが互換性の目安となっています。
+このmoduleのminor versionが変わった時は何らかの互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
+
+```text
+# poetryにてminor versionまでを0.5に固定する例
+asynckivy@~0.5
+
+# pipにてminor versionまでを0.5に固定する例
+asynckivy>=0.5,<0.6
+```
 
 ## 使い方
 
@@ -105,7 +111,7 @@ import asynckivy as ak
 
 
 async def some_task(button):
-    # animationの完了を待つ。
+    # animationを開始してその完了を待つ。
     # keyword引数は全て `kivy.animation.Animation` と同じ。
     await ak.animate(button, width=200, t='in_out_quad', d=.5)
 
@@ -151,9 +157,9 @@ class Painter(RelativeLayout):
             max_y = max(y, oy)
             line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
             # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
-
-        # 'on_touch_up'時に行いたい処理はここに書く
-        do_something_on_touch_up()
+        else:
+            # 'on_touch_up'時にこのcode blockが実行される
+            print("'on_touch_up' was fired")
 ```
 
 ### thread
@@ -183,13 +189,12 @@ thread内で起きた例外(BaseExceptionは除く)は呼び出し元に運ば�
 
 ```python
 import requests
-from requests.exceptions import Timeout
 import asynckivy as ak
 
 async def some_task():
     try:
         r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
-    except Timeout:
+    except requests.Timeout:
         print("制限時間内に応答せず")
     else:
         print('通信成功')
