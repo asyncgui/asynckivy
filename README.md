@@ -4,7 +4,7 @@
 [日本語doc](README_jp.md)  
 
 `asynckivy` is an async library that saves you from ugly callback-based code,
-just like other async libraries do.
+like other async libraries do.
 Let's say you want to do:
 
 1. `print('A')`
@@ -59,10 +59,10 @@ If you use this module, it's recommended to pin the minor version, because if
 it changed, it usually means some breaking changes occurred.
 
 ```text
-# poetry
+# example of pinning the minor version using poetry
 asynckivy@~0.5
 
-# pip
+# example of pinning the minor version using pip
 asynckivy>=0.5,<0.6
 ```
 
