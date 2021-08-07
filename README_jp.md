@@ -99,6 +99,17 @@ async def some_task(button):
         ak.sleep(5),
     )
 
+    # buttonが押され なおかつ (5秒経つ か 'other_async_func'が完了する) まで待つ
+    tasks = await ak.and_(
+        ak.event(button, 'on_press'),
+        ak.or_(
+            ak.sleep(5),
+            other_async_func(),
+        ),
+    )
+    child_tasks = tasks[1].result
+    print("5秒経ちました" if child_tasks[0].done else "other_async_funcが完了しました")
+
 ak.start(some_task(some_button))
 ```
 
@@ -241,4 +252,4 @@ ak.start_soon(coro_or_task)
 - CPython 3.8 + Kivy 2.0.0
 - CPython 3.9 + Kivy 2.0.0
 
-[sc]:https://ja.wikipedia.org/wiki/%E6%A7%8B%E9%80%A0%E5%8C%96%E3%81%95%E3%82%8C%E3%81%9F%E4%B8%A6%E8%A1%8C%E6%80%A7
+[sc]:https://qiita.com/gotta_dive_into_python/items/6feb3224a5fa572f1e19

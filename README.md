@@ -101,6 +101,18 @@ async def some_task(button):
         ak.sleep(5),
     )
 
+    # nest as you want.
+    # wait for a button to be pressed AND (5sec OR 'other_async_func' to complete)
+    tasks = await ak.and_(
+        ak.event(button, 'on_press'),
+        ak.or_(
+            ak.sleep(5),
+            other_async_func(),
+        ),
+    )
+    child_tasks = tasks[1].result
+    print("5sec passed" if child_tasks[0].done else "other_async_func has completed")
+
 ak.start(some_task(some_button))
 ```
 
@@ -234,14 +246,13 @@ ak.start_soon(coro_or_task)
 
 ## Structured Concurrency
 
-Both `asynckivy.and_()` and `asynckivy.or_()` follow the concept of "structured concurrency".
-What does that mean?
-They promise two things:
+Both `asynckivy.and_()` and `asynckivy.or_()` follow the concept of "structured concurrency",
+and they guarantee two things:
 
 * The tasks passed into them never outlive them.
 * Exceptions occured in the tasks are propagated to the parent task.
 
-Read [this post][njs_sc] if you want to know more about "structured concurrency".
+Read [this post][njs_sc] if you want to know more about it.
 
 ## Test Environment
 
