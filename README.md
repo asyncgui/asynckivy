@@ -4,7 +4,7 @@
 [日本語doc](README_jp.md)  
 
 `asynckivy` is an async library that saves you from ugly callback-based code,
-just like other async libraries do.
+like other async libraries do.
 Let's say you want to do:
 
 1. `print('A')`
@@ -58,6 +58,14 @@ pip install asynckivy
 If you use this module, it's recommended to pin the minor version, because if
 it changed, it usually means some breaking changes occurred.
 
+```text
+# example of pinning the minor version using poetry
+asynckivy@~0.5
+
+# example of pinning the minor version using pip
+asynckivy>=0.5,<0.6
+```
+
 ## Usage
 
 ```python
@@ -92,6 +100,18 @@ async def some_task(button):
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
+
+    # nest as you want.
+    # wait for a button to be pressed AND (5sec OR 'other_async_func' to complete)
+    tasks = await ak.and_(
+        ak.event(button, 'on_press'),
+        ak.or_(
+            ak.sleep(5),
+            other_async_func(),
+        ),
+    )
+    child_tasks = tasks[1].result
+    print("5sec passed" if child_tasks[0].done else "other_async_func has completed")
 
 ak.start(some_task(some_button))
 ```
@@ -147,9 +167,8 @@ class Painter(RelativeLayout):
             max_y = max(y, oy)
             line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
             # await ak.sleep(1)  # Do not await anything during the iteration
-
-        # If you want to do something when 'on_touch_up' is fired, do it here.
-        do_something_on_touch_up()
+        else:
+            print("'on_touch_up' was fired")
 ```
 
 ### threading
@@ -179,13 +198,12 @@ so you can handle them like you do in synchronous code:
 
 ```python
 import requests
-from requests.exceptions import Timeout
 import asynckivy as ak
 
 async def some_task():
     try:
         r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
-    except Timeout:
+    except requests.Timeout:
         print("TIMEOUT!")
     else:
         print('GOT A RESPONSE')
@@ -228,14 +246,13 @@ ak.start_soon(coro_or_task)
 
 ## Structured Concurrency
 
-Both `asynckivy.and_()` and `asynckivy.or_()` follow the concept of "structured concurrency".
-What does that mean?
-They promise two things:
+Both `asynckivy.and_()` and `asynckivy.or_()` follow the concept of "structured concurrency",
+and they guarantee two things:
 
 * The tasks passed into them never outlive them.
 * Exceptions occured in the tasks are propagated to the parent task.
 
-Read [this post][njs_sc] if you want to know more about "structured concurrency".
+Read [this post][njs_sc] if you want to know more about it.
 
 ## Test Environment
 

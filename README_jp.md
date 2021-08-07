@@ -8,7 +8,7 @@
 
 1. `A`を出力
 1. 一秒待機
-1. `B`を出力して
+1. `B`を出力
 1. buttonが押されるまで待機
 1. `C`を出力
 
@@ -52,11 +52,17 @@ async def what_you_want_to_do(button):
 pip install asynckivy
 ```
 
-## このmoduleを使う際の注意点
+## minor versionまでを固定して
 
-このmoduleのminor versionが変わった時は何らかの互換性の無い変更が加えられた可能性が
-高いので、使う際はminor versionを固定してください。
-少なくともmajor versionが0の間はminor versionが互換性の目安となっています。
+このmoduleのminor versionが変わった時は何らかの互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
+
+```text
+# poetryにてminor versionまでを0.5に固定する例
+asynckivy@~0.5
+
+# pipにてminor versionまでを0.5に固定する例
+asynckivy>=0.5,<0.6
+```
 
 ## 使い方
 
@@ -93,6 +99,17 @@ async def some_task(button):
         ak.sleep(5),
     )
 
+    # buttonが押され なおかつ (5秒経つ か 'other_async_func'が完了する) まで待つ
+    tasks = await ak.and_(
+        ak.event(button, 'on_press'),
+        ak.or_(
+            ak.sleep(5),
+            other_async_func(),
+        ),
+    )
+    child_tasks = tasks[1].result
+    print("5秒経ちました" if child_tasks[0].done else "other_async_funcが完了しました")
+
 ak.start(some_task(some_button))
 ```
 
@@ -105,7 +122,7 @@ import asynckivy as ak
 
 
 async def some_task(button):
-    # animationの完了を待つ。
+    # animationを開始してその完了を待つ。
     # keyword引数は全て `kivy.animation.Animation` と同じ。
     await ak.animate(button, width=200, t='in_out_quad', d=.5)
 
@@ -151,9 +168,9 @@ class Painter(RelativeLayout):
             max_y = max(y, oy)
             line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
             # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
-
-        # 'on_touch_up'時に行いたい処理はここに書く
-        do_something_on_touch_up()
+        else:
+            # 'on_touch_up'時にこのcode blockが実行される
+            print("'on_touch_up' was fired")
 ```
 
 ### thread
@@ -183,13 +200,12 @@ thread内で起きた例外(BaseExceptionは除く)は呼び出し元に運ば�
 
 ```python
 import requests
-from requests.exceptions import Timeout
 import asynckivy as ak
 
 async def some_task():
     try:
         r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
-    except Timeout:
+    except requests.Timeout:
         print("制限時間内に応答せず")
     else:
         print('通信成功')
@@ -236,4 +252,4 @@ ak.start_soon(coro_or_task)
 - CPython 3.8 + Kivy 2.0.0
 - CPython 3.9 + Kivy 2.0.0
 
-[sc]:https://ja.wikipedia.org/wiki/%E6%A7%8B%E9%80%A0%E5%8C%96%E3%81%95%E3%82%8C%E3%81%9F%E4%B8%A6%E8%A1%8C%E6%80%A7
+[sc]:https://qiita.com/gotta_dive_into_python/items/6feb3224a5fa572f1e19
