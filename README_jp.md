@@ -86,7 +86,7 @@ async def some_task(button):
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
         print(f'button.x の現在の値は {x} です')
 
-    # buttonが押されるか5秒経つまで待つ
+    # buttonが押される か 5秒経つまで待つ
     tasks = await ak.or_(
         ak.event(button, 'on_press'),
         ak.sleep(5),
@@ -113,7 +113,7 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
-`and_`と`or_`は[構造化][sc]されているため上のcodeの中の`ak.event(...)`と`ak.sleep(...)`は`and_`と`or_`より長生きする事は絶対に無い(もしあれば不具合)。
+`and_`と`or_`は[構造化][sc]されている。
 
 ### animation関連
 

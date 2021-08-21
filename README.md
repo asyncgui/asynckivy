@@ -56,7 +56,7 @@ pip install asynckivy
 ## Pin the minor version
 
 If you use this module, it's recommended to pin the minor version, because if
-it changed, it usually means some breaking changes occurred.
+it changed, it usually means some *important* breaking changes occurred.
 
 ```text
 # example of pinning the minor version using poetry
@@ -123,11 +123,11 @@ import asynckivy as ak
 
 async def some_task(widget):
     # start an animation and wait for the completion.
-    # the keyword-arguments are the same as kivy.animation.Animation's.
+    # keyword-arguments are the same as kivy.animation.Animation's.
     await ak.animate(widget, width=200, t='in_out_quad', d=.5)
 
-    # interpolate between the values 0 and 200.
-    # the keyword-arguments are the same as kivy.animation.Animation's.
+    # interpolate between the values 0 and 200 in an asynchronous manner.
+    # keyword-arguments are the same as kivy.animation.Animation's.
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
         # await ak.sleep(1)  # Do not await anything during the iteration
@@ -191,8 +191,8 @@ async def some_task():
     print("return value:", r)
 ```
 
-Exceptions(not BaseExceptions) are propagated to the caller,
-so you can handle them like you do in synchronous code:
+Exceptions(not BaseExceptions) are propagated to the caller
+so you can catch them like you do in synchronous code:
 
 ```python
 import requests
