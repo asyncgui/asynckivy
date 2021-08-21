@@ -34,18 +34,17 @@ class Painter(RelativeLayout):
             line = Line(width=2)
             inst_group.add(line)
             ox, oy = self.to_local(*touch.opos)
-            on_touch_move_was_fired = False
             async for __ in rest_of_touch_moves(
                     self, touch, stop_dispatching=True):
                 # Don't await anything during the iteration
-                on_touch_move_was_fired = True
                 x, y = self.to_local(*touch.pos)
-                min_x = min(x, ox)
-                min_y = min(y, oy)
-                max_x = max(x, ox)
-                max_y = max(y, oy)
-                line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
-            if on_touch_move_was_fired:
+                min_x, max_x = (x, ox) if x < ox else (ox, x)
+                min_y, max_y = (y, oy) if y < oy else (oy, y)
+                line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
+            x, y = self.to_local(*touch.pos)
+            if x == ox and y == oy:
+                self.canvas.remove(inst_group)
+            else:
                 inst_group.add(Color(*get_random_color(alpha=.3)))
                 inst_group.add(
                     Rectangle(
@@ -53,8 +52,6 @@ class Painter(RelativeLayout):
                         size=(max_x - min_x, max_y - min_y, ),
                     )
                 )
-            else:
-                self.canvas.remove(inst_group)
 
 
 if __name__ == "__main__":
