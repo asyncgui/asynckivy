@@ -73,7 +73,10 @@ async def some_task(button):
     # 1秒待つ
     dt = await ak.sleep(1)
     print(f'{dt}秒経ちました')
-    
+
+    # 2frame 待つ
+    await ak.n_frames(2)
+
     # buttonが押されるまで待つ
     await ak.event(button, 'on_press')
 

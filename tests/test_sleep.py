@@ -60,3 +60,30 @@ def test_create_sleep():
     time.sleep(.5)
     Clock.tick()
     assert task_state == 'C'
+
+
+def test_n_frames():
+    from kivy.clock import Clock
+    import asynckivy as ak
+
+    task = ak.start(ak.n_frames(3))
+    Clock.tick()
+    assert not task.done
+    Clock.tick()
+    assert not task.done
+    Clock.tick()
+    assert task.done
+
+
+def test_n_frames_zero():
+    import asynckivy as ak
+
+    task = ak.start(ak.n_frames(0))
+    assert task.done
+
+
+def test_n_frames_negative_number():
+    import asynckivy as ak
+
+    task = ak.start(ak.n_frames(-2))
+    assert task.done
