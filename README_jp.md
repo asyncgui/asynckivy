@@ -160,14 +160,11 @@ class Painter(RelativeLayout):
         ox, oy = self.to_local(*touch.opos)
         async for __ in ak.rest_of_touch_moves(self, touch):
             # 'on_touch_move'の度にこのloopが繰り返される。
-            # 注意点としてこのloop内では絶対にawaitを使わないこと。
+            # 注意点としてこの繰り返し中は絶対にawaitを使わないこと。
             x, y = self.to_local(*touch.pos)
-            min_x = min(x, ox)
-            min_y = min(y, oy)
-            max_x = max(x, ox)
-            max_y = max(y, oy)
-            line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
-            # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
+            min_x, max_x = (x, ox) if x < ox else (ox, x)
+            min_y, max_y = (y, oy) if y < oy else (oy, y)
+            line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
         else:
             # 'on_touch_up'時にこのcode blockが実行される
             print("'on_touch_up' was fired")

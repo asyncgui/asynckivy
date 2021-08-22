@@ -161,11 +161,9 @@ class Painter(RelativeLayout):
         async for __ in ak.rest_of_touch_moves(self, touch):
             # This part is iterated everytime 'on_touch_move' is fired.
             x, y = self.to_local(*touch.pos)
-            min_x = min(x, ox)
-            min_y = min(y, oy)
-            max_x = max(x, ox)
-            max_y = max(y, oy)
-            line.rectangle = [min_x, min_y, max_x - min_x, max_y - min_y]
+            min_x, max_x = (x, ox) if x < ox else (ox, x)
+            min_y, max_y = (y, oy) if y < oy else (oy, y)
+            line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
             # await ak.sleep(1)  # Do not await anything during the iteration
         else:
             print("'on_touch_up' was fired")
