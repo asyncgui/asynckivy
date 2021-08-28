@@ -66,6 +66,8 @@ async def create_sleep(duration):
 
 async def n_frames(n: int):
     '''(experimental)'''
+    if n < 0:
+        raise ValueError("Cannot await negative number of frames")
     sleep_for_1frame = await create_sleep(0)
     for __ in range(n):
         await sleep_for_1frame()

@@ -1,3 +1,5 @@
+import pytest
+
 def test_sleep():
     import time
     from kivy.clock import Clock
@@ -84,6 +86,5 @@ def test_n_frames_zero():
 
 def test_n_frames_negative_number():
     import asynckivy as ak
-
-    task = ak.start(ak.n_frames(-2))
-    assert task.done
+    with pytest.raises(ValueError):
+        ak.start(ak.n_frames(-2))
