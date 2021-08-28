@@ -14,7 +14,7 @@ class TestApp(App):
     def on_start(self):
         async def main_task(label):
             from kivy.utils import get_random_color
-            await ak.sleep(1)
+            await ak.n_frames(4)
             for text in (
                 'Zen of Python',
                 'Beautiful is better than ugly.',

@@ -1,4 +1,4 @@
-__all__ = ('sleep', 'sleep_free', 'create_sleep', )
+__all__ = ('sleep', 'sleep_free', 'create_sleep', 'n_frames', )
 
 import types
 
@@ -62,3 +62,12 @@ async def create_sleep(duration):
     def sleep():
         return (yield clock_event)[0][0]
     return sleep
+
+
+async def n_frames(n: int):
+    '''(experimental)'''
+    if n < 0:
+        raise ValueError("Cannot await negative number of frames")
+    sleep_for_1frame = await create_sleep(0)
+    for __ in range(n):
+        await sleep_for_1frame()
