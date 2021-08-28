@@ -76,9 +76,6 @@ async def some_task(button):
     dt = await ak.sleep(1)
     print(f'{dt} seconds have passed')
 
-    # wait for two frames
-    await ak.n_frames(2)
-
     # wait until a button is pressed
     await ak.event(button, 'on_press')
 
