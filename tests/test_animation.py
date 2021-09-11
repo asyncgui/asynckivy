@@ -37,12 +37,10 @@ class Clock:
         Clock.tick()
 
 
-@pytest.mark.parametrize('force_final_value', (True, False, ))
-def test_cancel(approx, force_final_value):
+def test_cancel(approx):
     import asynckivy as ak
     target = Target()
-    coro = ak.animate(
-        target, num=100, d=.4, force_final_value=force_final_value)
+    coro = ak.animate(target, num=100, d=.4,)
     clock = Clock()
     ak.raw_start(coro)
 
@@ -51,10 +49,7 @@ def test_cancel(approx, force_final_value):
     clock.sleep(.1)
     assert target.num == approx(50)
     coro.close()  # cancel
-    if force_final_value:
-        assert target.num == approx(100)
-    else:
-        assert target.num == approx(50)
+    assert target.num == approx(50)
 
 
 def test_list(approx):

@@ -10,7 +10,7 @@ async def animate(target, **kwargs):  # noqa:C901
     animate
     =======
 
-    An asynchronous version of ``kivy.animation.Animation``.
+    An async version of ``kivy.animation.Animation``.
 
     Usage
     -----
@@ -29,59 +29,44 @@ async def animate(target, **kwargs):  # noqa:C901
     Difference from kivy.animation.Animation
     ----------------------------------------
 
-    One notable difference is ``force_final_value``, which ensures the
-    final-value of an animation to be applied even when the animation is
-    cancelled.
+    ``kivy.animation.Animation`` requires the object you wanna animate to
+    have an attribute named ``uid`` but ``asynckivy`` does not. When you have
+    an object like this:
 
     .. code-block:: python
 
-       import asynckivy as ak
+       class MyClass: pass
+       obj = MyClass()
+       obj.value = 100
 
-       widget.x = 0
-       task = ak.start(ak.animate(widget, x=100, force_final_value=True))
-       task.cancel()  # cancels immediately
-       assert widget.x == 100  # but the final-value is applied
-
-    I believe this is useful when you want an animation to be skippable.
-
-    .. code-block:: python
-
-       import asynckivy as ak
-
-       # animation that can be skipped by touching the screen
-       await ak.or_(
-           ak.animate(widget, x=100, force_final_value=True),
-           ak.event(root_widget, 'on_touch_down', stop_dispatching=True)
-       )
-
-    .. warning::
-
-        ``force_final_value`` might be removed in the future.
+    you already can animate it by ``asynckivy.animate(obj, value=200)``.
+    Therefore, ``asynckivy.animate()`` is more broadly applicable than
+    ``kivy.animation.Animation``.
 
     Sequence and Parallel
     ---------------------
 
     Kivy has two compound animations: ``Sequence`` and ``Parallel``.
-    You can achive the same functionality in asynckivy as follows.
+    You can achieve the same functionality in asynckivy as follows:
 
     .. code-block:: python
 
-       def kivy_way_of_doing_sequential_animation(widget):
+       def kivy_Sequence(widget):
            anim = Animation(x=100) + Animation(x=0)
            anim.repeat = True
            anim.start(widget)
 
-       async def asynckivy_way_of_doing_sequential_animation(widget):
+       async def asynckivy_Sequence(widget):
            while True:
                await ak.animate(widget, x=100)
                await ak.animate(widget, x=0)
 
-       def kivy_way_of_doing_parallel_animation(widget):
+       def kivy_Parallel(widget):
            anim = Animation(x=100) & Animation(y=100, d=2)
            anim.start(widget)
            anim.bind(on_complete=lambda *args: print("completed"))
 
-       async def asynckivy_way_of_doing_parallel_animation(widget):
+       async def asynckivy_Parallel(widget):
            await ak.and_(
                ak.animate(widget, x=100),
                ak.animate(widget, y=100, d=2),
@@ -92,7 +77,6 @@ async def animate(target, **kwargs):  # noqa:C901
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
-    force_final_value = kwargs.pop('force_final_value', False)
     animated_properties = kwargs
     if not duration:
         for key, value in animated_properties.items():
@@ -122,11 +106,6 @@ async def animate(target, **kwargs):  # noqa:C901
         }
         clock_event = Clock.schedule_interval(partial(_update, ctx), step)
         await sleep_forever()
-    except GeneratorExit:
-        if force_final_value:
-            for key, values in properties.items():
-                setattr(target, key, values[1])
-        raise
     finally:
         clock_event.cancel()
 
