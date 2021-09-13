@@ -34,6 +34,8 @@ async def interpolate(start, end, **kwargs):
     **1.2 sec** 100
     =========== =====
 
+    Keyword-arguments are the same as ``kivy.animation.Animation``'s.
+
     .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate  # noqa: E501
     '''
     from asyncgui import get_step_coro
@@ -96,14 +98,14 @@ def _get_current_value() -> int:
 
 @asynccontextmanager
 async def fade_transition(*widgets, **kwargs):
-    '''Fade out/in given widgets.
+    '''Fade-out/in the given widgets.
 
-    Available keyword-only arguments are 'd', 'duration', 's', and 'step'.
+    Available keyword-arguments are 'd', 'duration', 's' and 'step'.
     '''
     half_d = kwargs.pop('d', kwargs.pop('duration', 1.)) / 2.
     s = kwargs.pop('s', kwargs.pop('step', 0))
     if kwargs:
-        raise ValueError("surplus keyword-only arguments were given:", kwargs)
+        raise ValueError("surplus keyword-arguments were given:", kwargs)
     original_opacities = tuple(w.opacity for w in widgets)
     try:
         async for v in interpolate(1.0, 0.0, d=half_d, s=s):

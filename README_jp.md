@@ -54,7 +54,7 @@ pip install asynckivy
 
 ## minor versionまでを固定して
 
-このmoduleのminor versionが変わった時は何らかの互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
+このmoduleのminor versionが変わった時は何らかの重要な互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
 
 ```text
 # poetryにてminor versionまでを0.5に固定する例
@@ -234,13 +234,40 @@ e.set()
 # B2
 ```
 
+Trioやasyncioの物とは違って``Event.set()``が呼ばれた時それを待っているtaskは即座に再開される。
+なので上の例で``e.set()``は``A2``と``B2``が出力された後に処理が戻る。
+
+### 中断への対処
+
+``asynckivy.start()``が返した``Task``の``.cancel()``を呼ぶ事で処理を中断できる。
+
+```python
+task = asynckivy.start(async_func())
+...
+task.cancel()
+```
+
+その際`async_func()`の中で`GeneratorExit`例外が起きるので以下のように書けば中断に備えたコードになる。
+
+```python
+async def async_func():
+    try:
+        ...
+    except GeneratorExit:
+        # .cancel() による明示的な中断が行われた時にだけ行いたい処理をここに書くと良い。
+        ...
+        raise  # 例外を揉み消してはならない!!
+    finally:
+        # ここで何か後始末をすると良い
+```
+
 ### その他
 
 ```python
 import asynckivy as ak
 
-# 次のframeでcoroutine/Taskが始まるように予約
-ak.start_soon(coro_or_task)
+# 次のframeでawaitable/Taskが始まるように予約
+ak.start_soon(awaitable_or_task)
 ```
 
 ## Test環境

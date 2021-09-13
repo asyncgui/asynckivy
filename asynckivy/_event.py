@@ -22,7 +22,7 @@ def event(ed, name, *, filter=None, stop_dispatching=False):
        import asynckivy as ak
 
        async def async_fn(widget):
-           # wait for a widget to fire a 'on_touch_down'
+           # wait for a widget to fire an 'on_touch_down' event.
            __, touch = await ak.event(widget, 'on_touch_down')
            if widget.collide_point(*touch.opos):
                print('Someone touched me.')
@@ -46,11 +46,10 @@ def event(ed, name, *, filter=None, stop_dispatching=False):
 
            # wait for 'widget.x' to become greater than 100
            if widget.x <= 100:
-               await ak.event(
-                   widget, 'x',
-                   filter=lambda widget, x: x > 100)
+               await ak.event(widget, 'x', filter=lambda __, x: x > 100)
 
-    ``stop_dispatching`` is useful when you want to stop event-dispatching.
+    ``stop_dispatching`` is useful when you want to stop event-dispatching
+    there.
 
     .. code-block:: python
 
@@ -58,7 +57,7 @@ def event(ed, name, *, filter=None, stop_dispatching=False):
 
        async def async_fn(label):
            # wait for a label to get touched inside of it, and stop the
-           # event-dispatching when it happened.
+           # event-dispatching when that happened.
            await ak.event(
                label, 'on_touch_down', stop_dispatching=True,
                filter=lambda label, touch: label.collide_point(*touch.opos),

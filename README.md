@@ -126,7 +126,7 @@ async def some_task(widget):
     # keyword-arguments are the same as kivy.animation.Animation's.
     await ak.animate(widget, width=200, t='in_out_quad', d=.5)
 
-    # interpolate between the values 0 and 200 in an asynchronous manner.
+    # interpolate between the values 0 and 200 in an async-manner.
     # keyword-arguments are the same as kivy.animation.Animation's.
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
@@ -187,6 +187,7 @@ async def some_task():
     print("return value:", r)
 
     # run a function inside a ThreadPoolExecuter, and wait for the completion
+    # (ProcessPoolExecuter is not supported)
     r = await ak.run_in_executer(thread_blocking_operation, executer)
     print("return value:", r)
 ```
@@ -233,13 +234,42 @@ e.set()
 # B2
 ```
 
+Unlike Trio's and asyncio's, when you call ``Event.set()``,
+the tasks waiting for it to happen will *immediately* be resumed.
+As a result, ``e.set()`` will return *after* ``A2`` and ``B2`` are printed.
+
+### dealing with cancellations
+
+``asynckivy.start()`` returns a ``Task``,
+which can be used to cancel the execution.
+
+```python
+task = asynckivy.start(async_func())
+...
+task.cancel()
+```
+
+When `.cancel()` is called, `GeneratorExit` will occur inside the awaitable,
+which means you can prepare for cancellations as follows:
+
+```python
+async def async_func():
+    try:
+        ...
+    except GeneratorExit:
+        print('cancelled')
+        raise  # You must re-raise !!
+    finally:
+        # do some resource clean-up here
+```
+
 ### misc
 
 ```python
 import asynckivy as ak
 
-# schedule a coroutine/Task to start after the next frame
-ak.start_soon(coro_or_task)
+# schedule a awaitable/Task to start after the next frame
+ak.start_soon(awaitable_or_task)
 ```
 
 ## Structured Concurrency
@@ -247,7 +277,7 @@ ak.start_soon(coro_or_task)
 Both `asynckivy.and_()` and `asynckivy.or_()` follow the concept of "structured concurrency",
 and they guarantee two things:
 
-* The tasks passed into them never outlive them.
+* The tasks/awaitables passed into them never outlive them.
 * Exceptions occured in the tasks are propagated to the parent task.
 
 Read [this post][njs_sc] if you want to know more about it.
@@ -260,11 +290,12 @@ Read [this post][njs_sc] if you want to know more about it.
 
 ## Why this does exist
 
-Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio], from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing]. Actually, I started developing this one just for learning how async/await works so it *was* initially `reinventing the wheel`.
+Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio] from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing].
+Actually, I started developing this one just for learning how async/await works so it *was* initially "reinventing the wheel".
 
 But after playing with Trio and Kivy for a while, I noticed that Trio is not suitable for the situation where fast reactions are required e.g. touch events. The same is true of asyncio. You can confirm it by running `examples/misc/why_xxx_is_not_suitable_for_handling_touch_events.py`, and masshing a mouse button. You'll see sometimes `up` is not paired with `down`. You'll see the coordinates aren't relative to the `RelativeLayout` even though the `target` belongs to it.
 
-The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks that are waiting for the `Event` to be set. They just schedule the tasks to resume.
+The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks waiting for the `Event` to be set. They just schedule the tasks to resume.
 Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
 
 Trio and asyncio are async **I/O** libraries after all. They probably don't need the functionality that immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
