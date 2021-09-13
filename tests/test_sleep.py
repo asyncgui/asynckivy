@@ -23,6 +23,8 @@ def test_sleep_free():
     from kivy.clock import Clock
     import asynckivy as ak
 
+    if not hasattr(Clock, 'create_trigger_free'):
+        pytest.skip("free-type Clock is not avaiable")
     Clock.tick()
     task = ak.start(ak.sleep_free(.1))
     assert not task.done
