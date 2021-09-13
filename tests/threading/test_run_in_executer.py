@@ -4,8 +4,7 @@ import time
 import threading
 
 
-def test_thread_id():
-    from kivy.clock import Clock
+def test_thread_id(kivy_clock):
     import asynckivy as ak
 
     async def job(executer):
@@ -19,12 +18,11 @@ def test_thread_id():
         task = ak.start(job(executer))
         time.sleep(.01)
         assert not task.done
-        Clock.tick()
+        kivy_clock.tick()
         assert task.done
 
 
-def test_propagate_exception():
-    from kivy.clock import Clock
+def test_propagate_exception(kivy_clock):
     import asynckivy as ak
 
     async def job(executer):
@@ -35,12 +33,11 @@ def test_propagate_exception():
         task = ak.start(job(executer))
         time.sleep(.01)
         assert not task.done
-        Clock.tick()
+        kivy_clock.tick()
         assert task.done
 
 
-def test_no_exception():
-    from kivy.clock import Clock
+def test_no_exception(kivy_clock):
     import asynckivy as ak
 
     async def job(executer):
@@ -50,13 +47,12 @@ def test_no_exception():
         task = ak.start(job(executer))
         time.sleep(.01)
         assert not task.done
-        Clock.tick()
+        kivy_clock.tick()
         assert task.done
 
 
-def test_cancel_before_getting_excuted():
+def test_cancel_before_getting_excuted(kivy_clock):
     import time
-    from kivy.clock import Clock
     import asynckivy as ak
 
     flag = ak.Event()
@@ -70,7 +66,7 @@ def test_cancel_before_getting_excuted():
         time.sleep(.02)
         assert not task.done
         assert not flag.is_set()
-        Clock.tick()
+        kivy_clock.tick()
         task.cancel()
         assert task.cancelled
         assert not flag.is_set()

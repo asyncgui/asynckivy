@@ -4,8 +4,7 @@ import time
 
 
 @pytest.mark.parametrize('daemon', (True, False))
-def test_thread_id(daemon):
-    from kivy.clock import Clock
+def test_thread_id(daemon, kivy_clock):
     import asynckivy as ak
 
     async def job():
@@ -17,13 +16,12 @@ def test_thread_id(daemon):
     task = ak.start(job())
     time.sleep(.01)
     assert not task.done
-    Clock.tick()
+    kivy_clock.tick()
     assert task.done
 
 
 @pytest.mark.parametrize('daemon', (True, False))
-def test_propagate_exception(daemon):
-    from kivy.clock import Clock
+def test_propagate_exception(daemon, kivy_clock):
     import asynckivy as ak
 
     async def job():
@@ -33,13 +31,12 @@ def test_propagate_exception(daemon):
     task = ak.start(job())
     time.sleep(.01)
     assert not task.done
-    Clock.tick()
+    kivy_clock.tick()
     assert task.done
 
 
 @pytest.mark.parametrize('daemon', (True, False))
-def test_no_exception(daemon):
-    from kivy.clock import Clock
+def test_no_exception(daemon, kivy_clock):
     import asynckivy as ak
 
     async def job():
@@ -48,5 +45,5 @@ def test_no_exception(daemon):
     task = ak.start(job())
     time.sleep(.01)
     assert not task.done
-    Clock.tick()
+    kivy_clock.tick()
     assert task.done

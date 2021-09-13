@@ -3,6 +3,7 @@ __all__ = ('sleep', 'sleep_free', 'create_sleep', 'n_frames', )
 import types
 
 from kivy.clock import Clock
+# NOTE: This hinders the 'kivy_clock'-fixture
 create_trigger = Clock.create_trigger
 create_trigger_free = getattr(Clock, 'create_trigger_free', None)
 
