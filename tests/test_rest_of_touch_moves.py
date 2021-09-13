@@ -22,7 +22,6 @@ def touch_cls():
 
 @pytest.mark.parametrize('n_touch_moves', [0, 1, 10])
 def test_a_number_of_on_touch_moves_fired(touch_cls, n_touch_moves):
-    from time import perf_counter
     from kivy.uix.widget import Widget
     import asynckivy as ak
 

@@ -1,35 +1,27 @@
 import pytest
 
 
-@pytest.fixture(autouse=True)
-def unlimit_maxfps(monkeypatch):
-    from kivy.clock import Clock
-    monkeypatch.setattr(Clock, '_max_fps', 0)
-
-
 @pytest.fixture(scope='module')
 def approx():
     from functools import partial
     return partial(pytest.approx, abs=2)
 
 
-def test_complete_iteration(approx):
-    from .test_animation import Clock
+def test_complete_iteration(approx, ready_to_sleep):
     import asynckivy as ak
 
     async def job():
         l = [v async for v in ak.interpolate(start=0, end=100, step=.3)]
         assert l == approx([0, 30, 60, 90, 100])
 
-    clock = Clock()
+    sleep = ready_to_sleep()
     task = ak.start(job())
     for __ in range(130):
-        clock.sleep(.01)
+        sleep(.01)
     assert task.done
 
 
-def test_break_during_iteration(approx):
-    from .test_animation import Clock
+def test_break_during_iteration(approx, ready_to_sleep):
     import asynckivy as ak
 
     async def job():
@@ -41,10 +33,10 @@ def test_break_during_iteration(approx):
         assert l == approx([0, 30, 60, ])
         await ak.sleep_forever()
 
-    clock = Clock()
+    sleep = ready_to_sleep()
     task = ak.start(job())
     for __ in range(130):
-        clock.sleep(.01)
+        sleep(.01)
     assert not task.done
     with pytest.raises(StopIteration):
         task.root_coro.send(None)
