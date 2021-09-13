@@ -15,6 +15,7 @@ def _start(dt):
         start(task)
 
 
+# NOTE: This hinders the 'kivy_clock'-fixture
 _trigger_start = Clock.create_trigger(_start, 0)
 
 
