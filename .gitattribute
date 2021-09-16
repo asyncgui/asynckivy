@@ -1,0 +1,20 @@
+*.apk binary
+
+*.ogg binary
+*.mp3 binary
+*.wav binary
+
+*.png binary
+*.jpg binary
+*.gif binary
+
+*.mp4 binary
+*.avi binary
+*.webm binary
+
+*.ttf binary
+*.ttc binary
+*.otf binary
+
+*.zip binary
+*.7z binary
