@@ -49,7 +49,7 @@ class SpringyButton(Label):
     def on_press(self):
         pass
 
-    def on_release(self):
+    def on_release(self, inside: bool):
         pass
 
     def on_kv_post(self, *args, **kwargs):
@@ -58,9 +58,9 @@ class SpringyButton(Label):
         asynckivy.start(self._async_main())
 
     async def _async_main(self):
-        from asynckivy import animate, rest_of_touch_moves, event
+        from asynckivy import animate, rest_of_touch_moves, event, MotionEventAlreadyEndedError
 
-        def will_accept_touch(w, t) -> bool:
+        def accepts_touch(w, t) -> bool:
             return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
 
         # 'itertools.cycle()' is no use here because it cannot react to
@@ -73,27 +73,34 @@ class SpringyButton(Label):
 
         def change_border_color(dt):
             self._border_color = next(color_iter)
-        blink_ev = Clock.create_trigger(change_border_color, .1, interval=True)
 
-        while True:
-            __, touch = await event(
-                self, 'on_touch_down', filter=will_accept_touch,
-                stop_dispatching=True)
-            self.dispatch('on_press')
-            blink_ev()
-            async for __ in rest_of_touch_moves(
-                    self, touch, stop_dispatching=True):
-                if self.collide_point(*touch.pos):
-                    blink_ev()
-                else:
-                    blink_ev.cancel()
-                    self._border_color = self.border_color1
-            if self.collide_point(*touch.pos):
-                await animate(self, _scaling=.9, d=.05)
-                await animate(self, _scaling=1, d=.05)
-                self.dispatch('on_release')
+        blink_ev = Clock.create_trigger(change_border_color, .1, interval=True)
+        collide_point = self.collide_point
+        dispatch = self.dispatch
+
+        try:
+            while True:
+                __, touch = await event(self, 'on_touch_down', filter=accepts_touch, stop_dispatching=True)
+                dispatch('on_press')
+                blink_ev()
+                try:
+                    async for __ in rest_of_touch_moves(self, touch, stop_dispatching=True):
+                        if collide_point(*touch.pos):
+                            blink_ev()
+                        else:
+                            blink_ev.cancel()
+                            self._border_color = self.border_color1
+                except MotionEventAlreadyEndedError:
+                    continue
+                inside = collide_point(*touch.pos)
+                if inside:
+                    await animate(self, _scaling=.9, d=.05)
+                    await animate(self, _scaling=1, d=.05)
+                dispatch('on_release', inside)
+                blink_ev.cancel()
+                self._border_color = self.border_color1
+        finally:
             blink_ev.cancel()
-            self._border_color = self.border_color1
 
 
 KV_CODE = '''
@@ -106,14 +113,14 @@ BoxLayout:
         border_color2: .3, .4, 1, 1
         background_color: .6, .3, .6, 1
         on_press: print('blue: on_press')
-        on_release: print('blue: on_release')
+        on_release: print('blue: on_release', '' if args[1] else '(outside)')
     RelativeLayout:
         SpringyButton:
             text: 'Kivy'
             size_hint: .8, .3
             pos_hint: {'center_x': .5, 'center_y': .7, }
             on_press: print('orange: on_press')
-            on_release: print('orange: on_release')
+            on_release: print('orange: on_release', '' if args[1] else '(outside)')
 '''
 
 
