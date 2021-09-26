@@ -10,4 +10,4 @@ test_free_only_clock:
 
 style:
 	$(FLAKE8) --count --select=E9,F63,F7,F82 --show-source --statistics ./tests ./asynckivy ./examples
-	$(FLAKE8) --count --exit-zero --max-complexity=10 --max-line-length=80 --statistics ./asynckivy ./examples
+	$(FLAKE8) --count --exit-zero --max-complexity=10 --max-line-length=119 --statistics ./asynckivy ./examples
