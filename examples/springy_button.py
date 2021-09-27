@@ -91,6 +91,9 @@ class SpringyButton(Label):
                             blink_ev.cancel()
                             self._border_color = self.border_color1
                 except MotionEventAlreadyEndedError:
+                    dispatch('on_release', collide_point(*touch.pos))
+                    blink_ev.cancel()
+                    self._border_color = self.border_color1
                     continue
                 inside = collide_point(*touch.pos)
                 if inside:
@@ -101,6 +104,7 @@ class SpringyButton(Label):
                 self._border_color = self.border_color1
         finally:
             blink_ev.cancel()
+            self._border_color = self.border_color1
 
 
 KV_CODE = '''
