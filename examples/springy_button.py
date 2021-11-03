@@ -2,6 +2,9 @@
 Springy Button
 ==============
 
+Notable differences from the official Button
+--------------------------------------------
+
 * can only handle one touch at a time
 '''
 
@@ -17,6 +20,7 @@ KV_CODE = '''
     outline_width: 4
     outline_color: 0, 0, 0, 1
     font_size: 30
+    _border_color: self.border_color1
     canvas.before:
         PushMatrix:
         Scale:
@@ -33,6 +37,7 @@ KV_CODE = '''
         Rectangle:
             pos: self.x + dp(4), self.y + dp(4)
             size: self.width - dp(8), self.height - dp(8)
+    canvas.after:
         PopMatrix:
 '''
 Builder.load_string(KV_CODE)
@@ -43,8 +48,8 @@ class SpringyButton(Label):
     border_color1 = ColorProperty('#666666')
     border_color2 = ColorProperty('#AAAA33')
     background_color = ColorProperty('#999933')
-    _border_color = ColorProperty('#666666')
-    _scaling = NumericProperty(1)
+    _border_color = ColorProperty(border_color1.defaultvalue)
+    _scaling = NumericProperty(1.)
 
     def on_press(self):
         pass
@@ -58,7 +63,7 @@ class SpringyButton(Label):
         asynckivy.start(self._async_main())
 
     async def _async_main(self):
-        from asynckivy import animate, rest_of_touch_moves, event, MotionEventAlreadyEndedError
+        from asynckivy import animate, rest_of_touch_moves, event, MotionEventAlreadyEndedError, cancel_protection
 
         def accepts_touch(w, t) -> bool:
             return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
@@ -95,8 +100,9 @@ class SpringyButton(Label):
                     self._border_color = self.border_color1
                     continue
                 if collide_point(*touch.pos):
-                    await animate(self, _scaling=.9, d=.05)
-                    await animate(self, _scaling=1, d=.05)
+                    async with cancel_protection():
+                        await animate(self, _scaling=.9, d=.05)
+                        await animate(self, _scaling=1, d=.05)
                     dispatch('on_release')
                 blink_ev.cancel()
                 self._border_color = self.border_color1
