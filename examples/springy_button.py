@@ -49,7 +49,7 @@ class SpringyButton(Label):
     def on_press(self):
         pass
 
-    def on_release(self, inside: bool):
+    def on_release(self):
         pass
 
     def on_kv_post(self, *args, **kwargs):
@@ -91,15 +91,13 @@ class SpringyButton(Label):
                             blink_ev.cancel()
                             self._border_color = self.border_color1
                 except MotionEventAlreadyEndedError:
-                    dispatch('on_release', collide_point(*touch.pos))
                     blink_ev.cancel()
                     self._border_color = self.border_color1
                     continue
-                inside = collide_point(*touch.pos)
-                if inside:
+                if collide_point(*touch.pos):
                     await animate(self, _scaling=.9, d=.05)
                     await animate(self, _scaling=1, d=.05)
-                dispatch('on_release', inside)
+                    dispatch('on_release')
                 blink_ev.cancel()
                 self._border_color = self.border_color1
         finally:
@@ -117,14 +115,14 @@ BoxLayout:
         border_color2: .3, .4, 1, 1
         background_color: .6, .3, .6, 1
         on_press: print('blue: on_press')
-        on_release: print('blue: on_release', '' if args[1] else '(outside)')
+        on_release: print('blue: on_release')
     RelativeLayout:
         SpringyButton:
             text: 'Kivy'
             size_hint: .8, .3
             pos_hint: {'center_x': .5, 'center_y': .7, }
             on_press: print('orange: on_press')
-            on_release: print('orange: on_release', '' if args[1] else '(outside)')
+            on_release: print('orange: on_release')
 '''
 
 
