@@ -63,6 +63,16 @@ class SpringyButton(Label):
         asynckivy.start(self._async_main())
 
     async def _async_main(self):
+        from asynckivy import or_, animate, event, NoChildLeft
+        while True:
+            if not self.disabled:
+                await or_(event(self, 'disabled'), self._watch_touch_events())
+            await animate(self, opacity=.5, d=.2)
+            if self.disabled:
+                await event(self, 'disabled')
+            await animate(self, opacity=1, d=.2)
+
+    async def _watch_touch_events(self):
         from asynckivy import animate, rest_of_touch_moves, event, MotionEventAlreadyEndedError, cancel_protection
 
         def accepts_touch(w, t) -> bool:
@@ -117,6 +127,7 @@ BoxLayout:
     spacing: 40
     SpringyButton:
         text: 'Hello'
+        disabled: not onoff_switch.active
         border_color1: 0, 0, .6, 1
         border_color2: .3, .4, 1, 1
         background_color: .6, .3, .6, 1
@@ -125,10 +136,17 @@ BoxLayout:
     RelativeLayout:
         SpringyButton:
             text: 'Kivy'
+            disabled: not onoff_switch.active
             size_hint: .8, .3
             pos_hint: {'center_x': .5, 'center_y': .7, }
             on_press: print('orange: on_press')
             on_release: print('orange: on_release')
+        Switch:
+            id: onoff_switch
+            active: True
+            size_hint: None, None
+            size: 100, 40
+            pos_hint: {'center_x': .6, 'center_y': .1, }
 '''
 
 
