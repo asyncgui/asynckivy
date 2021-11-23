@@ -6,15 +6,16 @@ Painter
 * can handle multiple touches simultaneously
 '''
 
+from kivy.utils import reify
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.app import runTouchApp
 import asynckivy as ak
 
 
 class Painter(RelativeLayout):
-    def on_kv_post(self, *args, **kwargs):
-        super().on_kv_post(*args, **kwargs)
-        self._ud_key = 'Painter.' + str(self.uid)
+    @reify
+    def _ud_key(self):
+        return 'Painter.' + str(self.uid)
 
     def will_accept_touch(self, touch) -> bool:
         return self.collide_point(*touch.opos) and \

@@ -1,8 +1,6 @@
 '''
 Skippable Animation
 ===================
-
-* The ``force_final_value`` argument is intentionally unused
 '''
 
 from kivy.app import App
