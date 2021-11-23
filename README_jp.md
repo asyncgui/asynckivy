@@ -261,6 +261,10 @@ async def async_func():
         # ここで何か後始末をすると良い
 ```
 
+ただもし明示的な``.cancel()``を呼び出しがcode内に多く現れるようなら、
+それはcodeが正しい構造を採っていない兆しなので修正すべきである。
+多くの場合``Task.cancel()``は`asynckivy.and_()`や`asynckivy.or_()`を用いる事で無くせるのでそうされたし。
+
 ### その他
 
 ```python

@@ -88,14 +88,15 @@ async def some_task(button):
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
         print(f'button.x is now {x}')
 
-    # wait until EITHER a button is pressed OR 5sec passes
+    # wait until EITHER a button is pressed OR 5sec passes.
+    # i.e. wait at most 5 seconds for a button to be pressed
     tasks = await ak.or_(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
-    print("The button was pressed" if tasks[0].done else "5sec passed")
+    print("The button was pressed" if tasks[0].done else "Timeout")
 
-    # wait until BOTH a button is pressed AND 5sec passes"
+    # wait until a button is pressed AND 5sec passes"
     tasks = await ak.and_(
         ak.event(button, 'on_press'),
         ak.sleep(5),
@@ -205,7 +206,7 @@ async def some_task():
     except requests.Timeout:
         print("TIMEOUT!")
     else:
-        print('GOT A RESPONSE')
+        print('RECEIVED:', r)
 ```
 
 ### synchronization primitive
@@ -263,6 +264,10 @@ async def async_func():
         # do some resource clean-up here
 ```
 
+But note that if there are lots of explicit calls to `Task.cancel()` in your code,
+**it's a sign of your code being not well-structured**.
+You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.  
+
 ### misc
 
 ```python
@@ -274,13 +279,11 @@ ak.start_soon(awaitable_or_task)
 
 ## Structured Concurrency
 
-Both `asynckivy.and_()` and `asynckivy.or_()` follow the concept of "structured concurrency",
-and they guarantee two things:
+`asynckivy.and_()` and `asynckivy.or_()` are [structured][njs_sc],
+and thus they guarantee two things:
 
 * The tasks/awaitables passed into them never outlive them.
-* Exceptions occured in the tasks are propagated to the parent task.
-
-Read [this post][njs_sc] if you want to know more about it.
+* Exceptions occured in the tasks/awaitables are propagated to the parent task.
 
 ## Test Environment
 
@@ -288,7 +291,7 @@ Read [this post][njs_sc] if you want to know more about it.
 - CPython 3.8 + Kivy 2.0.0
 - CPython 3.9 + Kivy 2.0.0
 
-## Why this does exist
+## Why this even exists
 
 Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio] from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing].
 Actually, I started developing this one just for learning how async/await works so it *was* initially "reinventing the wheel".
@@ -299,7 +302,7 @@ The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()`
 Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
 
 Trio and asyncio are async **I/O** libraries after all. They probably don't need the functionality that immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
-Their core design may not be suitable for GUI in the first place.
+Their core design might not be suitable for GUI in the first place.
 That's why I'm still developing this `asynckivy` library to this day.
 
 [asyncio]:https://docs.python.org/3/library/asyncio.html
