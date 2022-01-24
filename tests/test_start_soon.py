@@ -17,7 +17,7 @@ def test_normaly():
     assert task2.done
 
 
-def test_schedule_another_during_a_scheduled_one():
+def test_schedule_another_one_during_a_scheduled_one():
     from kivy.clock import Clock
     import asynckivy as ak
     from asynckivy import _start_soon
