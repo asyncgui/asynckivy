@@ -63,7 +63,7 @@ class SpringyButton(Label):
         asynckivy.start(self._async_main())
 
     async def _async_main(self):
-        from asynckivy import or_, animate, event, NoChildLeft
+        from asynckivy import or_, animate, event
         while True:
             if not self.disabled:
                 await or_(event(self, 'disabled'), self._watch_touch_events())
