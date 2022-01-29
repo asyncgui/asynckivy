@@ -52,12 +52,17 @@ def test_cancel():
 
 def test_zero_frames():
     import asynckivy as ak
+    from asynckivy import _n_frames
 
     task = ak.start(ak.n_frames(0))
+    assert _n_frames._waiting == []
     assert task.done
 
 
 def test_negative_number_of_frames():
     import asynckivy as ak
+    from asynckivy import _n_frames
+
     with pytest.raises(ValueError):
         ak.start(ak.n_frames(-2))
+    assert _n_frames._waiting == []
