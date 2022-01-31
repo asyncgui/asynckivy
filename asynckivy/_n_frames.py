@@ -1,4 +1,4 @@
-__all__ = ('n_frames', )
+__all__ = ('n_frames', 'one_frame', )
 
 import types
 from kivy.clock import Clock
@@ -19,8 +19,20 @@ _trigger_resume = Clock.create_trigger(_resume, 0)
 
 
 @types.coroutine
-def _wait_for_a_frame():
-    '''(internal)'''
+def one_frame():
+    '''(experimental)
+    wait for one frame.
+
+    Usage
+    -----
+
+    .. code-block:: python
+
+       import asynckivy as ak
+
+       async def async_fn():
+           await ak.one_frame()
+    '''
     _trigger_resume()
     yield _waiting.append
 
@@ -39,8 +51,8 @@ async def n_frames(n: int):
        async def async_fn():
            await ak.n_frames(2)  # wait for two frames
     '''
-    wait_for_a_frame = _wait_for_a_frame
+    _one_frame = one_frame
     if n < 0:
         raise ValueError("Cannot wait for negative number of frames")
     for __ in range(n):
-        await wait_for_a_frame()
+        await _one_frame()
