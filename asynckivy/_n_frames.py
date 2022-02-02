@@ -51,8 +51,8 @@ async def n_frames(n: int):
        async def async_fn():
            await ak.n_frames(2)  # wait for two frames
     '''
-    _one_frame = one_frame
     if n < 0:
         raise ValueError("Cannot wait for negative number of frames")
+    _one_frame = one_frame
     for __ in range(n):
         await _one_frame()
