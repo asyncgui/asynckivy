@@ -1,3 +1,9 @@
+'''
+notes for maintainers
+---------------------
+
+default引数を使ってLOAD_GLOBALをLAOD_FASTに変えている箇所がありますがコードが読みにくくなる悪手かもしれない。
+'''
 __all__ = ('n_frames', 'one_frame', )
 
 import types
@@ -19,7 +25,7 @@ _trigger_resume = Clock.create_trigger(_resume, 0)
 
 
 @types.coroutine
-def one_frame():
+def one_frame(*, _trigger_resume=_trigger_resume):
     '''(experimental)
     wait for one frame.
 
@@ -37,7 +43,7 @@ def one_frame():
     yield _waiting.append
 
 
-async def n_frames(n: int):
+async def n_frames(n: int, *, _one_frame=one_frame, _range=range):
     '''(experimental)
     wait for the specified number of frames.
 
@@ -53,6 +59,5 @@ async def n_frames(n: int):
     '''
     if n < 0:
         raise ValueError("Cannot wait for negative number of frames")
-    _one_frame = one_frame
-    for __ in range(n):
+    for __ in _range(n):
         await _one_frame()
