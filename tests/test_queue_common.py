@@ -23,7 +23,7 @@ def test_invalid_capacity_value(capacity):
         Queue(capacity=capacity)
 
 
-@p('capacity', [0, 1, 2, None, ])
+@p_capacity
 @p('order', ['fifo', 'lifo', 'priority', ])
 def test_instance_type(capacity, order):
     from asynckivy.queue import Queue
