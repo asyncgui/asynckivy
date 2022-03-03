@@ -44,7 +44,7 @@ class Queue:
         '''
 
     async def put(self, item):
-        '''Put an item into the queue. If no free slots are available, wait until one is avaiable.
+        '''Put an item into the queue. If no free slots are available, wait until one is available.
         If the queue is partially or fully closed, raise ClosedResourceError.
         '''
 

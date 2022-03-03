@@ -2,9 +2,9 @@
 Notes for maintainers
 ---------------------
 
-ZeroCapacityQueue(以後はZQと略す)とNormalQueuen(以後はNQと略す)は容量以外にも以下の違いがある。
+ZeroCapacityQueue(以後はZQと略す)とNormalQueue(以後はNQと略す)は容量以外にも以下の違いがある。
 
-- ZQは get_nowait() 時にputterを見に行くのに対しNQは見に行かない。なのでNQはputterがあったとしてもキューが空の時はWouldBlobkを起こす。
+- ZQは get_nowait() 時にputterを見に行くのに対しNQは見に行かない。なのでNQはputterがあったとしてもキューが空の時はWouldBlockを起こす。
 - put_nowait() も同じ。
 - ZQではitemの中継はputterとgetterの両方を同時に取り出てから行うため、putterを進めた時にキューを閉じられたとしてもgetterには影響しない。
 対してNQでは同時に取り出さないため、putterを進めた時にキューが閉じられればgetterはその影響をうける。
