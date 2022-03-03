@@ -21,7 +21,7 @@ class Queue:
 
     @property
     def order(self) -> Union[str, None]:
-        ''' 'fifo', 'lifo' or 'priority'. None if the capacity of the queue is zero. '''
+        ''' 'fifo', 'lifo' or 'smallest'. None if the capacity of the queue is zero. '''
 
     async def get(self):
         '''Take out an item from the queue. If one is not available, wait until it is.
@@ -61,7 +61,7 @@ class Queue:
             `capacity`: int, defaults to 0
                 If this is None, the queue will have infinite capacity.
             `order`: str, defaults to 'fifo'
-                The order of the queue items. One of 'fifo', 'lifo' or 'priority'.
+                The order of the queue items. One of 'fifo', 'lifo' or 'smallest'.
         '''
         # 単に False だと私が使っているeditor(Visual Studio Code)の色付けが崩れてしまう為 bool(False)
         assert bool(False), "This is an abstract class"
