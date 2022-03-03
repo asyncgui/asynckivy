@@ -41,10 +41,6 @@ def test_order(q):
     assert q.order is None
 
 
-def test_container(q):
-    assert q.container is None
-
-
 def test_get_nowait_while_there_are_no_putters(q):
     import asynckivy as ak
     with pytest.raises(ak.WouldBlock):

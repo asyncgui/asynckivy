@@ -55,10 +55,6 @@ class ZeroCapacityQueue:
     def order(self):
         return None
 
-    @property
-    def container(self):
-        return None
-
     @types.coroutine
     def get(self):
         if not self._allows_to_get:
@@ -230,10 +226,6 @@ class NormalQueue:
     @property
     def order(self):
         return self._order
-
-    @property
-    def container(self):
-        return self._c
 
     @types.coroutine
     def get(self):

@@ -1,5 +1,4 @@
 __all__ = ('Queue', )
-from collections import deque
 from typing import Union
 
 
@@ -23,14 +22,6 @@ class Queue:
     @property
     def order(self) -> Union[str, None]:
         ''' 'fifo', 'lifo' or 'priority'. None if the capacity of the queue is zero. '''
-
-    @property
-    def container(self) -> Union[list, deque, None]:
-        '''Return an underlying container used by this queue.
-        None if the capacity of the queue is zero no matter what the order is.
-        A deque if the order of the queue is 'fifo'.
-        A list otherwise.
-        '''
 
     async def get(self):
         '''Take out an item from the queue. If one is not available, wait until it is.

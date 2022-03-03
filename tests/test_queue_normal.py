@@ -90,9 +90,9 @@ def test_container_type(capacity, order):
     q = Queue(capacity=capacity, order=order)
     if capacity != 1 and order == 'fifo':
         from collections import deque
-        assert isinstance(q.container, deque)
+        assert isinstance(q._c, deque)
     else:
-        assert isinstance(q.container, list)
+        assert isinstance(q._c, list)
 
 
 @p_capacity
