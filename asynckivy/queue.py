@@ -13,11 +13,11 @@ class Queue:
 
     @property
     def is_empty(self) -> bool:
-        '''Whether the queue is empty. If the capacity of the queue is zero, raise AttributeError.'''
+        '''Whether the queue is empty. Raise AttributeError if the capacity of the queue is zero.'''
 
     @property
     def is_full(self) -> bool:
-        '''Whether the queue is full. If the capacity of the queue is zero, raise AttributeError.'''
+        '''Whether the queue is full. Raise AttributeError if the capacity of the queue is zero.'''
 
     @property
     def order(self) -> Union[str, None]:
