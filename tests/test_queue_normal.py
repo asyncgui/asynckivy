@@ -1,6 +1,6 @@
 import pytest
 p = pytest.mark.parametrize
-p_order = p('order', ('lifo', 'fifo', 'smallest'))
+p_order = p('order', ('lifo', 'fifo', 'small-first'))
 p_capacity = p('capacity', [1, 2, None, ])
 p_capacity2 = p('capacity', [1, 2, 3, 4, None, ])
 
@@ -242,7 +242,7 @@ def test_getter_triggers_close(kivy_clock, fullclose, capacity):
 
 
 @p('capacity', [4, 5, None, ])
-@p('order,input,expect', [('fifo', '0123', '0123'), ('lifo', '0123', '3210'), ('smallest', '3102', '0123'), ])
+@p('order,input,expect', [('fifo', '0123', '0123'), ('lifo', '0123', '3210'), ('small-first', '3102', '0123'), ])
 def test_item_order__enough_capacity(kivy_clock, capacity, order, input, expect):
     import asynckivy as ak
     from asynckivy.queue import Queue
@@ -263,7 +263,7 @@ def test_item_order__enough_capacity(kivy_clock, capacity, order, input, expect)
     assert c.result == expect
 
 
-@p('order,input,expect', [('fifo', '0123', '0123'), ('lifo', '0123', '1032'), ('smallest', '3102', '1302'), ])
+@p('order,input,expect', [('fifo', '0123', '0123'), ('lifo', '0123', '1032'), ('small-first', '3102', '1302'), ])
 def test_item_order_2capacity(kivy_clock, order, input, expect):
     '''NOTE: これは仕様というよりは現状の実装に対するtest'''
     import asynckivy as ak
@@ -285,7 +285,7 @@ def test_item_order_2capacity(kivy_clock, order, input, expect):
     assert c.result == expect
 
 
-@p('order,input,expect', [('fifo', '0123', '0123'), ('lifo', '0123', '2103'), ('smallest', '3102', '0132'), ])
+@p('order,input,expect', [('fifo', '0123', '0123'), ('lifo', '0123', '2103'), ('small-first', '3102', '0132'), ])
 def test_item_3capacity(kivy_clock, order, input, expect):
     '''NOTE: これは仕様というよりは現状の実装に対するtest'''
     import asynckivy as ak

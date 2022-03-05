@@ -196,13 +196,13 @@ class NormalQueue:
             c = deque(maxlen=capacity)
             c_get = c.popleft
             c_put = c.append
-        elif order == 'smallest':
+        elif order == 'small-first':
             import heapq
             c = []
             c_get = partial(heapq.heappop, c)
             c_put = partial(heapq.heappush, c)
         else:
-            raise ValueError("'order' must be one of 'lifo', 'fifo' or 'smallest'.")
+            raise ValueError("'order' must be one of 'lifo', 'fifo' or 'small-first'.")
         self._c = c
         self._c_get = c_get
         self._c_put = c_put

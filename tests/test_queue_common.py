@@ -24,7 +24,7 @@ def test_invalid_capacity_value(capacity):
 
 
 @p_capacity
-@p('order', ['fifo', 'lifo', 'smallest', ])
+@p('order', ['fifo', 'lifo', 'small-first', ])
 def test_instance_type(capacity, order):
     from asynckivy.queue import Queue
     from asynckivy._queue import ZeroCapacityQueue, NormalQueue
