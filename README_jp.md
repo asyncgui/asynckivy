@@ -198,7 +198,7 @@ async def some_task():
 
 ### Task間の連絡および同期
 
-Trioの[Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物。
+[trio.Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物。
 
 ```python
 import asynckivy as ak
@@ -225,7 +225,7 @@ e.set()
 Trioやasyncioの物とは違って``Event.set()``が呼ばれた時それを待っているtaskは即座に再開される。
 なので上の例で``e.set()``は``A2``と``B2``が出力された後に処理が戻る。
 
-asyncioの[Queue](https://docs.python.org/3/library/asyncio-queue.html)相当の物もある.
+[asyncio.Queue](https://docs.python.org/3/library/asyncio-queue.html)相当の物.
 
 ```python
 from kivy.app import App
@@ -275,11 +275,39 @@ async def async_func():
     except GeneratorExit:
         # .cancel() による明示的な中断が行われた時にだけ行いたい処理をここに書くと良い。
         ...
-        raise  # 例外を揉み消してはならない!!
+        raise  # GeneratorExit例外を揉み消してはならない!!
     finally:
         # ここで何か後始末をすると良い
 ```
 
+また中断は常に速やかに完遂させないといけないので、except-GeneratorExit節とfinally節の中で`await`する事は許されない。
+
+```python
+async def async_func():
+    try:
+        await something  # <-- 良い
+    except Exception:
+        await something  # <-- 良い
+    except GeneratorExit:
+        await something  # <-- 駄目
+        raise
+    finally:
+        await something  # <-- 駄目
+```
+
+逆にいうと中断されないのであればfinally節で`await`しても良い。
+
+```python
+async def async_func():
+    try:
+        await something  # <-- 良い
+    except Exception:
+        await something  # <-- 良い
+    finally:
+        await something  # <-- 良い (中断されない前提)
+```
+
+上の決まりを守っている限りは好きなだけ中断できる。
 ただもし明示的な``.cancel()``呼び出しがcode内に多く現れるようなら、
 それはcodeが正しい構造を採っていない兆しなので修正すべきである。
 多くの場合``Task.cancel()``は`asynckivy.and_()`や`asynckivy.or_()`を用いる事で無くせるのでそうされたし。
@@ -295,14 +323,15 @@ ak.start_soon(awaitable_or_task)
 
 ### Structured Concurrency
 
+(この章はまだ未完成。)
+
 `asynckivy.and_()`と`asynckivy.or_()`は[structured concurrency][sc]の考え方に従っています。
 
 <!--
-色んな種類のファイルがたくさん(例えば数千個)あったとして、それらを全て一つのフォルダに纏めて突っ込む人は少ないと思います。
+関連性の無いファイルがたくさん(例えば数千個)あったとして、それらを全て一つのフォルダに入れて管理する人は少ないと思います。
 多くの人はそれらを自分なりの基準(日付、ファイルの種類、属するプロジェクト)で別にフォルダを作って小分けしていくでしょう。
 同じ事が並行処理にもいえます。
-`asyncio.create_task()`や`asynckivy.start()`で立ち上げたtaskはフォルダに属していないファイルも同然であり、
-そういったtaskが多いとプログラム全体の流れの把握が難しくなります。
+`asyncio.create_task()`や`asynckivy.start()`や`threading.Thread.start()`等で立ち上げたtaskはフォルダに属していないファイルも同然であり
 -->
 
 ```python

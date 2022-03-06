@@ -201,7 +201,7 @@ async def some_task():
 
 ### synchronizing and communicating between tasks
 
-There is a Trio's [Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event) equivalent.
+There is a [trio.Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event) equivalent.
 
 ```python
 import asynckivy as ak
@@ -229,7 +229,7 @@ Unlike Trio's and asyncio's, when you call ``Event.set()``,
 the tasks waiting for it to happen will *immediately* be resumed.
 As a result, ``e.set()`` will return *after* ``A2`` and ``B2`` are printed.
 
-And there is an asyncio's [Queue](https://docs.python.org/3/library/asyncio-queue.html) equivalent.
+And there is an [asyncio.Queue](https://docs.python.org/3/library/asyncio-queue.html) equivalent.
 
 ```python
 from kivy.app import App
@@ -285,6 +285,35 @@ async def async_func():
         # do resource clean-up here
 ```
 
+You are not allowed to `await` inside except-GeneratorExit-clause and finally-clause if you want the awaitable to be cancellable
+because cancellations always must be done immediately.
+
+```python
+async def async_func():
+    try:
+        await something  # <-- ALLOWED
+    except Exception:
+        await something  # <-- ALLOWED
+    except GeneratorExit:
+        await something  # <-- NOT ALLOWED
+        raise
+    finally:
+        await something  # <-- NOT ALLOWED
+```
+
+You are allowed to `await` inside finally-clause if the awaitable will never get cancelled.
+
+```python
+async def async_func():  # Assuming this never gets cancelled
+    try:
+        await something  # <-- ALLOWED
+    except Exception:
+        await something  # <-- ALLOWED
+    finally:
+        await something  # <-- ALLOWED
+```
+
+As long as you follow the rules above, you can cancel tasks as you wish.
 But note that if there are lots of explicit calls to `Task.cancel()` in your code,
 **it's a sign of your code being not well-structured**.
 You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.  
@@ -300,7 +329,35 @@ ak.start_soon(awaitable_or_task)
 
 ## Structured Concurrency
 
+(This section is incomplete, and will be filled some day.)
+
 `asynckivy.and_()` and `asynckivy.or_()` follow the concept of [structured concurrency][njs_sc].
+
+```python
+import asynckivy as ak
+
+async def root():
+    await ak.or_(child1(), child2())
+
+async def child1():
+    ...
+
+async def child2():
+    await ak.and_(ground_child1(), ground_child2())
+
+async def ground_child1():
+    ...
+
+async def ground_child2():
+    ...
+```
+
+```mermaid
+flowchart TB
+root --> C1(child 1) & C2(child 2)
+C2 --> GC1(ground child 1) & GC2(ground child 2)
+```
+
 
 ## Tested on
 
