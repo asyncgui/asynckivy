@@ -4,7 +4,7 @@
 [日本語doc](README_jp.md)  
 
 `asynckivy` is an async library that saves you from ugly callback-based code,
-like other async libraries do.
+like most of async libraries do.
 Let's say you want to do:
 
 1. `print('A')`
@@ -33,7 +33,7 @@ def what_you_want_to_do(button):
 ```
 
 It's barely readable and not easy to understand.
-If you use `asynckivy`, the code above will become like this:
+If you use `asynckivy`, the code above will become:
 
 ```python
 import asynckivy as ak
@@ -48,22 +48,12 @@ async def what_you_want_to_do(button):
 
 ## Installation
 
-```
-# stable version
-pip install asynckivy
-```
-
-## Pin the minor version
-
 If you use this module, it's recommended to pin the minor version, because if
 it changed, it usually means some *important* breaking changes occurred.
 
 ```text
-# example of pinning the minor version using poetry
-asynckivy@~0.5
-
-# example of pinning the minor version using pip
-asynckivy>=0.5,<0.6
+poetry add asynckivy@~0.5
+pip install "asynckivy>=0.5,<0.6"
 ```
 
 ## Usage
@@ -96,7 +86,7 @@ async def some_task(button):
     )
     print("The button was pressed" if tasks[0].done else "Timeout")
 
-    # wait until a button is pressed AND 5sec passes"
+    # wait until a button is pressed AND 5sec passes.
     tasks = await ak.and_(
         ak.event(button, 'on_press'),
         ak.sleep(5),
@@ -172,7 +162,7 @@ class Painter(RelativeLayout):
 
 ### threading
 
-`asynckivy` currently does not have any I/O primitives like Trio and asyncio do,
+`asynckivy` does not have any I/O primitives like Trio and asyncio do,
 thus threads are the only way to perform them without blocking the main-thread:
 
 ```python
@@ -209,9 +199,9 @@ async def some_task():
         print('RECEIVED:', r)
 ```
 
-### synchronization primitive
+### synchronizing and communicating between tasks
 
-There is a Trio's [Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event) equivalent.
+There is a [trio.Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event) equivalent.
 
 ```python
 import asynckivy as ak
@@ -239,6 +229,37 @@ Unlike Trio's and asyncio's, when you call ``Event.set()``,
 the tasks waiting for it to happen will *immediately* be resumed.
 As a result, ``e.set()`` will return *after* ``A2`` and ``B2`` are printed.
 
+And there is an [asyncio.Queue](https://docs.python.org/3/library/asyncio-queue.html) equivalent.
+
+```python
+from kivy.app import App
+import asynckivy as ak
+from asynckivy.queue import Queue
+
+async def producer(q, items):
+    for i in items:
+        await q.put(i)
+    q.close()
+
+async def consumer(q):
+    assert ''.join([item async for item in q]) == 'ABCD'  # Queue is async-iterable
+
+async def consumer2(q):
+    '''The ``consumer()`` above can be written in more primitive way like this'''
+    items = []
+    try:
+        while True:
+            items.append(await q.get())
+    except ak.EndOfResource:
+        assert ''.join(items) == 'ABCD'
+
+
+q = Queue()
+ak.start(producer(q, 'ABCD'))
+ak.start(consumer(q))
+App().run()  # Queue relies on Clock so you need to run the event-loop
+```
+
 ### dealing with cancellations
 
 ``asynckivy.start()`` returns a ``Task``,
@@ -261,9 +282,38 @@ async def async_func():
         print('cancelled')
         raise  # You must re-raise !!
     finally:
-        # do some resource clean-up here
+        # do resource clean-up here
 ```
 
+You are not allowed to `await` inside except-GeneratorExit-clause and finally-clause if you want the awaitable to be cancellable
+because cancellations always must be done immediately.
+
+```python
+async def async_func():
+    try:
+        await something  # <-- ALLOWED
+    except Exception:
+        await something  # <-- ALLOWED
+    except GeneratorExit:
+        await something  # <-- NOT ALLOWED
+        raise
+    finally:
+        await something  # <-- NOT ALLOWED
+```
+
+You are allowed to `await` inside finally-clause if the awaitable will never get cancelled.
+
+```python
+async def async_func():  # Assuming this never gets cancelled
+    try:
+        await something  # <-- ALLOWED
+    except Exception:
+        await something  # <-- ALLOWED
+    finally:
+        await something  # <-- ALLOWED
+```
+
+As long as you follow the rules above, you can cancel tasks as you wish.
 But note that if there are lots of explicit calls to `Task.cancel()` in your code,
 **it's a sign of your code being not well-structured**.
 You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.  
@@ -279,13 +329,37 @@ ak.start_soon(awaitable_or_task)
 
 ## Structured Concurrency
 
-`asynckivy.and_()` and `asynckivy.or_()` are [structured][njs_sc],
-and thus they guarantee two things:
+(This section is incomplete, and will be filled some day.)
 
-* The tasks/awaitables passed into them never outlive them.
-* Exceptions occured in the tasks/awaitables are propagated to the parent task.
+`asynckivy.and_()` and `asynckivy.or_()` follow the concept of [structured concurrency][njs_sc].
 
-## Test Environment
+```python
+import asynckivy as ak
+
+async def root():
+    await ak.or_(child1(), child2())
+
+async def child1():
+    ...
+
+async def child2():
+    await ak.and_(ground_child1(), ground_child2())
+
+async def ground_child1():
+    ...
+
+async def ground_child2():
+    ...
+```
+
+```mermaid
+flowchart TB
+root --> C1(child 1) & C2(child 2)
+C2 --> GC1(ground child 1) & GC2(ground child 2)
+```
+
+
+## Tested on
 
 - CPython 3.7 + Kivy 2.0.0
 - CPython 3.8 + Kivy 2.0.0
@@ -293,15 +367,16 @@ and thus they guarantee two things:
 
 ## Why this even exists
 
-Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio] from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing].
-Actually, I started developing this one just for learning how async/await works so it *was* initially "reinventing the wheel".
+Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio], from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing].
+Actually, I started this one just for learning how async/await works so it *was* initially "reinventing the wheel".
 
 But after playing with Trio and Kivy for a while, I noticed that Trio is not suitable for the situation where fast reactions are required e.g. touch events. The same is true of asyncio. You can confirm it by running `examples/misc/why_xxx_is_not_suitable_for_handling_touch_events.py`, and masshing a mouse button. You'll see sometimes `up` is not paired with `down`. You'll see the coordinates aren't relative to the `RelativeLayout` even though the `target` belongs to it.
 
 The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks waiting for the `Event` to be set. They just schedule the tasks to resume.
 Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
 
-Trio and asyncio are async **I/O** libraries after all. They probably don't need the functionality that immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
+Trio and asyncio are async **I/O** libraries after all. They probably don't have to immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
+(If a touch is not handled immediately, its coordinate's origin may change, its `pos` might be updated and the previous value will be lost.)
 Their core design might not be suitable for GUI in the first place.
 That's why I'm still developing this `asynckivy` library to this day.
 

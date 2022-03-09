@@ -3,7 +3,7 @@
 [Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)
 
 `asynckivy`はKivy用のlibraryで、
-よくあるasync libraryと同じでcallback関数だらけの醜いcodeを読みやすくしてくれる。
+よくあるasync libraryと同じでcallback関数だらけの醜いcodeを読みやすくしてくれます。
 例えば
 
 1. `A`を出力
@@ -43,25 +43,15 @@ async def what_you_want_to_do(button):
     print('C')
 ```
 
-と分かりやすく書ける。
+と分かりやすく書けます。
 
 ## Install方法
-
-```
-# stable version
-pip install asynckivy
-```
-
-## minor versionまでを固定して
 
 このmoduleのminor versionが変わった時は何らかの重要な互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
 
 ```text
-# poetryにてminor versionまでを0.5に固定する例
-asynckivy@~0.5
-
-# pipにてminor versionまでを0.5に固定する例
-asynckivy>=0.5,<0.6
+poetry add asynckivy@~0.5
+pip install "asynckivy>=0.5,<0.6"
 ```
 
 ## 使い方
@@ -112,8 +102,6 @@ async def some_task(button):
 
 ak.start(some_task(some_button))
 ```
-
-`and_`と`or_`は[構造化][sc]されている。
 
 ### animation関連
 
@@ -172,7 +160,7 @@ class Painter(RelativeLayout):
 
 ### thread
 
-`asynckivy`はTrioやasyncioのような入出力機能を持たないので、main threadを停めずにそれをしたければ別のthreadで行うしかない。今のところ次の二つの方法がある。
+`asynckivy`はTrioやasyncioのような入出力機能を持たないので、GUIを固まらせずにそれをしたければ別のthreadで行うしかない。今のところ次の二つの方法がある。
 
 ```python
 from concurrent.futures import ThreadPoolExecuter
@@ -208,9 +196,9 @@ async def some_task():
         print('通信成功')
 ```
 
-### 同期
+### Task間の連絡および同期
 
-Trioの[Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物。
+[trio.Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物。
 
 ```python
 import asynckivy as ak
@@ -237,6 +225,37 @@ e.set()
 Trioやasyncioの物とは違って``Event.set()``が呼ばれた時それを待っているtaskは即座に再開される。
 なので上の例で``e.set()``は``A2``と``B2``が出力された後に処理が戻る。
 
+[asyncio.Queue](https://docs.python.org/3/library/asyncio-queue.html)相当の物.
+
+```python
+from kivy.app import App
+import asynckivy as ak
+from asynckivy.queue import Queue
+
+async def producer(q, items):
+    for i in items:
+        await q.put(i)
+    q.close()
+
+async def consumer(q):
+    assert ''.join([item async for item in q]) == 'ABCD'  # Queueはasync-iterable
+
+async def consumer2(q):
+    '''上の ``consumer()`` と同等のコード'''
+    items = []
+    try:
+        while True:
+            items.append(await q.get())
+    except ak.EndOfResource:
+        assert ''.join(items) == 'ABCD'
+
+
+q = Queue()
+ak.start(producer(q, 'ABCD'))
+ak.start(consumer(q))
+App().run()  # QueueはClockに依存しているのでevent-loopを回してあげないと動作しない。
+```
+
 ### 中断への対処
 
 ``asynckivy.start()``が返した``Task``の``.cancel()``を呼ぶ事で処理を中断できる。
@@ -256,12 +275,40 @@ async def async_func():
     except GeneratorExit:
         # .cancel() による明示的な中断が行われた時にだけ行いたい処理をここに書くと良い。
         ...
-        raise  # 例外を揉み消してはならない!!
+        raise  # GeneratorExit例外を揉み消してはならない!!
     finally:
         # ここで何か後始末をすると良い
 ```
 
-ただもし明示的な``.cancel()``を呼び出しがcode内に多く現れるようなら、
+また中断は常に速やかに完遂させないといけないので、except-GeneratorExit節とfinally節の中で`await`する事は許されない。
+
+```python
+async def async_func():
+    try:
+        await something  # <-- 良い
+    except Exception:
+        await something  # <-- 良い
+    except GeneratorExit:
+        await something  # <-- 駄目
+        raise
+    finally:
+        await something  # <-- 駄目
+```
+
+逆にいうと中断されないのであればfinally節で`await`しても良い。
+
+```python
+async def async_func():
+    try:
+        await something  # <-- 良い
+    except Exception:
+        await something  # <-- 良い
+    finally:
+        await something  # <-- 良い (中断されない前提)
+```
+
+上の決まりを守っている限りは好きなだけ中断できる。
+ただもし明示的な``.cancel()``呼び出しがcode内に多く現れるようなら、
 それはcodeが正しい構造を採っていない兆しなので修正すべきである。
 多くの場合``Task.cancel()``は`asynckivy.and_()`や`asynckivy.or_()`を用いる事で無くせるのでそうされたし。
 
@@ -272,6 +319,44 @@ import asynckivy as ak
 
 # 次のframeでawaitable/Taskが始まるように予約
 ak.start_soon(awaitable_or_task)
+```
+
+### Structured Concurrency
+
+(この章はまだ未完成。)
+
+`asynckivy.and_()`と`asynckivy.or_()`は[structured concurrency][sc]の考え方に従っています。
+
+<!--
+関連性の無いファイルがたくさん(例えば数千個)あったとして、それらを全て一つのフォルダに入れて管理する人は少ないと思います。
+多くの人はそれらを自分なりの基準(日付、ファイルの種類、属するプロジェクト)で別にフォルダを作って小分けしていくでしょう。
+同じ事が並行処理にもいえます。
+`asyncio.create_task()`や`asynckivy.start()`や`threading.Thread.start()`等で立ち上げたtaskはフォルダに属していないファイルも同然であり
+-->
+
+```python
+import asynckivy as ak
+
+async def 根():
+    await ak.or_(子1(), 子2())
+
+async def 子1():
+    ...
+
+async def 子2():
+    await ak.and_(孫1(), 孫2())
+
+async def 孫1():
+    ...
+
+async def 孫2():
+    ...
+```
+
+```mermaid
+flowchart TB
+根 --> 子1 & 子2(子2)
+子2 --> 孫1 & 孫2
 ```
 
 ## Test環境
