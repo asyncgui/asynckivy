@@ -10,11 +10,11 @@ on:
     branches: [ main ]
 
 jobs:
-  kivy_2_0_0:
+  kivy_2_1_0:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10-dev']
     env:
       DISPLAY: ':99.0'
     steps:
