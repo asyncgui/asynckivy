@@ -10,7 +10,7 @@ on:
     branches: [ main ]
 
 jobs:
-  kivy_2_0_0:
+  kivy_2_1_0:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -31,7 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pytest flake8 asyncgui kivy[base]==2.0.0
+        python -m pip install pytest flake8 asyncgui kivy[base]==2.1.0
     - name: Lint with flake8
       run: make style
     - name: Test with pytest
