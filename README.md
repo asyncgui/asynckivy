@@ -364,7 +364,6 @@ C2 --> GC1(ground child 1) & GC2(ground child 2)
 - CPython 3.7 + Kivy 2.1.0
 - CPython 3.8 + Kivy 2.1.0
 - CPython 3.9 + Kivy 2.1.0
-- CPython 3.10 + Kivy 2.1.0
 
 ## Why this even exists
 

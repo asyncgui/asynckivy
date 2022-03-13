@@ -364,6 +364,5 @@ flowchart TB
 - CPython 3.7 + Kivy 2.1.0
 - CPython 3.8 + Kivy 2.1.0
 - CPython 3.9 + Kivy 2.1.0
-- CPython 3.10 + Kivy 2.1.0
 
 [sc]:https://qiita.com/gotta_dive_into_python/items/6feb3224a5fa572f1e19
