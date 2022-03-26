@@ -121,7 +121,7 @@ async def some_task(widget):
     # keyword-arguments are the same as kivy.animation.Animation's.
     async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
         print(v)
-        # await ak.sleep(1)  # Do not await anything during the iteration
+        # await ak.sleep(1)  # Do not await anything during this iteration
 
     # change the text of Label with fade-transition
     label = Label(...)
@@ -155,7 +155,7 @@ class Painter(RelativeLayout):
             min_x, max_x = (x, ox) if x < ox else (ox, x)
             min_y, max_y = (y, oy) if y < oy else (oy, y)
             line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
-            # await ak.sleep(1)  # Do not await anything during the iteration
+            # await ak.sleep(1)  # Do not await anything during this iteration
         else:
             print("'on_touch_up' was fired")
 ```
@@ -327,7 +327,34 @@ import asynckivy as ak
 ak.start_soon(awaitable_or_task)
 ```
 
-## Structured Concurrency
+## Notes
+
+### Places you cannot await
+
+I already mentioned about this but I'll say again.
+**You cannot await while iterating `rest_of_touch_moves()` or `interpolate()`.**
+
+```python
+import asynckivy as ak
+
+async def async_fn():
+    async for v in ak.interpolate(...):
+        await something  # <-- NOT ALLOWED
+
+    async for __ in ak.rest_of_touch_moves(...):
+        await something  # <-- NOT ALLOWED
+```
+
+### asynckivy cannot be used with asyncio or trio
+
+`asyncio` and `trio` do some hacky stuff, `sys.set_asyncgen_hooks()` and `sys.get_asyncgen_hooks`,
+which likely hinders asynckivy-flavored async generators.
+You can see its details [here](https://peps.python.org/pep-0525/#finalization).
+I don't know how to make it work.
+Maybe if [PEP355](https://peps.python.org/pep-0533/) is accepted,
+it might work.
+
+### Structured Concurrency
 
 (This section is incomplete, and will be filled some day.)
 
