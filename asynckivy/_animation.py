@@ -2,6 +2,7 @@ __all__ = ('animate', )
 from functools import partial
 from kivy.clock import Clock
 from kivy.animation import AnimationTransition
+from asyncgui import get_step_coro
 from asynckivy import sleep_forever
 
 
@@ -73,7 +74,6 @@ async def animate(target, **kwargs):  # noqa:C901
            )
            print("completed")
     '''
-    from asyncgui import get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
     transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
     step = kwargs.pop('s', kwargs.pop('step', 0))
@@ -96,42 +96,18 @@ async def animate(target, **kwargs):  # noqa:C901
         properties[key] = (original_value, value)
 
     try:
-        ctx = {
-            'target': target,
-            'time': 0.,
-            'duration': duration,
-            'transition': transition,
-            'properties': properties,
-            'step_coro': await get_step_coro(),
-        }
-        clock_event = Clock.schedule_interval(partial(_update, ctx), step)
+        clock_event = Clock.schedule_interval(
+            partial(_update, target, duration, transition, properties, await get_step_coro(), [0., ]),
+            step,
+        )
         await sleep_forever()
     finally:
         clock_event.cancel()
 
 
-def _update(ctx, dt):
-    time = ctx['time'] + dt
-    ctx['time'] = time
-
-    # calculate progression
-    progress = min(1., time / ctx['duration'])
-    t = ctx['transition'](progress)
-
-    # apply progression on target
-    target = ctx['target']
-    for key, values in ctx['properties'].items():
-        a, b = values
-        value = _calculate(a, b, t)
-        setattr(target, key, value)
-
-    # time to stop ?
-    if progress >= 1.:
-        ctx['step_coro']()
-        return False
-
-
-def _calculate(a, b, t):
+def _calculate(a, b, t, isinstance=isinstance, list=list, tuple=tuple, dict=dict):
+    '''The logic of this function is identical to 'kivy.animation.Animation._calculate()'
+    '''
     if isinstance(a, list) or isinstance(a, tuple):
         if isinstance(a, list):
             tp = list
@@ -150,3 +126,24 @@ def _calculate(a, b, t):
         return d
     else:
         return (a * (1. - t)) + (b * t)
+
+
+def _update(target, duration, transition, properties, step_coro, p_time, dt, _calculate=_calculate, setattr=setattr):
+    time = p_time[0] + dt
+    p_time[0] = time
+
+    # calculate progression
+    progress = min(1., time / duration)
+    t = transition(progress)
+
+    # apply progression on target
+    target = target
+    for key, values in properties.items():
+        a, b = values
+        value = _calculate(a, b, t)
+        setattr(target, key, value)
+
+    # time to stop ?
+    if progress >= 1.:
+        step_coro()
+        return False

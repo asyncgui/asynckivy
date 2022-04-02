@@ -52,15 +52,10 @@ async def interpolate(start, end, **kwargs):
         yield end
         return
     try:
-        ctx = {
-            'start': start,
-            'end': end,
-            'time': 0.,
-            'duration': duration,
-            'transition': transition,
-            'step_coro': await get_step_coro(),
-        }
-        clock_event = Clock.schedule_interval(partial(_update, ctx), step)
+        clock_event = Clock.schedule_interval(
+            partial(_update, start, end, duration, transition, await get_step_coro(), [0., ],),
+            step,
+        )
 
         get_current_value = _get_current_value
         while True:
@@ -74,25 +69,25 @@ async def interpolate(start, end, **kwargs):
         clock_event.cancel()
 
 
-def _update(ctx, dt):
-    time = ctx['time'] + dt
-    ctx['time'] = time
+def _update(start, end, duration, transition, step_coro, p_time, dt):
+    time = p_time[0] + dt
+    p_time[0] = time
 
     # calculate progression
-    progress = min(1., time / ctx['duration'])
-    t = ctx['transition'](progress)
+    progress = min(1., time / duration)
+    t = transition(progress)
 
-    value = (ctx['start'] * (1. - t)) + (ctx['end'] * t)
-    ctx['step_coro'](value)
+    value = (start * (1. - t)) + (end * t)
+    step_coro(value)
 
     # time to stop ?
     if progress >= 1.:
-        ctx['step_coro'](None)
+        step_coro(None)
         return False
 
 
 @types.coroutine
-def _get_current_value() -> int:
+def _get_current_value():
     return (yield lambda step_coro: None)[0][0]
 
 
