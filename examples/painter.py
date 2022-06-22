@@ -18,9 +18,7 @@ class Painter(RelativeLayout):
         return 'Painter.' + str(self.uid)
 
     def will_accept_touch(self, touch) -> bool:
-        return self.collide_point(*touch.opos) and \
-            (not touch.is_mouse_scrolling) and \
-            (self._ud_key not in touch.ud)
+        return self.collide_point(*touch.opos) and (not touch.is_mouse_scrolling) and (self._ud_key not in touch.ud)
 
     def on_touch_down(self, touch):
         if self.will_accept_touch(touch):
@@ -37,8 +35,7 @@ class Painter(RelativeLayout):
         line = Line(width=2)
         inst_group.add(line)
         ox, oy = x, y = self.to_local(*touch.opos)
-        async for __ in ak.rest_of_touch_moves(
-                self, touch, stop_dispatching=True):
+        async for __ in ak.rest_of_touch_moves(self, touch, stop_dispatching=True):
             # Don't await anything during the iteration
             x, y = self.to_local(*touch.pos)
             min_x, max_x = (x, ox) if x < ox else (ox, x)

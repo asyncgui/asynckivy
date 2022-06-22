@@ -8,6 +8,7 @@ import asynckivy as ak
 
 
 def heavy_task(n):
+    # This function is called from outside the main-thread, so you are not allowed to touch the GUI here.
     import time
     for i in range(n):
         time.sleep(1)
@@ -20,14 +21,15 @@ class TestApp(App):
         return Button(font_size='20sp')
 
     def on_start(self):
-        async def some_task():
-            button = self.root
-            button.text = 'start heavy task'
-            await ak.event(button, 'on_press')
-            button.text = 'running...'
-            await ak.run_in_thread(lambda: heavy_task(5))
-            button.text = 'done'
-        ak.start(some_task())
+        ak.start(self.main())
+
+    async def main(self):
+        button = self.root
+        button.text = 'start heavy task'
+        await ak.event(button, 'on_press')
+        button.text = 'running...'
+        await ak.run_in_thread(lambda: heavy_task(5))
+        button.text = 'done'
 
 
 if __name__ == '__main__':

@@ -20,21 +20,22 @@ class TestApp(App):
         return Builder.load_string(KV_CODE)
 
     def on_start(self):
-        async def some_task():
-            label = self.root.ids.label
-            button = self.root.ids.button
-            label.text = '--'
-            button.text = 'start spinning'
-            await ak.event(button, 'on_press')
-            button.text = 'stop'
-            tasks = await ak.or_(
-                ak.event(button, 'on_press'),
-                spinning(label),
-            )
-            tasks[1].cancel()
-            self.root.remove_widget(button)
-            label.text = 'fin.'
-        ak.start(some_task())
+        ak.start(self.main())
+
+    async def main(self):
+        label = self.root.ids.label
+        button = self.root.ids.button
+        label.text = '--'
+        button.text = 'start spinning'
+        await ak.event(button, 'on_press')
+        button.text = 'stop'
+        tasks = await ak.or_(
+            ak.event(button, 'on_press'),
+            spinning(label),
+        )
+        tasks[1].cancel()
+        self.root.remove_widget(button)
+        label.text = 'fin.'
 
 
 async def spinning(label):

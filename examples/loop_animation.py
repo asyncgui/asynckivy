@@ -18,25 +18,26 @@ class TestApp(App):
                      )
 
     def on_start(self):
-        async def animate_label(label):
-            sleep = asynckivy.sleep
-            await sleep(0)
-            await sleep(1)
-            while True:
-                label.outline_color = get_color_from_hex('#FFFFFF')
-                label.text = 'Do'
-                await sleep(.5)
-                label.text = 'you'
-                await sleep(.5)
-                label.text = 'like'
-                await sleep(.5)
-                label.text = 'Kivy?'
-                await sleep(2)
+        asynckivy.start(self.main())
 
-                label.outline_color = get_color_from_hex('#FF5555')
-                label.text = 'Answer me!'
-                await sleep(2)
-        asynckivy.start(animate_label(self.root))
+    async def main(self):
+        label = self.root
+        sleep = asynckivy.sleep
+        await asynckivy.n_frames(4)
+        while True:
+            label.outline_color = get_color_from_hex('#FFFFFF')
+            label.text = 'Do'
+            await sleep(.5)
+            label.text = 'you'
+            await sleep(.5)
+            label.text = 'like'
+            await sleep(.5)
+            label.text = 'Kivy?'
+            await sleep(2)
+
+            label.outline_color = get_color_from_hex('#FF5555')
+            label.text = 'Answer me!'
+            await sleep(2)
 
 
 if __name__ == '__main__':
