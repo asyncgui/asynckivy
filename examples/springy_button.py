@@ -60,9 +60,9 @@ class SpringyButton(Label):
     def on_kv_post(self, *args, **kwargs):
         import asynckivy
         super().on_kv_post(*args, **kwargs)
-        asynckivy.start(self._async_main())
+        asynckivy.start(self._main())
 
-    async def _async_main(self):
+    async def _main(self):
         from asynckivy import or_, animate, event
         while True:
             if not self.disabled:

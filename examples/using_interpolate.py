@@ -13,13 +13,14 @@ class TestApp(App):
         return Label()
 
     def on_start(self):
-        async def animate_label(label):
-            await ak.n_frames(4)
-            async for font_size in ak.interpolate(
-                    start=0, end=300, d=5, s=.1, t='out_cubic'):
-                label.font_size = font_size
-                label.text = str(int(font_size))
-        ak.start(animate_label(self.root))
+        ak.start(self.main())
+
+    async def main(self):
+        label = self.root
+        await ak.n_frames(4)
+        async for font_size in ak.interpolate(start=0, end=300, d=5, s=.1, t='out_cubic'):
+            label.font_size = font_size
+            label.text = str(int(font_size))
 
 
 if __name__ == '__main__':

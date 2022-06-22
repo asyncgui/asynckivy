@@ -22,35 +22,41 @@ class TestApp(App):
         return Builder.load_string(KV_CODE)
 
     def on_start(self):
-        ak.start(animate(self.root))
+        ak.start(self.main())
 
+    async def main(self):
+        from asynckivy import animate
+        root = self.root
+        label = root.ids.label
+        round = self._round
 
-async def animate(root):
-    from asynckivy import animate as a
-    l = root.ids.label  # noqa: E741
-
-    async def _blink_forever():
+        ak.start(self._blink_forever(label))
         while True:
-            await a(l, color=(0, .3, 0, 1, ), t='out_quad')
-            await a(l, color=(1, 1, 1, 1, ), t='in_quad')
+            label.text = 'Hello'
+            await round(root, label)
+            await animate(label, center=root.center)
+            label.pos_hint['center'] = (.5, .5, )
+            await animate(label, font_size=100.0, s=.1)
+            del label.pos_hint['center']
+            label.text = 'Kivy'
+            await animate(label, pos=root.pos)
+            await round(root, label)
+            await animate(label, font_size=60.0, s=.1)
 
-    async def _round():
-        await a(l, right=root.right)
-        await a(l, top=root.top)
-        await a(l, x=root.x)
-        await a(l, y=root.y)
-    ak.start(_blink_forever())
-    while True:
-        l.text = 'Hello'
-        await _round()
-        await a(l, center=root.center)
-        l.pos_hint['center'] = (.5, .5, )
-        await a(l, font_size=100.0, s=.1)
-        l.pos_hint.clear()
-        l.text = 'Kivy'
-        await a(l, pos=root.pos)
-        await _round()
-        await a(l, font_size=60.0, s=.1)
+    @staticmethod
+    async def _blink_forever(label):
+        from asynckivy import animate
+        while True:
+            await animate(label, color=(0, .3, 0, 1, ), t='out_quad')
+            await animate(label, color=(1, 1, 1, 1, ), t='in_quad')
+
+    @staticmethod
+    async def _round(parent, widget):
+        from asynckivy import animate
+        await animate(widget, right=parent.right)
+        await animate(widget, top=parent.top)
+        await animate(widget, x=parent.x)
+        await animate(widget, y=parent.y)
 
 
 if __name__ == '__main__':
