@@ -7,37 +7,48 @@ Notable differences from the official Button
 
 * can only handle one touch at a time
 '''
-
+import itertools
+from functools import partial
+# from kivy.config import Config
+# Config.set('modules', 'showborder', '')
 from kivy.properties import ColorProperty, NumericProperty
 from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy.uix.label import Label
 from kivy.app import App
 
+import asynckivy
+
 
 KV_CODE = '''
-<SpringyButton>:
-    outline_width: 4
-    outline_color: 0, 0, 0, 1
-    font_size: 30
-    _border_color: self.border_color1
-    canvas.before:
+<-SpringyButton>:
+    canvas:
         PushMatrix:
+        Translate:
+            xy: self.center
         Scale:
-            origin: self.center
             x: self._scaling
             y: self._scaling
         Color:
             rgba: self._border_color
-        Rectangle:
-            pos: self.pos
-            size: self.size
+        Line:
+            width: self.border_width
+            joint: 'miter'
+            rectangle:
+                (
+                bw := self.border_width,
+                hw := self.width / 2. - bw,
+                hh := self.height / 2. - bw,
+                ) and (-hw, -hh, 2 * hw, 2 * hh, )
+
+        # Since this widget doesn't inherit the Label's kv rules, we need to re-write them.
         Color:
-            rgba: self.background_color
+            rgba: 1, 1, 1, 1
         Rectangle:
-            pos: self.x + dp(4), self.y + dp(4)
-            size: self.width - dp(8), self.height - dp(8)
-    canvas.after:
+            texture: self.texture
+            size: self.texture_size
+            pos: self.texture_size[0] / -2., self.texture_size[1] / -2.
+
         PopMatrix:
 '''
 Builder.load_string(KV_CODE)
@@ -47,9 +58,13 @@ class SpringyButton(Label):
     __events__ = ('on_press', 'on_release', )
     border_color1 = ColorProperty('#666666')
     border_color2 = ColorProperty('#AAAA33')
-    background_color = ColorProperty('#999933')
+    border_width = NumericProperty('4dp')
+    border_blinking_interval = NumericProperty(.1)
     _border_color = ColorProperty(border_color1.defaultvalue)
     _scaling = NumericProperty(1.)
+    _props_that_trigger_to_restart = (
+        'disabled', 'parent', 'border_color1', 'border_color2', 'border_blinking_interval',
+    )
 
     def on_press(self):
         pass
@@ -57,67 +72,68 @@ class SpringyButton(Label):
     def on_release(self):
         pass
 
-    def on_kv_post(self, *args, **kwargs):
-        import asynckivy
-        super().on_kv_post(*args, **kwargs)
-        asynckivy.start(self._main())
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._main_task = asynckivy.dummy_task
+        fbind = self.fbind
+        trigger = Clock.schedule_once(self._restart)
+        for prop in self._props_that_trigger_to_restart:
+            fbind(prop, trigger)
+
+    def _restart(self, dt):
+        self._main_task.cancel()
+        self._main_task = asynckivy.start(self._main())
+
+    @staticmethod
+    def _touch_filter(w, t) -> bool:
+        return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
+
+    @staticmethod
+    def _blink_border(next_, self, color_iter, dt):
+        self._border_color = next_(color_iter)
 
     async def _main(self):
-        from asynckivy import or_, animate, event
-        while True:
-            if not self.disabled:
-                await or_(event(self, 'disabled'), self._watch_touch_events())
-            await animate(self, opacity=.5, d=.2)
-            if self.disabled:
-                await event(self, 'disabled')
-            await animate(self, opacity=1, d=.2)
-
-    async def _watch_touch_events(self):
         from asynckivy import animate, rest_of_touch_moves, event, MotionEventAlreadyEndedError, cancel_protection
+        if self.parent is None or self.disabled:
+            self._border_color = self.disabled_color
+            return
 
-        def accepts_touch(w, t) -> bool:
-            return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
-
-        # 'itertools.cycle()' is no use here because it cannot react to
-        # the property changes. There might be a better way than this, though.
-        def color_iter(w):
-            while True:
-                yield w.border_color2
-                yield w.border_color1
-        color_iter = color_iter(self)
-
-        def change_border_color(dt):
-            self._border_color = next(color_iter)
-
-        blink_ev = Clock.create_trigger(change_border_color, .1, interval=True)
+        border_color1 = self.border_color1
+        self._border_color = border_color1
+        blink_trigger = Clock.create_trigger(
+            partial(self._blink_border, next, self, itertools.cycle((self.border_color2, border_color1, ))),
+            self.border_blinking_interval, interval=True,
+        )
+        blink_trigger_cancel = blink_trigger.cancel
+        touch_filter = self._touch_filter
         collide_point = self.collide_point
         dispatch = self.dispatch
-
         try:
             while True:
-                __, touch = await event(self, 'on_touch_down', filter=accepts_touch, stop_dispatching=True)
+                __, touch = await event(self, 'on_touch_down', filter=touch_filter, stop_dispatching=True)
                 dispatch('on_press')
-                blink_ev()
+                blink_trigger()
                 try:
                     async for __ in rest_of_touch_moves(self, touch, stop_dispatching=True):
                         if collide_point(*touch.pos):
-                            blink_ev()
+                            blink_trigger()
                         else:
-                            blink_ev.cancel()
-                            self._border_color = self.border_color1
+                            blink_trigger_cancel()
+                            self._border_color = border_color1
                 except MotionEventAlreadyEndedError:
-                    blink_ev.cancel()
-                    self._border_color = self.border_color1
+                    blink_trigger_cancel()
+                    self._border_color = border_color1
                     continue
                 if collide_point(*touch.pos):
                     async with cancel_protection():
                         await animate(self, _scaling=.9, d=.05)
                         await animate(self, _scaling=1, d=.05)
                     dispatch('on_release')
-                blink_ev.cancel()
-                self._border_color = self.border_color1
+                blink_trigger_cancel()
+                self._border_color = border_color1
         finally:
-            blink_ev.cancel()
+            blink_trigger_cancel()
+            # border_color1 の変化によりtaskが中断される状況を考えるとここではlocal変数のborder_color1は使えない。
             self._border_color = self.border_color1
 
 
@@ -126,23 +142,22 @@ BoxLayout:
     padding: 40
     spacing: 40
     SpringyButton:
+        font_size: 30
         text: 'Hello'
-        disabled: not onoff_switch.active
+        disabled: not switch.active
         border_color1: 0, 0, .6, 1
         border_color2: .3, .4, 1, 1
-        background_color: .6, .3, .6, 1
-        on_press: print('blue: on_press')
-        on_release: print('blue: on_release')
-    RelativeLayout:
+    FloatLayout:
         SpringyButton:
+            font_size: 30
             text: 'Kivy'
-            disabled: not onoff_switch.active
+            disabled: not switch.active
+            border_color1: .3, .3, 0, 1
+            border_blinking_interval: 0.05
             size_hint: .8, .3
             pos_hint: {'center_x': .5, 'center_y': .7, }
-            on_press: print('orange: on_press')
-            on_release: print('orange: on_release')
         Switch:
-            id: onoff_switch
+            id: switch
             active: True
             size_hint: None, None
             size: 100, 40
