@@ -25,7 +25,7 @@ _trigger_resume = Clock.create_trigger(_resume, 0)
 
 
 @types.coroutine
-def one_frame(*, _trigger_resume=_trigger_resume):
+def one_frame():
     '''(experimental)
     wait for one frame.
 
@@ -43,7 +43,7 @@ def one_frame(*, _trigger_resume=_trigger_resume):
     yield _waiting.append
 
 
-async def n_frames(n: int, *, _one_frame=one_frame, _range=range):
+async def n_frames(n: int):
     '''(experimental)
     wait for the specified number of frames.
 
@@ -59,5 +59,6 @@ async def n_frames(n: int, *, _one_frame=one_frame, _range=range):
     '''
     if n < 0:
         raise ValueError("Cannot wait for negative number of frames")
-    for __ in _range(n):
+    _one_frame = one_frame
+    for __ in range(n):
         await _one_frame()
