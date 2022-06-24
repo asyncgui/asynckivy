@@ -1,9 +1,3 @@
-'''
-notes for maintainers
----------------------
-
-default引数を使ってLOAD_GLOBALをLAOD_FASTに変えている箇所がありますがコードが読みにくくなる悪手かもしれない。
-'''
 __all__ = ('n_frames', 'one_frame', )
 
 import types
