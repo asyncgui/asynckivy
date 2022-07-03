@@ -10,16 +10,14 @@ create_trigger_free = getattr(Clock, 'create_trigger_free', None)
 
 @types.coroutine
 def sleep(duration):
-    args, kwargs = yield lambda step_coro: \
-        create_trigger(step_coro, duration, release_ref=False)()
+    args, kwargs = yield lambda step_coro, _d=duration: create_trigger(step_coro, _d, False, False)()
     return args[0]
 
 
 @types.coroutine
 def sleep_free(duration):
     '''(experimental)'''
-    args, kwargs = yield lambda step_coro: \
-        create_trigger_free(step_coro, duration, release_ref=False)()
+    args, kwargs = yield lambda step_coro, _d=duration: create_trigger_free(step_coro, _d, False, False)()
     return args[0]
 
 
@@ -56,8 +54,7 @@ async def create_sleep(duration):
             await some_fn()  # OK
     '''
     from asyncgui import get_step_coro
-    clock_event = Clock.create_trigger(
-        await get_step_coro(), duration, release_ref=False)
+    clock_event = Clock.create_trigger(await get_step_coro(), duration, False, False)
 
     @types.coroutine
     def sleep():
