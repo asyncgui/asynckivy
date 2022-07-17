@@ -171,6 +171,11 @@ import asynckivy as ak
 
 executer = ThreadPoolExecuter()
 
+
+def thread_blocking_operation():
+    '''This function is called from outside the main-thread, so you are not allowed to touch the GUI here.'''
+
+
 async def some_task():
     # create a new thread, run a function inside it, then
     # wait for the completion of that thread
@@ -190,13 +195,13 @@ so you can catch them like you do in synchronous code:
 import requests
 import asynckivy as ak
 
-async def some_task():
+async def some_task(label):
     try:
-        r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
+        response = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
     except requests.Timeout:
-        print("TIMEOUT!")
+        label.text = "TIMEOUT!"
     else:
-        print('RECEIVED:', r)
+        label.text = "RECEIVED: " + response.text
 ```
 
 ### synchronizing and communicating between tasks
