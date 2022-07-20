@@ -173,7 +173,7 @@ executer = ThreadPoolExecuter()
 
 
 def thread_blocking_operation():
-    '''This function is called from outside the main-thread, so you are not allowed to touch the GUI here.'''
+    '''This function is called from outside the main-thread, so you are not allowed to touch gui components here.'''
 
 
 async def some_task():
@@ -328,7 +328,7 @@ You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.
 ```python
 import asynckivy as ak
 
-# schedule a awaitable/Task to start after the next frame
+# schedule an awaitable/Task to start after the next frame
 ak.start_soon(awaitable_or_task)
 ```
 
