@@ -284,10 +284,10 @@ async def async_func():
     try:
         ...
     except GeneratorExit:
-        print('This part is excuted only when the task is cancelled.')
+        print('cancelled')
         raise  # You must re-raise !!
     finally:
-        print('clean-up resources here')
+        print('cleanup resources here')
 ```
 
 You are not allowed to `await` inside `except-GeneratorExit-clause` and `finally-clause` if you want the task to be cancellable
