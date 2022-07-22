@@ -49,7 +49,7 @@ async def what_you_want_to_do(button):
 ## Installation
 
 If you use this module, it's recommended to pin the minor version, because if
-it changed, it usually means some *important* breaking changes occurred.
+it changed, it means some *important* breaking changes occurred.
 
 ```text
 poetry add asynckivy@~0.5
@@ -171,6 +171,11 @@ import asynckivy as ak
 
 executer = ThreadPoolExecuter()
 
+
+def thread_blocking_operation():
+    '''This function is called from outside the main-thread, so you are not allowed to touch gui components here.'''
+
+
 async def some_task():
     # create a new thread, run a function inside it, then
     # wait for the completion of that thread
@@ -190,13 +195,13 @@ so you can catch them like you do in synchronous code:
 import requests
 import asynckivy as ak
 
-async def some_task():
+async def some_task(label):
     try:
-        r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
+        response = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
     except requests.Timeout:
-        print("TIMEOUT!")
+        label.text = "TIMEOUT!"
     else:
-        print('RECEIVED:', r)
+        label.text = "RECEIVED: " + response.text
 ```
 
 ### synchronizing and communicating between tasks
@@ -271,7 +276,7 @@ task = asynckivy.start(async_func())
 task.cancel()
 ```
 
-When `.cancel()` is called, `GeneratorExit` will occur inside the awaitable,
+When `.cancel()` is called, `GeneratorExit` will occur inside the task,
 which means you can prepare for cancellations as follows:
 
 ```python
@@ -282,10 +287,10 @@ async def async_func():
         print('cancelled')
         raise  # You must re-raise !!
     finally:
-        # do resource clean-up here
+        print('cleanup resources here')
 ```
 
-You are not allowed to `await` inside except-GeneratorExit-clause and finally-clause if you want the awaitable to be cancellable
+You are not allowed to `await` inside `except-GeneratorExit-clause` and `finally-clause` if you want the task to be cancellable
 because cancellations always must be done immediately.
 
 ```python
@@ -301,7 +306,7 @@ async def async_func():
         await something  # <-- NOT ALLOWED
 ```
 
-You are allowed to `await` inside finally-clause if the awaitable will never get cancelled.
+You are allowed to `await` inside `finally-clause` if the task will never get cancelled.
 
 ```python
 async def async_func():  # Assuming this never gets cancelled
@@ -313,7 +318,7 @@ async def async_func():  # Assuming this never gets cancelled
         await something  # <-- ALLOWED
 ```
 
-As long as you follow the rules above, you can cancel tasks as you wish.
+As long as you follow the above rules, you can cancel tasks as you wish.
 But note that if there are lots of explicit calls to `Task.cancel()` in your code,
 **it's a sign of your code being not well-structured**.
 You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.  
@@ -323,7 +328,7 @@ You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.
 ```python
 import asynckivy as ak
 
-# schedule a awaitable/Task to start after the next frame
+# schedule an awaitable/Task to start after the next frame
 ak.start_soon(awaitable_or_task)
 ```
 

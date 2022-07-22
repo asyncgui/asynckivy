@@ -168,6 +168,11 @@ import asynckivy as ak
 
 executer = ThreadPoolExecuter()
 
+
+def thread_blocking_operation():
+    '''この関数は main-thread の外から呼ばれるので ここでKivyのGUIに触れてはならない。'''
+
+
 async def some_task():
     # 方法その一
     # 新しくthreadを作ってそこで渡された関数を実行し、その完了を待つ
@@ -187,13 +192,13 @@ thread内で起きた例外(BaseExceptionは除く)は呼び出し元に運ば�
 import requests
 import asynckivy as ak
 
-async def some_task():
+async def some_task(label):
     try:
-        r = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
+        response = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
     except requests.Timeout:
-        print("制限時間内に応答せず")
+        label.text = "制限時間内に応答無し"
     else:
-        print('通信成功')
+        label.text = "応答有り: " + response.text
 ```
 
 ### Task間の連絡および同期

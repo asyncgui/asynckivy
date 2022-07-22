@@ -8,7 +8,6 @@ import asynckivy as ak
 
 
 def heavy_task(n):
-    # This function is called from outside the main-thread, so you are not allowed to touch the GUI here.
     import time
     for i in range(n):
         time.sleep(1)
