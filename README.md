@@ -402,7 +402,11 @@ C2 --> GC1(ground child 1) & GC2(ground child 2)
 Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio], from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing].
 Actually, I started this one just for learning how async/await works so it *was* initially "reinventing the wheel".
 
-But after playing with Trio and Kivy for a while, I noticed that Trio is not suitable for the situation where fast reactions are required e.g. touch events. The same is true of asyncio. You can confirm it by running `examples/misc/why_xxx_is_not_suitable_for_handling_touch_events.py`, and masshing a mouse button. You'll see sometimes `up` is not paired with `down`. You'll see the coordinates aren't relative to the `RelativeLayout` even though the `target` belongs to it.
+But after playing with Trio and Kivy for a while, I noticed that Trio is not suitable for the situation where fast reactions are required e.g. touch events.
+The same is true of asyncio.
+You can confirm it by running `investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`, and masshing a mouse button.
+You'll see sometimes `up` is not paired with `down`.
+You'll see the coordinates aren't relative to the `RelativeLayout` even though the `target` belongs to it.
 
 The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks waiting for the `Event` to be set. They just schedule the tasks to resume.
 Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
