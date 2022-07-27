@@ -105,7 +105,7 @@ async def animate(target, **kwargs):  # noqa:C901
         clock_event.cancel()
 
 
-def _calculate(a, b, t, isinstance=isinstance, list=list, tuple=tuple, dict=dict):
+def _calculate(a, b, t, isinstance=isinstance, list=list, tuple=tuple, dict=dict, range=range, len=len):
     '''The logic of this function is identical to 'kivy.animation.Animation._calculate()'
     '''
     if isinstance(a, list) or isinstance(a, tuple):
@@ -137,7 +137,6 @@ def _update(target, duration, transition, properties, step_coro, p_time, dt, _ca
     t = transition(progress)
 
     # apply progression on target
-    target = target
     for key, values in properties.items():
         a, b = values
         value = _calculate(a, b, t)
