@@ -1,4 +1,4 @@
-__all__ = ('sleep', 'sleep_free', 'create_sleep', 'repeat_sleeping', )
+__all__ = ('sleep', 'sleep_free', 'repeat_sleeping', )
 
 import types
 from functools import partial
@@ -79,44 +79,3 @@ class repeat_sleeping:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self._trigger.cancel()
-
-
-async def create_sleep(duration):
-    '''(internal) Improves the performance by re-using a ClockEvent.
-
-        sleep_for_1sec = await create_sleep(1)
-        while True:
-            dt = await sleep_for_1sec()
-            # do whatever you want
-
-    WARNING:
-
-        In the example above, "sleep_for_1sec" must be awaited in the same
-        async-thread that created it. That means the following code is not
-        allowed:
-
-            sleep_for_1sec = await create_sleep(1)
-
-            asynckivy.start(sleep_for_1sec())  # No
-            asynckivy.and_(sleep_for_1sec(), ...)  # No
-            asynckivy.or_(sleep_for_1sec(), ...)  # No
-
-            async def some_fn():
-                await sleep_for_1sec()
-            asynckivy.start(some_fn())  # No
-
-        But the following code is allowed:
-
-            sleep_for_1sec = await create_sleep(1)
-
-            async def some_fn():
-                await sleep_for_1sec()
-            await some_fn()  # OK
-    '''
-    from asyncgui import get_step_coro
-    clock_event = Clock.create_trigger(await get_step_coro(), duration, False, False)
-
-    @types.coroutine
-    def sleep():
-        return (yield clock_event)[0][0]
-    return sleep
