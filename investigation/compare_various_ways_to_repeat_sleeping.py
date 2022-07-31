@@ -25,6 +25,14 @@ BoxLayout:
         text: 'repeat_sleeping'
     MyToggleButton:
         text: 'repeat_sleeping_free_await'
+    MyToggleButton:
+        text: 'vanim_dt'
+    MyToggleButton:
+        text: 'vanim_dt_free_await'
+    MyToggleButton:
+        text: 'vanim_dt_et'
+    MyToggleButton:
+        text: 'vanim_dt_et_free_await'
 '''
 
 
@@ -70,6 +78,30 @@ async def ver_repeat_sleeping_free_await():
     async with ak.repeat_sleeping(0, free_await=True) as sleep:
         while True:
             await sleep()
+
+
+async def ver_vanim_dt():
+    from asynckivy import vanim
+    async for dt in vanim.dt():
+        pass
+
+
+async def ver_vanim_dt_free_await():
+    from asynckivy import vanim
+    async for dt in vanim.dt(free_await=True):
+        pass
+
+
+async def ver_vanim_dt_et():
+    from asynckivy import vanim
+    async for dt, et in vanim.dt_et():
+        pass
+
+
+async def ver_vanim_dt_et_free_await():
+    from asynckivy import vanim
+    async for dt, et in vanim.dt_et(free_await=True):
+        pass
 
 
 if __name__ == '__main__':
