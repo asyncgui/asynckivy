@@ -38,6 +38,38 @@ def test_sleep_free():
     assert task.done
 
 
+@pytest.mark.parametrize('free_await', (False, True))
+def test_repeat_sleeping(free_await):
+    import time
+    from kivy.clock import Clock
+    import asynckivy as ak
+
+    async def async_fn():
+        nonlocal task_state
+        async with ak.repeat_sleeping(.5, free_await=free_await) as sleep:
+            task_state = 'A'
+            await sleep()
+            task_state = 'B'
+            await sleep()
+            task_state = 'C'
+
+    task_state = None
+    Clock.tick()
+    task = ak.start(async_fn())
+    time.sleep(.2)
+    Clock.tick()
+    assert task_state == 'A'
+    assert not task.done
+    time.sleep(.5)
+    Clock.tick()
+    assert task_state == 'B'
+    assert not task.done
+    time.sleep(.5)
+    Clock.tick()
+    assert task_state == 'C'
+    assert task.done
+
+
 def test_create_sleep():
     import time
     from kivy.clock import Clock
