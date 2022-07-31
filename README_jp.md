@@ -124,6 +124,11 @@ async def some_task(button):
     # d/2秒かけて元の透明度に戻す。透明度の更新はs秒毎に行う。
     async with ak.fade_transition(widget, d=1, s=.1):
         pass
+
+    # より低級で細やかにanimationを制御したい場合には vanim があります。詳しくはmoduleのdocを。
+    from asynckivy import vanim
+    async for dt in vanim.delta_time():
+        ...
 ```
 
 ### touch処理

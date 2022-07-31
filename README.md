@@ -127,6 +127,12 @@ async def some_task(widget):
     label = Label(...)
     async with ak.fade_transition(label):
         label.text = 'new text'
+
+    # If you want more low-level control over animations, use the vanim module.
+    # Read the module doc for details.
+    from asynckivy import vanim
+    async for dt in vanim.delta_time():
+        ...
 ```
 
 ### touch handling
