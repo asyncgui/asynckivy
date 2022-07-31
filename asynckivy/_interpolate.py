@@ -1,9 +1,11 @@
 __all__ = ('interpolate', 'fade_transition', )
 from contextlib import asynccontextmanager
-import types
-from functools import partial
-from kivy.clock import Clock
 from kivy.animation import AnimationTransition
+
+from ._sleep import repeat_sleeping
+
+
+linear_transition = AnimationTransition.linear
 
 
 async def interpolate(start, end, **kwargs):
@@ -24,23 +26,22 @@ async def interpolate(start, end, **kwargs):
 
     The code above prints as follows:
 
-    =========== =====
-    progress    print
-    =========== =====
-    0 sec       0
-    0.3 sec     30
-    0.6 sec     60
-    0.9 sec     90
-    **1.2 sec** 100
-    =========== =====
+    ============ =====
+    elapsed time print
+    ============ =====
+    0 sec        0
+    0.3 sec      30
+    0.6 sec      60
+    0.9 sec      90
+    **1.2 sec**  100
+    ============ =====
 
     Keyword-arguments are the same as ``kivy.animation.Animation``'s.
 
     .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate  # noqa: E501
     '''
-    from asyncgui import get_step_coro
     duration = kwargs.pop('d', kwargs.pop('duration', 1.))
-    transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
+    transition = kwargs.pop('t', kwargs.pop('transition', linear_transition))
     step = kwargs.pop('s', kwargs.pop('step', 0))
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
@@ -51,44 +52,17 @@ async def interpolate(start, end, **kwargs):
     if not duration:
         yield end
         return
-    try:
-        clock_event = Clock.schedule_interval(
-            partial(_update, start, end, duration, transition, await get_step_coro(), [0., ],),
-            step,
-        )
 
-        get_current_value = _get_current_value
+    slope = end - start
+    elapsed_time = 0.
+    async with repeat_sleeping(step) as sleep:
         while True:
-            # TODO: refactor when drop python 3.7
-            value = await get_current_value()
-            if value is None:
+            elapsed_time += await sleep()
+            if elapsed_time >= duration:
                 break
-            else:
-                yield value
-    finally:
-        clock_event.cancel()
-
-
-def _update(start, end, duration, transition, step_coro, p_time, dt):
-    time = p_time[0] + dt
-    p_time[0] = time
-
-    # calculate progression
-    progress = min(1., time / duration)
-    t = transition(progress)
-
-    value = (start * (1. - t)) + (end * t)
-    step_coro(value)
-
-    # time to stop ?
-    if progress >= 1.:
-        step_coro(None)
-        return False
-
-
-@types.coroutine
-def _get_current_value():
-    return (yield lambda step_coro: None)[0][0]
+            progress = transition(elapsed_time / duration)
+            yield progress * slope + start
+    yield end
 
 
 @asynccontextmanager
