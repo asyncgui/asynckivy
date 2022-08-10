@@ -27,13 +27,11 @@ class Painter(RelativeLayout):
             return True
 
     async def draw_rect(self, touch):
-        from kivy.graphics import Line, Color, Rectangle, InstructionGroup
+        from kivy.graphics import Line, Color
         from kivy.utils import get_random_color
-        inst_group = InstructionGroup()
-        self.canvas.add(inst_group)
-        inst_group.add(Color(*get_random_color()))
-        line = Line(width=2)
-        inst_group.add(line)
+        with self.canvas:
+            Color(*get_random_color())
+            line = Line(width=2)
         ox, oy = x, y = self.to_local(*touch.opos)
         async for __ in ak.rest_of_touch_moves(self, touch, stop_dispatching=True):
             # Don't await anything during the iteration
@@ -41,16 +39,6 @@ class Painter(RelativeLayout):
             min_x, max_x = (x, ox) if x < ox else (ox, x)
             min_y, max_y = (y, oy) if y < oy else (oy, y)
             line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
-        if x == ox and y == oy:
-            self.canvas.remove(inst_group)
-        else:
-            inst_group.add(Color(*get_random_color(alpha=.3)))
-            inst_group.add(
-                Rectangle(
-                    pos=(min_x, min_y),
-                    size=(max_x - min_x, max_y - min_y, ),
-                )
-            )
 
 
 if __name__ == "__main__":
