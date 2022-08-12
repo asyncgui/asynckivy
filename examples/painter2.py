@@ -32,7 +32,7 @@ class Painter(RelativeLayout):
             with self.canvas:
                 Color(*get_random_color())
                 line = Line(width=2)
-            ox, oy = x, y = self_to_local(*touch.opos)
+            ox, oy = self_to_local(*touch.opos)
             async for __ in rest_of_touch_moves(self, touch, stop_dispatching=True):
                 # Don't await anything during the iteration
                 x, y = self_to_local(*touch.pos)
