@@ -73,7 +73,7 @@ If you want both ``dt`` and ``et``, this is for you.
 progress
 --------
 
-If you don't care how much time elapsed, and only care the progression rate, this is for you.
+If you aren't interested in how much time elapsed, and are only interested in the progression rate, this is for you.
 
 .. code-block:: python
 
@@ -151,8 +151,6 @@ well.
 * ``et`` -> ``elapsed_time``
 * ``dt_et`` -> ``delta_time_elapsed_time``
 * ``dt_et_progress`` -> ``delta_time_elapsed_time_progress``
-
-
 '''
 __all__ = (
     'dt', 'delta_time', 'et', 'elapsed_time', 'dt_et', 'delta_time_elapsed_time', 'progress', 'dt_et_progress',
