@@ -25,17 +25,16 @@ degrees_per_second = float
 
 
 async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degrees_per_second=360., ignore_touch=False):
-    with ignore_touch_down(widget) if ignore_touch else nullcontext():
-        with transform(widget) as ig:  # <- InstructionGroup
-            # TODO: refactor after Python 3.7 ends
-            translate = Translate()
-            rotate = Rotate(origin=widget.center)
-            ig.add(translate)
-            ig.add(rotate)
-            async for dt, et, p in vanim.delta_time_elapsed_time_progress(duration=duration):
-                p = p * 2. - 1.  # convert [0 to +1] into [-1 to +1]
-                translate.y = (-(p * p) + 1.) * height
-                rotate.angle = et * rotation_speed
+    with ignore_touch_down(widget) if ignore_touch else nullcontext(), transform(widget) as ig:  # <- InstructionGroup
+        # TODO: refactor after Python 3.7 ends
+        translate = Translate()
+        rotate = Rotate(origin=widget.center)
+        ig.add(translate)
+        ig.add(rotate)
+        async for dt, et, p in vanim.delta_time_elapsed_time_progress(duration=duration):
+            p = p * 2. - 1.  # convert [0 to +1] into [-1 to +1]
+            translate.y = (-(p * p) + 1.) * height
+            rotate.angle = et * rotation_speed
 
 
 KV_CODE = r'''

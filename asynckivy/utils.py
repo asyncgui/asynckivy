@@ -65,7 +65,8 @@ def transform(widget, *, use_outer_canvas=False):
     else:
         c.before  # ensure 'canvas.before' exists
 
-        # Indices start from 1 because there is 'canvas.before' at index 0 and it must remain the first one.
+        # Index starts from 1 because 'canvas.before' is sitting at index 0 and we usually want it to remain first.
+        # See https://github.com/kivy/kivy/issues/7945 for details.
         push_mat_idx = 1
         ig_idx = 2
         before = after = c
