@@ -3,8 +3,8 @@ Difference from popping_widget_1.py
 -----------------------------------
 
 ``Translate`` and ``Rotate`` are inserted into different layers of the canvas, 'canvas.before' and 'canvas'
-respectively, so they never interweave each other. As a result, animations never get messed up no matter how much
-they are stacked. Try mashing the buttons and see what happens.
+respectively, so they never interweave each other no matter how much animations are stacked. Try mashing the buttons
+and see what happens.
 '''
 from kivy.app import App
 from kivy.lang import Builder
@@ -17,17 +17,16 @@ degrees_per_second = float
 
 
 async def pop_widget(widget, *, height=200., duration=1., rotation_speed: degrees_per_second=360.):
-    with transform(widget, use_outer_canvas=True) as outer_ig:
-        with transform(widget) as ig:
-            # TODO: refactor after Python 3.7 ends
-            translate = Translate()
-            outer_ig.add(translate)
-            rotate = Rotate(origin=widget.center)
-            ig.add(rotate)
-            async for dt, et, p in vanim.delta_time_elapsed_time_progress(duration=duration):
-                p = p * 2. - 1.  # convert [0 to +1] into [-1 to +1]
-                translate.y = (-(p * p) + 1.) * height
-                rotate.angle = et * rotation_speed
+    with transform(widget, use_outer_canvas=True) as outer_ig, transform(widget) as ig:
+        # TODO: refactor after Python 3.7 ends
+        translate = Translate()
+        outer_ig.add(translate)
+        rotate = Rotate(origin=widget.center)
+        ig.add(rotate)
+        async for dt, et, p in vanim.delta_time_elapsed_time_progress(duration=duration):
+            p = p * 2. - 1.  # convert [0 to +1] into [-1 to +1]
+            translate.y = (-(p * p) + 1.) * height
+            rotate.angle = et * rotation_speed
 
 
 KV_CODE = r'''

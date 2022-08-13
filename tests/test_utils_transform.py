@@ -42,24 +42,32 @@ def test_use_outer_canvas(widget, has_before, has_after):
 
 
 @pytest.mark.parametrize('has_before', (True, False, ))
-@pytest.mark.parametrize('has_after', (True, False, ))
-def test_use_inner_canvas(widget, has_before, has_after):
+def test_use_inner_canvas__has_after(widget, has_before):
+    from asynckivy.utils import transform
+    c = widget.canvas
+    c.after
+    if has_before: c.before
+    with transform(widget, use_outer_canvas=False):
+        assert c.has_before
+        assert c.has_after
+        assert list_children(c) == ['CanvasBase', 'PushMatrix', 'InstructionGroup', 'Color', 'PopMatrix', 'CanvasBase', ]
+        assert list_children(c.before) == []
+        assert list_children(c.after) == []
+    assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase', ]
+    assert list_children(c.before) == []
+    assert list_children(c.after) == []
+
+
+@pytest.mark.parametrize('has_before', (True, False, ))
+def test_use_inner_canvas__no_after(widget, has_before):
     from asynckivy.utils import transform
     c = widget.canvas
     if has_before: c.before
-    if has_after: c.after
     with transform(widget, use_outer_canvas=False):
         assert c.has_before
-        assert c.has_after is has_after
-        expect = ['CanvasBase', 'PushMatrix', 'InstructionGroup', 'Color', 'PopMatrix', ]
-        if has_after: expect.append('CanvasBase')
-        assert list_children(c) == expect
+        assert not c.has_after
+        assert list_children(c) == ['CanvasBase', 'PushMatrix', 'InstructionGroup', 'Color', 'PopMatrix', ]
         assert list_children(c.before) == []
-        if has_after:
-            assert list_children(c.after) == []
-    expect = ['CanvasBase', 'Color', ]
-    if has_after: expect.append('CanvasBase')
-    assert list_children(c) == expect
+    assert not c.has_after
+    assert list_children(c) == ['CanvasBase', 'Color', ]
     assert list_children(c.before) == []
-    if has_after:
-        assert list_children(c.after) == []

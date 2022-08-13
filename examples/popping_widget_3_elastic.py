@@ -26,6 +26,7 @@ async def pop_widget(widget, *, max_height=600., max_scale_x=2.0):
 
     if max_scale_x <= 1.0:
         raise ValueError(f"'max_scale_x' must be greater than 1.0. (was {max_scale_x})")
+    widget = widget.__self__
     with ignore_touch_down(widget), transform(widget) as ig:
         # phase 1: widget becomes wider and shorter while it being pressed
         scale = Scale(origin=(widget.center_x, widget.y))
@@ -39,7 +40,7 @@ async def pop_widget(widget, *, max_height=600., max_scale_x=2.0):
         scale_y = scale.y
         await ak.animate(scale, x=scale_y, y=scale_x, duration=0.1)
 
-        # phase 3: widget pops and becomes normal size
+        # phase 3: widget pops and becomes initial size
         translate = Translate()
         ig.insert(0, translate)
         popping_energy = (scale_x - 1.0) / (max_scale_x - 1.0)
@@ -53,7 +54,7 @@ async def pop_widget(widget, *, max_height=600., max_scale_x=2.0):
         # phase 4: widget becomes wider and shorter on landing
         await ak.animate(scale, x=(scale_x + 1.0) * 0.5, y=(scale_y + 1.0) * 0.5, duration=0.1)
 
-        # phase 5: widget becomes normal size
+        # phase 5: widget becomes initial size
         await ak.animate(scale, x=1.0, y=1.0, duration=0.1)
 
 
