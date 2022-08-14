@@ -9,10 +9,11 @@ def test_a_number_of_touch_moves(n_touch_moves):
 
     async def async_fn(w, t):
         n = 0
-        async for __ in ak.rest_of_touch_moves(w, t):
-            n += 1
+        async with ak.watch_touch(w, t) as is_touch_move:
+            while await is_touch_move():
+                n += 1
         assert n == n_touch_moves
-        
+
     w = Widget()
     t = UnitTestTouch(0, 0)
     task = ak.start(async_fn(w, t))
@@ -28,7 +29,7 @@ def test_a_number_of_touch_moves(n_touch_moves):
     assert task.done
 
 
-def test_break_during_a_for_loop():
+def test_stop_watching_before_touch_ends():
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
@@ -38,11 +39,12 @@ def test_break_during_a_for_loop():
         nonlocal n_touch_moves
         weak_w = weakref.ref(w)
         assert weak_w not in t.grab_list
-        async for __ in ak.rest_of_touch_moves(w, t):
-            assert weak_w in t.grab_list
-            n_touch_moves += 1
-            if n_touch_moves == 2:
-                break
+        async with ak.watch_touch(w, t) as is_touch_move:
+            while await is_touch_move():
+                assert weak_w in t.grab_list
+                n_touch_moves += 1
+                if n_touch_moves == 2:
+                    break
         assert weak_w not in t.grab_list
         await ak.event(w, 'on_touch_up')
 
@@ -76,9 +78,9 @@ def test_stop_dispatching(stop_dispatching, expectation):
     import asynckivy as ak
 
     async def async_fn(parent, t):
-        async for __ in ak.rest_of_touch_moves(
-                parent, t, stop_dispatching=stop_dispatching):
-            pass
+        async with ak.watch_touch(parent, t, stop_dispatching=stop_dispatching) as is_touch_move:
+            while await is_touch_move():
+                pass
 
     n_touches = {'move': 0, 'up': 0, }
     def on_touch_move(*args):
@@ -120,8 +122,9 @@ def test_a_touch_that_might_have_already_ended(sleep_then_tick, timeout, actuall
 
     async def async_fn(w, t):
         with pytest.raises(MotionEventAlreadyEndedError) if actually_ended else nullcontext():
-            async for __ in ak.rest_of_touch_moves(w, t, timeout=timeout):
-                pass
+            async with ak.watch_touch(w, t, timeout=timeout) as is_touch_move:
+                while await is_touch_move():
+                    pass
 
     w = Widget()
     t = UnitTestTouch(0, 0)
