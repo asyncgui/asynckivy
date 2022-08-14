@@ -10,8 +10,8 @@ def transform(widget, *, use_outer_canvas=False):
     PopMatrix, and inserts an InstructionGroup right next to the PushMatrix. This may be useful when you want to
     animate a widget for a short period of time.
 
-    Example
-    -------
+    Usage
+    -----
 
     .. code-block:: python
 
@@ -25,9 +25,11 @@ def transform(widget, *, use_outer_canvas=False):
     The ``use_outer_canvas`` argument
     ---------------------------------
 
-    During the context manager, the canvas of the widget would be:
+    While the context manager is active, the canvas of the widget would be:
 
     .. code-block:: yaml
+
+        # ... represents existing instructions
 
         Widget:
             canvas.before:

@@ -47,7 +47,7 @@ async def pop_widget(widget, *, max_height=600., max_scale_x=2.0):
         height = popping_energy * max_height
         ak.start(ak.animate(scale, x=1.0, y=1.0, duration=0.1))
         async for p in vanim.progress(duration=popping_energy):
-            p = p * 2. - 1.  # convert [0 to +1] into [-1 to +1]
+            p = p * 2. - 1.  # convert range[0 to +1] into range[-1 to +1]
             translate.y = (-(p * p) + 1.) * height
         ig.remove(translate)
 
