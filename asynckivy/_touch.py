@@ -1,4 +1,4 @@
-__all__ = ('watch_touch', 'rest_of_touch_moves', )
+__all__ = ('watch_touch', 'rest_of_touch_moves', 'on_touch_up', )
 
 import types
 import functools
@@ -36,14 +36,18 @@ class watch_touch:
        widgets that interact to touches (``Button``, ``ScrollView`` and ``Carousel``, for instance) wouldn't work with
        this context manager unless you use it in a specific way.
     '''
-    __slots__ = ('_widget', '_touch', '_stop_dispatching', '_timeout', '_uid_up', '_uid_move', '_no_cleanup', )
+    __slots__ = (
+        '_widget', '_touch', '_stop_dispatching', '_timeout', '_uid_up', '_uid_move', '_no_cleanup',
+        '_non_grabbed_touch_move',
+    )
 
-    def __init__(self, widget, touch, stop_dispatching=False, timeout=1.):
+    def __init__(self, widget, touch, stop_dispatching=False, non_grabbed_touch_move=False, timeout=1.):
         self._widget = widget
         self._touch = touch
         self._stop_dispatching = stop_dispatching
         self._timeout = timeout
         self._no_cleanup = False
+        self._non_grabbed_touch_move = non_grabbed_touch_move
 
     def _on_touch_up_sd(step_coro, touch, w, t):
         if t is touch:
@@ -58,6 +62,12 @@ class watch_touch:
                 step_coro(True)
             return True
 
+    def _on_touch_move_sd_ng(step_coro, touch, w, t):
+        if t is touch:
+            if t.grab_current is None:
+                step_coro(True)
+            return True
+
     def _on_touch_up(step_coro, touch, w, t):
         if t.grab_current is w and t is touch:
             t.ungrab(w)
@@ -69,8 +79,14 @@ class watch_touch:
             step_coro(True)
             return True
 
-    _callbacks = ((_on_touch_up_sd, _on_touch_move_sd, ), (_on_touch_up, _on_touch_move, ), )
-    del _on_touch_up, _on_touch_move, _on_touch_up_sd, _on_touch_move_sd
+    def _on_touch_move_ng(step_coro, touch, w, t):
+        if t is touch and t.grab_current is None:
+            step_coro(True)
+            return True
+
+    _callbacks_up = (_on_touch_up_sd, _on_touch_up, )
+    _callbacks_move = ((_on_touch_move_sd_ng, _on_touch_move_sd, ), (_on_touch_move_ng, _on_touch_move, ), )
+    del _on_touch_up, _on_touch_move, _on_touch_up_sd, _on_touch_move_sd, _on_touch_move_ng, _on_touch_move_sd_ng
 
     @types.coroutine
     def _true_if_touch_move_false_if_touch_up() -> bool:
@@ -82,8 +98,9 @@ class watch_touch:
         yield  # just to make this function a generator function
 
     async def __aenter__(
-        self, get_step_coro=ak.get_step_coro, partial=functools.partial, _callbacks=_callbacks, ak=ak,
+        self, get_step_coro=ak.get_step_coro, partial=functools.partial, _callbacks_up=_callbacks_up, ak=ak,
         _always_false=_always_false, _true_if_touch_move_false_if_touch_up=_true_if_touch_move_false_if_touch_up,
+        _callbacks_move=_callbacks_move,
     ):
         touch = self._touch
         widget = self._widget
@@ -91,14 +108,15 @@ class watch_touch:
             # `on_touch_up` might have been already fired so we need to find out it actually was or not.
             tasks = await ak.or_(
                 ak.sleep(self._timeout),
-                ak.event(widget, 'on_touch_up', filter=lambda w, t: t is touch),
+                ak.event(widget, 'on_touch_up', filter=lambda w, t, touch=touch: t is touch),
             )
             if tasks[0].done:
                 raise ak.MotionEventAlreadyEndedError(f"MotionEvent(uid={touch.uid}) has already ended")
             self._no_cleanup = True
             return _always_false
         step_coro = await get_step_coro()
-        on_touch_up, on_touch_move = _callbacks[not self._stop_dispatching]
+        on_touch_up = _callbacks_up[not self._stop_dispatching]
+        on_touch_move = _callbacks_move[not self._stop_dispatching][not self._non_grabbed_touch_move]
         touch.grab(widget)
         self._uid_up = widget.fbind('on_touch_up', partial(on_touch_up, step_coro, touch))
         self._uid_move = widget.fbind('on_touch_move', partial(on_touch_move, step_coro, touch))
@@ -106,7 +124,7 @@ class watch_touch:
         assert self._uid_move
         return _true_if_touch_move_false_if_touch_up
 
-    del _always_false, _true_if_touch_move_false_if_touch_up, _callbacks
+    del _always_false, _true_if_touch_move_false_if_touch_up,
 
     async def __aexit__(self, *args):
         if self._no_cleanup:
@@ -117,7 +135,7 @@ class watch_touch:
         w.unbind_uid('on_touch_move', self._uid_move)
 
 
-async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=1.):
+async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, non_grabbed_touch_move=False, timeout=1.):
     '''
     Wrap ``watch_touch()`` in a more intuitive interface.
 
@@ -150,6 +168,33 @@ async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=
        See https://peps.python.org/pep-0525/#finalization for details.
     '''
 
-    async with watch_touch(widget, touch, stop_dispatching, timeout) as is_touch_move:
+    async with watch_touch(widget, touch, stop_dispatching, non_grabbed_touch_move, timeout) as is_touch_move:
         while await is_touch_move():
             yield
+
+
+async def on_touch_up(widget, touch, *, stop_dispatching=False, timeout=1.):
+    '''
+    Grab the touch, and wait for its ``on_touch_up`` event to be fired.
+    '''
+    if touch.time_end != -1:
+        # `on_touch_up` might have been already fired so we need to find out it actually was or not.
+        tasks = await ak.or_(
+            ak.sleep(timeout),
+            ak.event(widget, 'on_touch_up', filter=lambda w, t, touch=touch: t is touch),
+        )
+        if tasks[0].done:
+            raise ak.MotionEventAlreadyEndedError(f"MotionEvent(uid={touch.uid}) has already ended")
+        return
+
+    touch.grab(widget)
+    uid_up = widget.fbind('on_touch_up', watch_touch._callbacks_up[not stop_dispatching])
+    if stop_dispatching:
+        uid_move = widget.fbind('on_touch_move', lambda w, t, touch=touch: t is touch)
+    try:
+        await ak.event(widget, 'on_touch_up', filter=lambda w, t: t is touch and t.grab_current is w)
+    finally:
+        touch.ungrab(touch)
+        widget.unbind_uid('on_touch_up', uid_up)
+        if stop_dispatching:
+            widget.unbind_uid('on_touch_move', uid_move)
