@@ -172,8 +172,7 @@ async def et(*, step=0, free_await=False):
     et = 0.
     async with repeat_sleeping(step, free_await) as sleep:
         while True:
-            dt = await sleep()
-            et += dt
+            et += await sleep()
             yield et
 
 
@@ -192,8 +191,7 @@ async def progress(*, duration=1., step=0, free_await=False):
     et = 0.
     async with repeat_sleeping(step, free_await) as sleep:
         while et < duration:
-            dt = await sleep()
-            et += dt
+            et += await sleep()
             yield et / duration
 
 
