@@ -32,8 +32,8 @@ def what_you_want_to_do(button):
         print('C')
 ```
 
-It's barely readable and not easy to understand.
-If you use `asynckivy`, the code above will become:
+It's not easy to understand.
+If you use `asynckivy`, the above code will become:
 
 ```python
 import asynckivy as ak
@@ -48,8 +48,7 @@ async def what_you_want_to_do(button):
 
 ## Installation
 
-If you use this module, it's recommended to pin the minor version, because if
-it changed, it means some *important* breaking changes occurred.
+It's recommended to pin the minor version, because if it changed, it means some *important* breaking changes occurred.
 
 ```text
 poetry add asynckivy@~0.5
@@ -112,21 +111,21 @@ ak.start(some_task(some_button))
 ```python
 import asynckivy as ak
 
-async def some_task(widget):
-    # start an animation and wait for the completion.
-    # keyword-arguments are the same as kivy.animation.Animation's.
-    await ak.animate(widget, width=200, t='in_out_quad', d=.5)
+async def async_func(obj, widget1, widget2):
+    # Animate attibutes of any object and wait for it to end.
+    # Keyword-arguments are the same as kivy.animation.Animation's.
+    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400}, duration=.5, transition='in_out_quad')
 
-    # interpolate between the values 0 and 200 in an async-manner.
-    # keyword-arguments are the same as kivy.animation.Animation's.
-    async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
+    # Interpolate between two values in an async-manner.
+    # Keyword-arguments are the same as kivy.animation.Animation's.
+    async for v in ak.interpolate(0, 200, duration=2, transition='out_cubic'):
         print(v)
-        # await ak.sleep(1)  # Do not await anything during this iteration
+        # await something  # DO NOT await anything during this loop
 
-    # change the text of Label with fade-transition
-    label = Label(...)
-    async with ak.fade_transition(label):
-        label.text = 'new text'
+    # fade-out widgets, excute the with-block, fade-in widgets.
+    async with ak.fade_transition(widget1, widget2, duration=2):
+        widget.text = 'new text'
+        widget2.y = 200
 
     # If you want more low-level control over animations, use the vanim module.
     # Read the module doc for details.
@@ -140,30 +139,39 @@ async def some_task(widget):
 You can easily handle `on_touch_xxx` events via `asynckivy.rest_of_touch_moves()`.
 
 ```python
-import asynckivy as ak
-
-class Painter(RelativeLayout):
+class TouchReceiver(Widget):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
-            ak.start(self.draw_rect(touch))
+            ak.start(self.handle_touch(touch))
             return True
-    
-    async def draw_rect(self, touch):
-        from kivy.graphics import Line, Color, Rectangle
-        from kivy.utils import get_random_color
-        with self.canvas:
-            Color(*get_random_color())
-            line = Line(width=2)
-        ox, oy = self.to_local(*touch.opos)
+
+    async def handle_touch(self, touch):
+        print('on_touch_up')
         async for __ in ak.rest_of_touch_moves(self, touch):
-            # This part is iterated everytime 'on_touch_move' is fired.
-            x, y = self.to_local(*touch.pos)
-            min_x, max_x = (x, ox) if x < ox else (ox, x)
-            min_y, max_y = (y, oy) if y < oy else (oy, y)
-            line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
-            # await ak.sleep(1)  # Do not await anything during this iteration
-        else:
-            print("'on_touch_up' was fired")
+            # await something  # DO NOT await anything during this loop
+            print('on_touch_move')
+        print('on_touch_up')
+```
+
+If Kivy is running in asyncio/trio mode, `rest_of_touch_moves()` might not work.
+In that case, use `watch_touch()`.
+
+```python
+import asynckivy as ak
+
+class TouchReceiver(Widget):
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.opos):
+            ak.start(self.handle_touch(touch))
+            return True
+
+    async def handle_touch(self, touch):
+        print('on_touch_up')
+        async with ak.watch_watch(widget, touch) as is_touch_move:
+            # DO NOT await anything inside this with-block except the return value of 'is_touch_move()'.
+            while await is_touch_move():
+                print('on_touch_move')
+        print('on_touch_up')
 ```
 
 ### threading
@@ -356,11 +364,19 @@ async def async_fn():
         await something  # <-- NOT ALLOWED
 ```
 
-### asynckivy cannot be used with asyncio or trio
+### Some of features might not work if Kivy is running in asyncio/trio mode
 
 `asyncio` and `trio` do some hacky stuff, `sys.set_asyncgen_hooks()` and `sys.get_asyncgen_hooks`,
 which likely hinders asynckivy-flavored async generators.
 You can see its details [here](https://peps.python.org/pep-0525/#finalization).
+
+Because of that, the features that create async generators might not work perfectly.
+Here is a list of them:
+
+- `rest_of_touch_moves()`
+- the entire `vanim` module
+- `fade_transition()`
+
 I don't know how to make it work.
 Maybe if [PEP355](https://peps.python.org/pep-0533/) is accepted,
 it might work.
@@ -411,7 +427,7 @@ Actually, I started this one just for learning how async/await works so it *was*
 
 But after playing with Trio and Kivy for a while, I noticed that Trio is not suitable for the situation where fast reactions are required e.g. touch events.
 The same is true of asyncio.
-You can confirm it by running `investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`, and masshing a mouse button.
+You can confirm it by running `investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`, and mashing a mouse button.
 You'll see sometimes `up` is not paired with `down`.
 You'll see the coordinates aren't relative to the `RelativeLayout` even though the `target` belongs to it.
 
