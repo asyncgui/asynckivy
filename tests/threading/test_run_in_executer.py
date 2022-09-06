@@ -9,7 +9,7 @@ def test_thread_id(kivy_clock):
 
     async def job(executer):
         before = threading.get_ident()
-        await ak.run_in_executer(lambda: None, executer)
+        await ak.run_in_executer(executer, lambda: None)
         after = threading.get_ident()
         assert before == after
 
@@ -27,7 +27,7 @@ def test_propagate_exception(kivy_clock):
 
     async def job(executer):
         with pytest.raises(ZeroDivisionError):
-            await ak.run_in_executer(lambda: 1 / 0, executer)
+            await ak.run_in_executer(executer, lambda: 1 / 0)
 
     with ThreadPoolExecutor() as executer:
         task = ak.start(job(executer))
@@ -41,7 +41,7 @@ def test_no_exception(kivy_clock):
     import asynckivy as ak
 
     async def job(executer):
-        assert 'A' == await ak.run_in_executer(lambda: 'A', executer)
+        assert 'A' == await ak.run_in_executer(executer, lambda: 'A')
 
     with ThreadPoolExecutor() as executer:
         task = ak.start(job(executer))
@@ -58,7 +58,7 @@ def test_cancel_before_getting_excuted(kivy_clock):
     flag = ak.Event()
 
     async def job(executer):
-        await ak.run_in_executer(flag.set, executer)
+        await ak.run_in_executer(executer, flag.set)
 
     with ThreadPoolExecutor(max_workers=1) as executer:
         executer.submit(time.sleep, .1)
