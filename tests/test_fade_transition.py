@@ -7,15 +7,6 @@ def approx():
     return partial(pytest.approx, abs=0.01)
 
 
-def test_invalid_argument():
-    import asynckivy as ak
-    async def job():
-        async with ak.fade_transition(unknown=True):
-            pass
-    with pytest.raises(ValueError):
-        ak.start(job())
-
-
 def test_run_normally(approx, sleep_then_tick):
     from types import SimpleNamespace
     import asynckivy as ak

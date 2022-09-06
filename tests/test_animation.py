@@ -12,7 +12,7 @@ def test_scalar(approx, sleep_then_tick):
     import asynckivy as ak
 
     obj = SimpleNamespace(num=0)
-    task = ak.start(ak.animate(obj, num=100, d=.4))
+    task = ak.start(ak.animate(obj, num=100, duration=.4))
 
     sleep_then_tick(.1)
     assert obj.num == approx(25)
@@ -32,7 +32,7 @@ def test_list(approx, sleep_then_tick):
     import asynckivy as ak
 
     obj = SimpleNamespace(list=[0, 0])
-    task = ak.start(ak.animate(obj, list=[100, 200], d=.4))
+    task = ak.start(ak.animate(obj, list=[100, 200], duration=.4))
 
     sleep_then_tick(.1)
     assert obj.list == approx([25, 50])
@@ -52,7 +52,7 @@ def test_dict(approx, sleep_then_tick):
     import asynckivy as ak
 
     obj = SimpleNamespace(dict={'key': 0., })
-    task = ak.start(ak.animate(obj, dict={'key': 100}, d=.4))
+    task = ak.start(ak.animate(obj, dict={'key': 100}, duration=.4))
 
     sleep_then_tick(.1)
     assert obj.dict == approx({'key': 25})
@@ -72,7 +72,7 @@ def test_cancel(approx, sleep_then_tick):
     import asynckivy as ak
 
     obj = SimpleNamespace(num=0)
-    task = ak.start(ak.animate(obj, num=100, d=.4,))
+    task = ak.start(ak.animate(obj, num=100, duration=.4,))
 
     sleep_then_tick(.1)
     assert obj.num == approx(25)
@@ -88,7 +88,7 @@ def test_low_fps(approx, sleep_then_tick):
     import asynckivy as ak
 
     obj = SimpleNamespace(num=0)
-    task = ak.start(ak.animate(obj, num=100, d=.4, step=.3))
+    task = ak.start(ak.animate(obj, num=100, duration=.4, step=.3))
 
     sleep_then_tick(.1)
     assert obj.num == 0

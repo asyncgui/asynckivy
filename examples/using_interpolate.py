@@ -18,7 +18,7 @@ class TestApp(App):
     async def main(self):
         label = self.root
         await ak.n_frames(4)
-        async for font_size in ak.interpolate(start=0, end=300, d=5, s=.1, t='out_cubic'):
+        async for font_size in ak.interpolate(start=0, end=300, duration=5, step=.1, transition='out_cubic'):
             label.font_size = font_size
             label.text = str(int(font_size))
 

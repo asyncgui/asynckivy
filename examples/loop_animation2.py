@@ -36,19 +36,19 @@ class TestApp(App):
             await round(root, label)
             await animate(label, center=root.center)
             label.pos_hint['center'] = (.5, .5, )
-            await animate(label, font_size=100.0, s=.1)
+            await animate(label, font_size=100.0, step=.1)
             del label.pos_hint['center']
             label.text = 'Kivy'
             await animate(label, pos=root.pos)
             await round(root, label)
-            await animate(label, font_size=60.0, s=.1)
+            await animate(label, font_size=60.0, step=.1)
 
     @staticmethod
     async def _blink_forever(label):
         from asynckivy import animate
         while True:
-            await animate(label, color=(0, .3, 0, 1, ), t='out_quad')
-            await animate(label, color=(1, 1, 1, 1, ), t='in_quad')
+            await animate(label, color=(0, .3, 0, 1, ), transition='out_quad')
+            await animate(label, color=(1, 1, 1, 1, ), transition='in_quad')
 
     @staticmethod
     async def _round(parent, widget):

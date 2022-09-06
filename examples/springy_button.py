@@ -126,8 +126,8 @@ class SpringyButton(Label):
                     continue
                 if collide_point(*touch.pos):
                     async with cancel_protection():
-                        await animate(self, _scaling=.9, d=.05)
-                        await animate(self, _scaling=1, d=.05)
+                        await animate(self, _scaling=.9, duration=.05)
+                        await animate(self, _scaling=1, duration=.05)
                     dispatch('on_release')
                 blink_trigger_cancel()
                 self._border_color = border_color1

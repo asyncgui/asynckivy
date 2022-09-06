@@ -106,24 +106,25 @@ ak.start(async_func(a_button))
 ### animation関連
 
 ```python
+from types import SimpleNamespace
 import asynckivy as ak
 
 
-async def async_func(obj, widget1, widget2):
+async def async_func(widget1, widget2):
+    obj = SimpleNamespace(attr1=10, attr2=[20, 30, ], attr3={'key': 40, })
+
     # 任意のobjectの属性をanimationしてその完了を待つ。
-    # keyword引数は全て `kivy.animation.Animation` と同じ。
-    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400}, transition='in_out_quad', duration=.5)
+    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400})
 
     # 二つの数値を補間する。
-    # keyword引数は全て `kivy.animation.Animation` と同じ。
-    async for v in ak.interpolate(0, 200, transition='out_cubic', duration=2, step=0.2):
+    async for v in ak.interpolate(0, 200):
         print(v)
-        # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
+        # await something  # この繰り返し中にawaitは使ってはいけない
 
     # duration/2秒かけてwidget達を徐々に透明にしてからwith blobk内を実行し、それから
     # duration/2秒かけて元の透明度に戻す。透明度の更新はstep秒毎に行う。
-    async with ak.fade_transition(widget1, widget2, duration=2, step=.1):
-        widget.text = 'new text'
+    async with ak.fade_transition(widget1, widget2):
+        widget1.text = 'new text'
         widget2.y = 200
 
     # より細やかにanimationを制御したい時の為に vanim があります。詳しくはmoduleのdocを。
