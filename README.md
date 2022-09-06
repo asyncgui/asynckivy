@@ -109,21 +109,22 @@ ak.start(some_task(some_button))
 ### animation
 
 ```python
+from types import SimpleNamespace
 import asynckivy as ak
 
-async def async_func(obj, widget1, widget2):
+async def async_func(widget1, widget2):
+    obj = SimpleNamespace(attr1=10, attr2=[20, 30, ], attr3={'key': 40, })
+
     # Animate attibutes of any object and wait for it to end.
-    # Keyword-arguments are the same as kivy.animation.Animation's.
-    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400}, duration=.5, transition='in_out_quad')
+    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400})
 
     # Interpolate between two values in an async-manner.
-    # Keyword-arguments are the same as kivy.animation.Animation's.
-    async for v in ak.interpolate(0, 200, duration=2, transition='out_cubic'):
+    async for v in ak.interpolate(0, 200):
         print(v)
         # await something  # DO NOT await anything during this loop
 
     # fade-out widgets, excute the with-block, fade-in widgets.
-    async with ak.fade_transition(widget1, widget2, duration=2):
+    async with ak.fade_transition(widget1, widget2):
         widget.text = 'new text'
         widget2.y = 200
 

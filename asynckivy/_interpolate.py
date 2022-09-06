@@ -8,7 +8,7 @@ from ._sleep import repeat_sleeping
 linear_transition = AnimationTransition.linear
 
 
-async def interpolate(start, end, **kwargs):
+async def interpolate(start, end, *, duration=1.0, step=0, transition=AnimationTransition.linear):
     '''
     interpolate
     ===========
@@ -21,10 +21,10 @@ async def interpolate(start, end, **kwargs):
 
     .. code-block:: python
 
-       async for v in asynckivy.interpolate(0, 100, d=1., s=.3, t='linear'):
-           print(int(v))
+        async for v in asynckivy.interpolate(0, 100, duration=1.0, step=.3):
+            print(int(v))
 
-    The code above prints as follows:
+    The above code prints as follows:
 
     ============ =====
     elapsed time print
@@ -36,17 +36,10 @@ async def interpolate(start, end, **kwargs):
     **1.2 sec**  100
     ============ =====
 
-    Keyword-arguments are the same as ``kivy.animation.Animation``'s.
-
     .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate  # noqa: E501
     '''
-    duration = kwargs.pop('d', kwargs.pop('duration', 1.))
-    transition = kwargs.pop('t', kwargs.pop('transition', linear_transition))
-    step = kwargs.pop('s', kwargs.pop('step', 0))
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
-    if kwargs:
-        raise ValueError(f"unrecognizable keyword-arguments: {kwargs}")
 
     yield start
     if not duration:
@@ -66,22 +59,17 @@ async def interpolate(start, end, **kwargs):
 
 
 @asynccontextmanager
-async def fade_transition(*widgets, **kwargs):
-    '''Fade-out/in the given widgets.
-
-    Available keyword-arguments are 'd', 'duration', 's' and 'step'.
+async def fade_transition(*widgets, duration=1.0, step=0):
+    '''Return an async context manager that fades-out/in the given widgets.
     '''
-    half_d = kwargs.pop('d', kwargs.pop('duration', 1.)) / 2.
-    s = kwargs.pop('s', kwargs.pop('step', 0))
-    if kwargs:
-        raise ValueError("surplus keyword-arguments were given:", kwargs)
+    half_duration = duration / 2.
     original_opacities = tuple(w.opacity for w in widgets)
     try:
-        async for v in interpolate(1.0, 0.0, d=half_d, s=s):
+        async for v in interpolate(1.0, 0.0, duration=half_duration, step=step):
             for w, o in zip(widgets, original_opacities):
                 w.opacity = v * o
         yield
-        async for v in interpolate(0.0, 1.0, d=half_d, s=s):
+        async for v in interpolate(0.0, 1.0, duration=half_duration, step=step):
             for w, o in zip(widgets, original_opacities):
                 w.opacity = v * o
     except GeneratorExit:

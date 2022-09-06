@@ -6,7 +6,7 @@ from asyncgui import get_step_coro
 from asynckivy import sleep_forever
 
 
-async def animate(target, **kwargs):  # noqa:C901
+async def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear, **animated_properties):
     '''
     animate
     =======
@@ -18,14 +18,14 @@ async def animate(target, **kwargs):  # noqa:C901
 
     .. code-block:: python
 
-       import asynckivy as ak
+        import asynckivy as ak
 
-       async def some_async_func(widget):
-           # case #1: start an animation and wait for its completion
-           await ak.animate(widget, x=100, d=2, s=.2, t='in_cubic')
+        async def some_async_func(widget):
+            # case #1: start an animation and wait for its completion
+            await ak.animate(widget, x=100)
 
-       # case #2: start an animation but not wait for its completion
-       ak.start(ak.animate(widget, ...))
+        # case #2: start an animation but not wait for its completion
+        ak.start(ak.animate(widget, x=100))
 
     Difference from kivy.animation.Animation
     ----------------------------------------
@@ -36,9 +36,8 @@ async def animate(target, **kwargs):  # noqa:C901
 
     .. code-block:: python
 
-       class MyClass: pass
-       obj = MyClass()
-       obj.value = 100
+        import types
+        obj = types.SimpleNamespace(value=100)
 
     you already can animate it by ``asynckivy.animate(obj, value=200)``.
     Therefore, ``asynckivy.animate()`` is more broadly applicable than
@@ -63,24 +62,20 @@ async def animate(target, **kwargs):  # noqa:C901
                await ak.animate(widget, x=0)
 
        def kivy_Parallel(widget):
-           anim = Animation(x=100) & Animation(y=100, d=2)
-           anim.start(widget)
+           anim = Animation(x=100) & Animation(y=100, duration=2)
            anim.bind(on_complete=lambda *args: print("completed"))
+           anim.start(widget)
 
        async def asynckivy_Parallel(widget):
            await ak.and_(
                ak.animate(widget, x=100),
-               ak.animate(widget, y=100, d=2),
+               ak.animate(widget, y=100, duration=2),
            )
            print("completed")
     '''
-    duration = kwargs.pop('d', kwargs.pop('duration', 1.))
-    transition = kwargs.pop('t', kwargs.pop('transition', 'linear'))
-    step = kwargs.pop('s', kwargs.pop('step', 0))
-    animated_properties = kwargs
     if not duration:
         for key, value in animated_properties.items():
-            setattr(target, key, value)
+            setattr(obj, key, value)
         return
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
@@ -88,7 +83,7 @@ async def animate(target, **kwargs):  # noqa:C901
     # get current values
     properties = {}
     for key, value in animated_properties.items():
-        original_value = getattr(target, key)
+        original_value = getattr(obj, key)
         if isinstance(original_value, (tuple, list)):
             original_value = original_value[:]
         elif isinstance(original_value, dict):
@@ -97,7 +92,7 @@ async def animate(target, **kwargs):  # noqa:C901
 
     try:
         clock_event = Clock.schedule_interval(
-            partial(_update, target, duration, transition, properties, await get_step_coro(), [0., ]),
+            partial(_update, obj, duration, transition, properties, await get_step_coro(), [0., ]),
             step,
         )
         await sleep_forever()
@@ -128,7 +123,7 @@ def _calculate(a, b, t, isinstance=isinstance, list=list, tuple=tuple, dict=dict
         return (a * (1. - t)) + (b * t)
 
 
-def _update(target, duration, transition, properties, step_coro, p_time, dt, _calculate=_calculate, setattr=setattr):
+def _update(obj, duration, transition, properties, step_coro, p_time, dt, _calculate=_calculate, setattr=setattr):
     time = p_time[0] + dt
     p_time[0] = time
 
@@ -136,11 +131,11 @@ def _update(target, duration, transition, properties, step_coro, p_time, dt, _ca
     progress = min(1., time / duration)
     t = transition(progress)
 
-    # apply progression on target
+    # apply progression on obj
     for key, values in properties.items():
         a, b = values
         value = _calculate(a, b, t)
-        setattr(target, key, value)
+        setattr(obj, key, value)
 
     # time to stop ?
     if progress >= 1.:
