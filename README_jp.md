@@ -198,7 +198,7 @@ async def async_func():
 
     # 方法そのニ
     # ThreadPoolExecuterで渡された関数を実行し、その完了を待つ
-    r = await ak.run_in_executer(thread_blocking_operation, executer)
+    r = await ak.run_in_executer(executer, thread_blocking_operation)
     print("return value:", r)
 ```
 

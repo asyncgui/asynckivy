@@ -199,7 +199,7 @@ async def some_task():
 
     # run a function inside a ThreadPoolExecuter, and wait for the completion
     # (ProcessPoolExecuter is not supported)
-    r = await ak.run_in_executer(thread_blocking_operation, executer)
+    r = await ak.run_in_executer(executer, thread_blocking_operation)
     print("return value:", r)
 ```
 

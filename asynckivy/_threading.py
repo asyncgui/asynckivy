@@ -27,7 +27,7 @@ async def run_in_thread(func, *, daemon=False):
     return ret
 
 
-async def run_in_executer(func, executer):
+async def run_in_executer(executer, func):
     event = asynckivy.Event()
     future = executer.submit(_wrapper, func, event)
     try:
