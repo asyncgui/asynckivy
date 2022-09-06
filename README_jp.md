@@ -59,7 +59,7 @@ pip install "asynckivy>=0.5,<0.6"
 ```python
 import asynckivy as ak
 
-async def some_task(button):
+async def async_func(button):
     # 1秒待つ
     dt = await ak.sleep(1)
     print(f'{dt}秒経ちました')
@@ -100,7 +100,7 @@ async def some_task(button):
     child_tasks = tasks[1].result
     print("5秒経ちました" if child_tasks[0].done else "other_async_funcが完了しました")
 
-ak.start(some_task(some_button))
+ak.start(async_func(a_button))
 ```
 
 ### animation関連
@@ -109,23 +109,24 @@ ak.start(some_task(some_button))
 import asynckivy as ak
 
 
-async def some_task(button):
-    # animationを開始してその完了を待つ。
+async def async_func(obj, widget1, widget2):
+    # 任意のobjectの属性をanimationしてその完了を待つ。
     # keyword引数は全て `kivy.animation.Animation` と同じ。
-    await ak.animate(button, width=200, t='in_out_quad', d=.5)
+    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400}, transition='in_out_quad', duration=.5)
 
-    # d秒かけて0から200までを線形補間する。中間値の計算はs秒毎に行う。
+    # 二つの数値を補間する。
     # keyword引数は全て `kivy.animation.Animation` と同じ。
-    async for v in ak.interpolate(0, 200, s=.2, d=2, t='linear'):
+    async for v in ak.interpolate(0, 200, transition='out_cubic', duration=2, step=0.2):
         print(v)
         # await ak.sleep(1)  # この繰り返し中にawaitは使ってはいけない
 
-    # d/2秒かけてwidgetを徐々に透明にしてからwith blobk内を実行し、それから
-    # d/2秒かけて元の透明度に戻す。透明度の更新はs秒毎に行う。
-    async with ak.fade_transition(widget, d=1, s=.1):
-        pass
+    # duration/2秒かけてwidget達を徐々に透明にしてからwith blobk内を実行し、それから
+    # duration/2秒かけて元の透明度に戻す。透明度の更新はstep秒毎に行う。
+    async with ak.fade_transition(widget1, widget2, duration=2, step=.1):
+        widget.text = 'new text'
+        widget2.y = 200
 
-    # より低級で細やかにanimationを制御したい場合には vanim があります。詳しくはmoduleのdocを。
+    # より細やかにanimationを制御したい時の為に vanim があります。詳しくはmoduleのdocを。
     from asynckivy import vanim
     async for dt in vanim.delta_time():
         ...
@@ -138,29 +139,39 @@ async def some_task(button):
 ```python
 import asynckivy as ak
 
-class Painter(RelativeLayout):
+class TouchReceiver(Widget):
     def on_touch_down(self, touch):
         if self.collide_point(*touch.opos):
-            ak.start(self.draw_rect(touch))
+            ak.start(self.handle_touch(touch))
             return True
-    
-    async def draw_rect(self, touch):
-        from kivy.graphics import Line, Color, Rectangle
-        from kivy.utils import get_random_color
-        with self.canvas:
-            Color(*get_random_color())
-            line = Line(width=2)
-        ox, oy = self.to_local(*touch.opos)
+
+    async def handle_touch(self, touch):
+        print('on_touch_up')
         async for __ in ak.rest_of_touch_moves(self, touch):
-            # 'on_touch_move'の度にこのloopが繰り返される。
-            # 注意点としてこの繰り返し中は絶対にawaitを使わないこと。
-            x, y = self.to_local(*touch.pos)
-            min_x, max_x = (x, ox) if x < ox else (ox, x)
-            min_y, max_y = (y, oy) if y < oy else (oy, y)
-            line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
-        else:
-            # 'on_touch_up'時にこのcode blockが実行される
-            print("'on_touch_up' was fired")
+            # この繰り返し中はawaitを使ってはいけない。
+            print('on_touch_move')
+        print('on_touch_up')
+```
+
+Kivyがasyncio/trioモードで動いていると`rest_of_touch_moves()`がうまく動かない可能性があります。
+そんな時は`watch_touch()`を使って下さい。
+
+```python
+import asynckivy as ak
+
+class TouchReceiver(Widget):
+    def on_touch_down(self, touch):
+        if self.collide_point(*touch.opos):
+            ak.start(self.handle_touch(touch))
+            return True
+
+    async def handle_touch(self, touch):
+        print('on_touch_up')
+        async with ak.watch_watch(widget, touch) as is_touch_move:
+            # このwithブロック内で 'is_touch_move()' の戻り値以外の物をawaitしてはならない。
+            while await is_touch_move():
+                print('on_touch_move')
+        print('on_touch_up')
 ```
 
 ### thread
@@ -178,7 +189,7 @@ def thread_blocking_operation():
     '''この関数は main-thread の外から呼ばれるので ここでKivyのGUIに触れてはならない。'''
 
 
-async def some_task():
+async def async_func():
     # 方法その一
     # 新しくthreadを作ってそこで渡された関数を実行し、その完了を待つ
     r = await ak.run_in_thread(thread_blocking_operation)
@@ -197,7 +208,7 @@ thread内で起きた例外(BaseExceptionは除く)は呼び出し元に運ば�
 import requests
 import asynckivy as ak
 
-async def some_task(label):
+async def async_func(label):
     try:
         response = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
     except requests.Timeout:
@@ -330,6 +341,36 @@ import asynckivy as ak
 # 次のframeでawaitable/Taskが始まるように予約
 ak.start_soon(awaitable_or_task)
 ```
+
+## 留意点
+
+### awaitできない場所
+
+既に上で述べたことですが再び言います。
+`rest_of_touch_moves()`や`interpolate()`による繰り返し中は`await`してはいけません。
+
+```python
+import asynckivy as ak
+
+async def async_fn():
+    async for v in ak.interpolate(...):
+        await something  # 駄目
+
+    async for __ in ak.rest_of_touch_moves(...):
+        await something  # 駄目
+```
+
+### Kivyがasyncio/trioモードで動いている時はasynckivyはうまく機能しないかもしれません
+
+`asyncio`や`trio`がasync generatorに対して[付け焼き刃的な処置](https://peps.python.org/pep-0525/#finalization)を行うせいなのか、asynckivy用のasync generatorがうまく機能しない事があります。
+なので`asyncio`または`trio`を使っている場合は以下の者達を使わなのがお薦めです。
+
+- `rest_of_touch_moves()`
+- `vanim` モジュールの全て
+- `fade_transition()`
+
+これにどう対処すればいいのかは現状分かっていません。
+もしかすると[PEP533](https://peps.python.org/pep-0533/)が解決してくれるかもしれません。
 
 ### Structured Concurrency
 
