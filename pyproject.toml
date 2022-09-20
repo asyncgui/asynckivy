@@ -30,5 +30,6 @@ pytest = "^7.0.1"
 flake8 = "^4.0.1"
 kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.1.0.zip"}
 
+[build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
