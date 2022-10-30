@@ -49,3 +49,15 @@ def test_repeat_sleeping(sleep_then_tick, free_await):
     sleep_then_tick(.5)
     assert task_state == 'C'
     assert task.done
+
+
+def test_free_awaitが真の時は勝手にtaskを再開しない(sleep_then_tick):
+    import asynckivy as ak
+
+    async def async_fn():
+        async with ak.repeat_sleeping(0, free_await=True) as sleep:
+            await ak.sleep_forever()
+
+    task = ak.start(async_fn())
+    sleep_then_tick(.1)
+    assert not task.done

@@ -74,8 +74,11 @@ class repeat_sleeping:
             do_nothing=lambda step_coro: None):
         free = self._free_await
         self._trigger = trigger = create_trigger(await get_step_coro(), self._step, not free, False)
-        trigger()
-        return partial(sleep, trigger if free else do_nothing)
+        if free:
+            return partial(sleep, trigger)
+        else:
+            trigger()
+            return partial(sleep, do_nothing)
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self._trigger.cancel()
