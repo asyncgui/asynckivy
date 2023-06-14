@@ -14,8 +14,8 @@ class watch_touch:
 
     .. code-block:: python
 
-        async with watch_touch(widget, touch) as is_touch_move:
-            while await is_touch_move():
+        async with watch_touch(widget, touch) as in_progress:
+            while await in_progress():
                 print('on_touch_move')
             else:
                 print('on_touch_up')
@@ -28,8 +28,8 @@ class watch_touch:
 
        .. code-block:: python
 
-           async with watch_touch(widget, touch) as is_touch_move:
-               await is_touch_move()  # ALLOWED
+           async with watch_touch(widget, touch) as in_progress:
+               await in_progress()  # ALLOWED
                await something_else   # NOT ALLOWED
 
     2. Since the context manager grabs/ungrabs the ``touch``, the ``widget`` must NOT grab/ungrab it. Most of the
@@ -150,6 +150,6 @@ async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=
        See https://peps.python.org/pep-0525/#finalization for details.
     '''
 
-    async with watch_touch(widget, touch, stop_dispatching, timeout) as is_touch_move:
-        while await is_touch_move():
+    async with watch_touch(widget, touch, stop_dispatching, timeout) as in_progress:
+        while await in_progress():
             yield

@@ -9,8 +9,8 @@ def test_a_number_of_touch_moves(n_touch_moves):
 
     async def async_fn(w, t):
         n = 0
-        async with ak.watch_touch(w, t) as is_touch_move:
-            while await is_touch_move():
+        async with ak.watch_touch(w, t) as in_progress:
+            while await in_progress():
                 n += 1
         assert n == n_touch_moves
 
@@ -39,8 +39,8 @@ def test_stop_watching_before_touch_ends():
         nonlocal n_touch_moves
         weak_w = weakref.ref(w)
         assert weak_w not in t.grab_list
-        async with ak.watch_touch(w, t) as is_touch_move:
-            while await is_touch_move():
+        async with ak.watch_touch(w, t) as in_progress:
+            while await in_progress():
                 assert weak_w in t.grab_list
                 n_touch_moves += 1
                 if n_touch_moves == 2:
@@ -78,8 +78,8 @@ def test_stop_dispatching(stop_dispatching, expectation):
     import asynckivy as ak
 
     async def async_fn(parent, t):
-        async with ak.watch_touch(parent, t, stop_dispatching=stop_dispatching) as is_touch_move:
-            while await is_touch_move():
+        async with ak.watch_touch(parent, t, stop_dispatching=stop_dispatching) as in_progress:
+            while await in_progress():
                 pass
 
     n_touches = {'move': 0, 'up': 0, }
@@ -122,8 +122,8 @@ def test_a_touch_that_might_have_already_ended(sleep_then_tick, timeout, actuall
 
     async def async_fn(w, t):
         with pytest.raises(MotionEventAlreadyEndedError) if actually_ended else nullcontext():
-            async with ak.watch_touch(w, t, timeout=timeout) as is_touch_move:
-                while await is_touch_move():
+            async with ak.watch_touch(w, t, timeout=timeout) as in_progress:
+                while await in_progress():
                     pass
 
     w = Widget()

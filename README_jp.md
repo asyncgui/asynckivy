@@ -28,6 +28,8 @@ def what_you_want_to_do(button):
     def on_button_press(button):
         button.unbind(on_press=on_button_press)
         print('C')
+
+what_you_want_to_do(...)
 ```
 
 のように読みにくい物となりますが、`asynckivy`を用いることで
@@ -41,6 +43,8 @@ async def what_you_want_to_do(button):
     print('B')
     await ak.event(button, 'on_press')
     print('C')
+
+ak.start(what_you_want_to_do(...))
 ```
 
 と分かりやすく書けます。
@@ -165,12 +169,13 @@ class TouchReceiver(Widget):
         if self.collide_point(*touch.opos):
             ak.start(self.handle_touch(touch))
             return True
+        return super().on_touch_down(touch)
 
     async def handle_touch(self, touch):
         print('on_touch_up')
-        async with ak.watch_watch(widget, touch) as is_touch_move:
-            # このwithブロック内で 'is_touch_move()' の戻り値以外の物をawaitしてはならない。
-            while await is_touch_move():
+        async with ak.watch_watch(self, touch) as in_progress:
+            # このwithブロック内で 'in_progress()' の戻り値以外の物をawaitしてはならない。
+            while await in_progress():
                 print('on_touch_move')
         print('on_touch_up')
 ```
@@ -202,7 +207,7 @@ async def async_func():
     print("return value:", r)
 ```
 
-thread内で起きた例外(BaseExceptionは除く)は呼び出し元に運ばれるので、
+thread内で起きた例外(ExceptionではないBaseExceptionは除く)は呼び出し元に運ばれるので、
 以下のように通常の同期codeを書く感覚で例外を捌ける。
 
 ```python
@@ -332,7 +337,7 @@ async def async_func():
 上の決まりを守っている限りは好きなだけ中断できる。
 ただもし明示的な``.cancel()``呼び出しがcode内に多く現れるようなら、
 それはcodeが正しい構造を採っていない兆しなので修正すべきである。
-多くの場合``Task.cancel()``は`asynckivy.and_()`や`asynckivy.or_()`を用いる事で無くせるのでそうされたし。
+多くの場合``Task.cancel()``は`asynckivy.and_()`や`asynckivy.or_()`を用いる事で無くせるのでそうするのがお薦めです。
 
 ### その他
 
