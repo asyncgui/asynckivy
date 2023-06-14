@@ -30,6 +30,8 @@ def what_you_want_to_do(button):
     def on_button_press(button):
         button.unbind(on_press=on_button_press)
         print('C')
+
+what_you_want_to_do(...)
 ```
 
 It's not easy to understand.
@@ -44,6 +46,8 @@ async def what_you_want_to_do(button):
     print('B')
     await ak.event(button, 'on_press')
     print('C')
+
+ak.start(what_you_want_to_do(...))
 ```
 
 ## Installation
@@ -165,12 +169,13 @@ class TouchReceiver(Widget):
         if self.collide_point(*touch.opos):
             ak.start(self.handle_touch(touch))
             return True
+        return super().on_touch_down(touch)
 
     async def handle_touch(self, touch):
         print('on_touch_up')
-        async with ak.watch_watch(widget, touch) as is_touch_move:
-            # DO NOT await anything inside this with-block except the return value of 'is_touch_move()'.
-            while await is_touch_move():
+        async with ak.watch_watch(self, touch) as in_progress:
+            # DO NOT await anything inside this with-block except the return value of 'in_progress()'.
+            while await in_progress():
                 print('on_touch_move')
         print('on_touch_up')
 ```
