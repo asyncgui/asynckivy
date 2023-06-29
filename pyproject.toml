@@ -22,13 +22,13 @@ classifiers=[
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8.1"
 asyncgui = "~0.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.1"
-flake8 = "^4.0.1"
-kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.1.0.zip"}
+flake8 = "^6.0.0"
+kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.2.1.zip"}
 
 [build-system]
 requires = ["poetry-core"]
