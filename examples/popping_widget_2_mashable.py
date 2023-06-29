@@ -18,7 +18,6 @@ degrees_per_second = float
 
 async def pop_widget(widget, *, height=200., duration=1., rotation_speed: degrees_per_second=360.):
     with transform(widget, use_outer_canvas=True) as outer_ig, transform(widget) as ig:
-        # TODO: refactor after Python 3.7 ends
         translate = Translate()
         outer_ig.add(translate)
         rotate = Rotate(origin=widget.center)

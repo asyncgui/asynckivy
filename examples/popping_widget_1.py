@@ -26,7 +26,6 @@ degrees_per_second = float
 
 async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degrees_per_second=360., ignore_touch=False):
     with ignore_touch_down(widget) if ignore_touch else nullcontext(), transform(widget) as ig:  # <- InstructionGroup
-        # TODO: refactor after Python 3.7 ends
         translate = Translate()
         rotate = Rotate(origin=widget.center)
         ig.add(translate)
