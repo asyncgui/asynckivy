@@ -7,5 +7,4 @@ from ._animation import *
 from ._interpolate import *
 from ._touch import *
 from ._threading import *
-from ._start_soon import *
 from ._n_frames import *

@@ -30,5 +30,5 @@ async def main():
     App.get_running_app().stop()
 
 
-ak.start_soon(main())
+ak.start(main())
 App().run()
