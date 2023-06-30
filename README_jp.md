@@ -339,15 +339,6 @@ async def async_func():
 それはcodeが正しい構造を採っていない兆しなので修正すべきである。
 多くの場合``Task.cancel()``は`asynckivy.and_()`や`asynckivy.or_()`を用いる事で無くせるのでそうするのがお薦めです。
 
-### その他
-
-```python
-import asynckivy as ak
-
-# 次のframeでawaitable/Taskが始まるように予約
-ak.start_soon(awaitable_or_task)
-```
-
 ## 留意点
 
 ### awaitできない場所

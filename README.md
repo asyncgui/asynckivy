@@ -343,15 +343,6 @@ But note that if there are lots of explicit calls to `Task.cancel()` in your cod
 **it's a sign of your code being not well-structured**.
 You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.  
 
-### misc
-
-```python
-import asynckivy as ak
-
-# schedule an awaitable/Task to start after the next frame
-ak.start_soon(awaitable_or_task)
-```
-
 ## Notes
 
 ### Places you cannot await
