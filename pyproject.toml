@@ -13,23 +13,27 @@ classifiers=[
     'License :: OSI Approved :: MIT License',
     'Intended Audience :: Developers',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
     'Topic :: Software Development :: Libraries',
     'Operating System :: OS Independent',
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8.1"
 asyncgui = "~0.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.1"
-flake8 = "^4.0.1"
-kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.1.0.zip"}
+flake8 = "^6.0.0"
+kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.2.1.zip"}
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+xfail_strict = true
+addopts = "--maxfail=4 --strict-markers"

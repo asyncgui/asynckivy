@@ -1,4 +1,4 @@
-from functools import partial  # noqa  # This line makes flake8 fail on Python3.7 for some reason :(
+from functools import partial
 
 
 def immediate_call(f):

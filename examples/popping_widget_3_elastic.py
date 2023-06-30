@@ -21,7 +21,6 @@ def ignore_touch_down(widget, _f=lambda w, t: w.collide_point(*t.opos)):
 
 
 async def pop_widget(widget, *, max_height=600., max_scale_x=2.0):
-    # TODO: refactor after Python 3.7 ends
     import asynckivy as ak
 
     if max_scale_x <= 1.0:

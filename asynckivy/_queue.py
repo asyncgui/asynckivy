@@ -99,16 +99,9 @@ class ZeroCapacityQueue:
         CRE = ClosedResourceError
         EOR = EndOfResource
 
-        # TODO: refactor after python3.7 ends
-        while True:
-            putter, __ = pop_putter()
-            if putter is None:
-                break
+        while (putter := pop_putter()[0]) is not None:
             putter._throw_exc(CRE)
-        while True:
-            getter = pop_getter()
-            if getter is None:
-                break
+        while (getter := pop_getter()) is not None:
             getter._throw_exc(EOR)
 
     def fullclose(self):
@@ -120,16 +113,9 @@ class ZeroCapacityQueue:
         pop_putter = self._pop_putter
         pop_getter = self._pop_getter
 
-        # TODO: refactor after python3.7 ends
-        while True:
-            task, __ = pop_putter()
-            if task is None:
-                break
+        while (task := pop_putter()[0]) is not None:
             task._throw_exc(CRE)
-        while True:
-            task = pop_getter()
-            if task is None:
-                break
+        while (task := pop_getter()) is not None:
             task._throw_exc(CRE)
 
     async def __aiter__(self):
@@ -265,18 +251,11 @@ class NormalQueue:
         CRE = ClosedResourceError
         EOR = EndOfResource
 
-        # TODO: refactor after python3.7 ends
-        while True:
-            putter, __ = pop_putter()
-            if putter is None:
-                break
+        while (putter := pop_putter()[0]) is not None:
             putter._throw_exc(CRE)
         if not self.is_empty:
             return
-        while True:
-            getter = pop_getter()
-            if getter is None:
-                break
+        while (getter := pop_getter()) is not None:
             getter._throw_exc(EOR)
 
     def fullclose(self):
@@ -311,10 +290,7 @@ class NormalQueue:
             else:
                 if not self._allows_to_put:
                     EOR = EndOfResource  # LOAD_FAST
-                    while True:  # TODO: refactor after Python3.7 ends
-                        getter = pop_getter()
-                        if getter is None:
-                            break
+                    while (getter := pop_getter()) is not None:
                         getter._throw_exc(EOR)
             if (not putters) or self.is_full:
                 break
