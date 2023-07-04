@@ -3,6 +3,7 @@ p = pytest.mark.parametrize
 p_order = p('order', ('lifo', 'fifo', 'small-first'))
 p_capacity = p('capacity', [1, 2, None, ])
 p_capacity2 = p('capacity', [1, 2, 3, 4, None, ])
+p_limited_capacity = p('capacity', [1, 2, ])
 
 
 @pytest.fixture(autouse=True)
@@ -187,15 +188,15 @@ def test_putter_triggers_close(kivy_clock, fullclose, capacity):
     p2 = ak.start(producer2(q))
     c1 = ak.start(consumer1(q))
     c2 = ak.start(consumer2(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c1.done
-    assert not c2.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c1.finished
+    assert not c2.finished
     kivy_clock.tick()
-    assert p1.done
-    assert p2.done
-    assert c1.done
-    assert c2.done
+    assert p1.finished
+    assert p2.finished
+    assert c1.finished
+    assert c2.finished
 
 
 @p('fullclose', [True, False, ])
@@ -230,15 +231,15 @@ def test_getter_triggers_close(kivy_clock, fullclose, capacity):
     p2 = ak.start(producer2(q))
     c1 = ak.start(consumer1(q))
     c2 = ak.start(consumer2(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c1.done
-    assert not c2.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c1.finished
+    assert not c2.finished
     kivy_clock.tick()
-    assert p1.done
-    assert p2.done
-    assert c1.done
-    assert c2.done
+    assert p1.finished
+    assert p2.finished
+    assert c1.finished
+    assert c2.finished
 
 
 @p('capacity', [4, 5, None, ])
@@ -259,7 +260,7 @@ def test_item_order__enough_capacity(kivy_clock, capacity, order, input, expect)
     p = ak.start(producer(q))
     c = ak.start(consumer(q))
     kivy_clock.tick()
-    assert p.done
+    assert p.finished
     assert c.result == expect
 
 
@@ -281,7 +282,7 @@ def test_item_order_2capacity(kivy_clock, order, input, expect):
     p = ak.start(producer(q))
     c = ak.start(consumer(q))
     kivy_clock.tick()
-    assert p.done
+    assert p.finished
     assert c.result == expect
 
 
@@ -303,5 +304,65 @@ def test_item_3capacity(kivy_clock, order, input, expect):
     p = ak.start(producer(q))
     c = ak.start(consumer(q))
     kivy_clock.tick()
-    assert p.done
+    assert p.finished
     assert c.result == expect
+
+@p_order
+@p_capacity
+def test_scoped_cancel__get(kivy_clock, order, capacity):
+    import asynckivy as ak
+    from asynckivy.queue import Queue
+
+    async def async_fn(ctx):
+        async with ak.open_cancel_scope() as scope:
+            ctx['scope'] = scope
+            ctx['state'] = 'A'
+            await q.get()
+            pytest.fail()
+        ctx['state'] = 'B'
+        await ak.sleep_forever()
+        ctx['state'] = 'C'
+
+    q = Queue(capacity=capacity, order=order)
+    ctx = {}
+    task = ak.start(async_fn(ctx))
+    assert ctx['state'] == 'A'
+    ctx['scope'].cancel()
+    assert ctx['state'] == 'B'
+    q.put_nowait('Hello')
+    kivy_clock.tick()
+    assert ctx['state'] == 'B'
+    task._step()
+    assert ctx['state'] == 'C'
+
+
+@p_order
+@p_limited_capacity
+def test_scoped_cancel__put(kivy_clock, order, capacity):
+    import asynckivy as ak
+    from asynckivy.queue import Queue
+
+    async def async_fn(ctx):
+        async with ak.open_cancel_scope() as scope:
+            ctx['scope'] = scope
+            ctx['state'] = 'A'
+            await q.put('Hello')
+            pytest.fail()
+        ctx['state'] = 'B'
+        await ak.sleep_forever()
+        ctx['state'] = 'C'
+
+    q = Queue(capacity=capacity, order=order)
+    for __ in range(capacity):
+        q.put_nowait('Hello')
+    assert q.is_full
+    ctx = {}
+    task = ak.start(async_fn(ctx))
+    assert ctx['state'] == 'A'
+    ctx['scope'].cancel()
+    assert ctx['state'] == 'B'
+    q.get_nowait()
+    kivy_clock.tick()
+    assert ctx['state'] == 'B'
+    task._step()
+    assert ctx['state'] == 'C'

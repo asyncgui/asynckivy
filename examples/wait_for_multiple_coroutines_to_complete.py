@@ -1,5 +1,5 @@
 '''
-Just shows how ``asynckivy.or_()`` and ``asynckivy.and_()`` work.
+Just shows how ``asynckivy.wait_any()`` and ``asynckivy.wait_all()`` work.
 '''
 
 from kivy.app import App
@@ -45,11 +45,11 @@ class TestApp(App):
         # wait for ANY of multiple tasks to complete
         # ------------------------------------------
         label.text = "wait until button 'A' is pressed or 5sec passes"
-        tasks = await ak.or_(
+        tasks = await ak.wait_any(
             ak.event(buttons[0], 'on_press'),
             ak.sleep(5),
         )
-        label.text = 'Done! ({})'.format("button'A' was pressed" if tasks[0].done else "5sec passed")
+        label.text = 'Done! ({})'.format("button'A' was pressed" if tasks[0].finished else "5sec passed")
         await ak.sleep(1)
         label.text = 'next'
         await ak.sleep(1)
@@ -58,7 +58,7 @@ class TestApp(App):
         # wait for multiple tasks to complete
         # -----------------------------------
         label.text = "wait until all buttons are pressed and 5s passes"
-        tasks = await ak.and_(
+        tasks = await ak.wait_all(
             ak.sleep(5),
             *(ak.event(button, 'on_press') for button in buttons)
         )

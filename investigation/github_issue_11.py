@@ -29,7 +29,7 @@ class TestApp(App):
         button.text = 'start spinning'
         await ak.event(button, 'on_press')
         button.text = 'stop'
-        tasks = await ak.or_(
+        tasks = await ak.wait_any(
             ak.event(button, 'on_press'),
             spinning(label),
         )

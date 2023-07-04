@@ -68,13 +68,13 @@ def test_get_nowait_triggers_close(q, fullclose):
     p1 = ak.start(producer1(q))
     p2 = ak.start(producer2(q))
     c = ak.start(consumer(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c.finished
     assert q.get_nowait() == 'A'
-    assert p1.done
-    assert p2.done
-    assert c.done
+    assert p1.finished
+    assert p2.finished
+    assert c.finished
 
 
 @p('fullclose', [True, False, ])
@@ -95,15 +95,15 @@ def test_putter_triggers_close(kivy_clock, q, fullclose):
     p2 = ak.start(producer2(q))
     c1 = ak.start(consumer1(q))
     c2 = ak.start(consumer2(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c1.done
-    assert not c2.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c1.finished
+    assert not c2.finished
     kivy_clock.tick()
-    assert p1.done
-    assert p2.done
-    assert c1.done
-    assert c2.done
+    assert p1.finished
+    assert p2.finished
+    assert c1.finished
+    assert c2.finished
 
 
 @p('fullclose', [True, False, ])
@@ -121,13 +121,13 @@ def test_put_nowait_triggers_close(q, fullclose):
     p = ak.start(producer(q))
     c1 = ak.start(consumer1(q))
     c2 = ak.start(consumer2(q))
-    assert not p.done
-    assert not c1.done
-    assert not c2.done
+    assert not p.finished
+    assert not c1.finished
+    assert not c2.finished
     q.put_nowait('A')
-    assert p.done
-    assert c1.done
-    assert c2.done
+    assert p.finished
+    assert c1.finished
+    assert c2.finished
 
 
 @p('fullclose', [True, False, ])
@@ -148,15 +148,15 @@ def test_getter_triggers_close(kivy_clock, q, fullclose):
     p2 = ak.start(producer2(q))
     c1 = ak.start(consumer1(q))
     c2 = ak.start(consumer2(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c1.done
-    assert not c2.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c1.finished
+    assert not c2.finished
     kivy_clock.tick()
-    assert p1.done
-    assert p2.done
-    assert c1.done
-    assert c2.done
+    assert p1.finished
+    assert p2.finished
+    assert c1.finished
+    assert c2.finished
 
 
 def test_cancel_putter(kivy_clock, q):
@@ -166,14 +166,14 @@ def test_cancel_putter(kivy_clock, q):
     p1 = ak.start(q.put('A'))
     p2 = ak.start(q.put('B'))
     c = ak.start(consumer(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c.finished
     p1.cancel()
     kivy_clock.tick()
     assert p1.cancelled
-    assert p2.done
-    assert not c.done
+    assert p2.finished
+    assert not c.finished
     q.close()
     assert c.result == 'B'
 
@@ -189,12 +189,12 @@ def test_cancel_getter(kivy_clock, q):
     p = ak.start(producer(q))
     c1 = ak.start(consumer(q))
     c2 = ak.start(consumer(q))
-    assert not p.done
-    assert not c1.done
-    assert not c2.done
+    assert not p.finished
+    assert not c1.finished
+    assert not c2.finished
     c1.cancel()
     kivy_clock.tick()
-    assert p.done
+    assert p.finished
     assert c1.cancelled
     assert c2.result == 'ABCD'
 
@@ -203,10 +203,10 @@ def test_wait_for_a_frame_before_get(kivy_clock, q):
     import asynckivy as ak
     p = ak.start(q.put('A'))
     kivy_clock.tick()
-    assert not p.done
+    assert not p.finished
     c = ak.start(q.get())
     kivy_clock.tick()
-    assert p.done
+    assert p.finished
     assert c.result == 'A'
 
 
@@ -214,8 +214,60 @@ def test_wait_for_a_frame_before_put(kivy_clock, q):
     import asynckivy as ak
     c = ak.start(q.get())
     kivy_clock.tick()
-    assert not c.done
+    assert not c.finished
     p = ak.start(q.put('A'))
     kivy_clock.tick()
-    assert p.done
+    assert p.finished
     assert c.result == 'A'
+
+
+def test_scoped_cancel__get(kivy_clock, q):
+    import asynckivy as ak
+
+    async def async_fn(ctx):
+        async with ak.open_cancel_scope() as scope:
+            ctx['scope'] = scope
+            ctx['state'] = 'A'
+            await q.get()
+            pytest.fail()
+        ctx['state'] = 'B'
+        await ak.sleep_forever()
+        ctx['state'] = 'C'
+
+    ctx = {}
+    task = ak.start(async_fn(ctx))
+    assert ctx['state'] == 'A'
+    ctx['scope'].cancel()
+    assert ctx['state'] == 'B'
+    with pytest.raises(ak.WouldBlock):
+        q.put_nowait('Hello')
+    kivy_clock.tick()
+    assert ctx['state'] == 'B'
+    task._step()
+    assert ctx['state'] == 'C'
+
+
+def test_scoped_cancel__put(kivy_clock, q):
+    import asynckivy as ak
+
+    async def async_fn(ctx):
+        async with ak.open_cancel_scope() as scope:
+            ctx['scope'] = scope
+            ctx['state'] = 'A'
+            await q.put('Hello')
+            pytest.fail()
+        ctx['state'] = 'B'
+        await ak.sleep_forever()
+        ctx['state'] = 'C'
+
+    ctx = {}
+    task = ak.start(async_fn(ctx))
+    assert ctx['state'] == 'A'
+    ctx['scope'].cancel()
+    assert ctx['state'] == 'B'
+    with pytest.raises(ak.WouldBlock):
+        q.get_nowait()
+    kivy_clock.tick()
+    assert ctx['state'] == 'B'
+    task._step()
+    assert ctx['state'] == 'C'

@@ -18,7 +18,7 @@ import types
 from functools import partial
 from collections import deque
 from kivy.clock import Clock
-from asynckivy import sleep_forever, TaskState, Task, get_current_task
+from asyncgui import _sleep_forever, Task, _current_task, Cancelled
 from asynckivy.exceptions import WouldBlock, ClosedResourceError, EndOfResource
 
 
@@ -32,7 +32,7 @@ class ZeroCapacityQueue:
         self._allows_to_put = True
         self._allows_to_get = True
         self._putters = deque()  # queue of tuple(task, item) s
-        self._getters = deque()  # queue of task._step_coro s
+        self._getters = deque()  # queue of tasks
         self._trigger_consume = Clock.create_trigger(self._consume)
 
     def __len__(self):
@@ -62,7 +62,12 @@ class ZeroCapacityQueue:
         if not self._allows_to_put:
             raise EndOfResource
         self._trigger_consume()
-        return (yield self._getters.append)[0][0]
+        task = (yield _current_task)[0][0]  # 本来は except-Cancelled節に置きたい文だが、そこでは yield が使えないので仕方がない
+        try:
+            return (yield self._getters.append)[0][0]
+        except Cancelled:
+            self._getters.remove(task)
+            raise
 
     def get_nowait(self):
         if not self._allows_to_get:
@@ -72,15 +77,21 @@ class ZeroCapacityQueue:
         putter, item = self._pop_putter()
         if putter is None:
             raise WouldBlock
-        putter._step_coro()
+        putter._step()
         return item
 
-    async def put(self, item):
+    @types.coroutine
+    def put(self, item):
         if not self._allows_to_put:
             raise ClosedResourceError
         self._trigger_consume()
-        self._putters.append((await get_current_task(), item, ))
-        await sleep_forever()
+        row = ((yield _current_task)[0][0], item, )
+        self._putters.append(row)
+        try:
+            yield _sleep_forever
+        except Cancelled:
+            self._putters.remove(row)
+            raise
 
     def put_nowait(self, item):
         if not self._allows_to_put:
@@ -88,7 +99,7 @@ class ZeroCapacityQueue:
         getter = self._pop_getter()
         if getter is None:
             raise WouldBlock
-        getter._step_coro(item)
+        getter._step(item)
 
     def close(self):
         self._allows_to_put = False
@@ -136,28 +147,21 @@ class ZeroCapacityQueue:
                 break
             putter, item = pop_putter()
             if putter is None:
-                self._getters.appendleft(getter._step_coro)
+                self._getters.appendleft(getter)
                 break
-            putter._step_coro()
-            getter._step_coro(item)
+            putter._step()
+            getter._step(item)
         self._trigger_consume.cancel()
 
-    def _pop_getter(self, *, _STARTED=TaskState.STARTED) -> Task:
+    def _pop_getter(self) -> Task:
         '''Take out a next getter. Return None if no one is available.'''
         getters = self._getters
-        while getters:
-            task = getters.popleft().__self__
-            if task.state is _STARTED:
-                return task
+        return getters.popleft() if getters else None
 
-    def _pop_putter(self, *, _STARTED=TaskState.STARTED) -> Tuple[Task, Item]:
+    def _pop_putter(self, _none=(None, None, )) -> Tuple[Task, Item]:
         '''Take out a next putter and its item. Return (None, None) if no one is available.'''
         putters = self._putters
-        while putters:
-            task, item = putters.popleft()
-            if task.state is _STARTED:
-                return (task, item, )
-        return (None, None, )
+        return putters.popleft() if putters else _none
 
 
 class NormalQueue:
@@ -165,7 +169,7 @@ class NormalQueue:
         self._allows_to_put = True
         self._allows_to_get = True
         self._putters = deque()  # queue of tuple(task, item) s
-        self._getters = deque()  # queue of task._step_coro s
+        self._getters = deque()  # queue of tasks
         self._trigger_consume = Clock.create_trigger(self._consume)
         self._init_container(capacity, order)
         self._capacity = capacity
@@ -220,7 +224,12 @@ class NormalQueue:
         if (not self._allows_to_put) and self.is_empty:
             raise EndOfResource
         self._trigger_consume()
-        return (yield self._getters.append)[0][0]
+        task = (yield _current_task)[0][0]  # 本来は except-Cancelled節に置きたい文だが、そこでは yield が使えないので仕方がない
+        try:
+            return (yield self._getters.append)[0][0]
+        except Cancelled:
+            self._getters.remove(task)
+            raise
 
     def get_nowait(self):
         if not self._allows_to_get:
@@ -272,6 +281,7 @@ class NormalQueue:
         pop_getter = self._pop_getter
         c_put = self._c_put
         c_get = self._c_get
+        EOR = EndOfResource
 
         while True:
             while not self.is_full:
@@ -279,17 +289,16 @@ class NormalQueue:
                 if putter is None:
                     break
                 c_put(item)
-                putter._step_coro()
+                putter._step()
             if (not getters) or self.is_empty:
                 break
             while not self.is_empty:
                 getter = pop_getter()
                 if getter is None:
                     break
-                getter._step_coro(c_get())
+                getter._step(c_get())
             else:
                 if not self._allows_to_put:
-                    EOR = EndOfResource  # LOAD_FAST
                     while (getter := pop_getter()) is not None:
                         getter._throw_exc(EOR)
             if (not putters) or self.is_full:

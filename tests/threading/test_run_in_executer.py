@@ -17,9 +17,9 @@ def test_thread_id(kivy_clock):
     with ThreadPoolExecutor() as executer:
         task = ak.start(job(executer))
         time.sleep(.01)
-        assert not task.done
+        assert not task.finished
         kivy_clock.tick()
-        assert task.done
+        assert task.finished
 
 
 def test_propagate_exception(kivy_clock):
@@ -32,9 +32,9 @@ def test_propagate_exception(kivy_clock):
     with ThreadPoolExecutor() as executer:
         task = ak.start(job(executer))
         time.sleep(.01)
-        assert not task.done
+        assert not task.finished
         kivy_clock.tick()
-        assert task.done
+        assert task.finished
 
 
 def test_no_exception(kivy_clock):
@@ -46,9 +46,9 @@ def test_no_exception(kivy_clock):
     with ThreadPoolExecutor() as executer:
         task = ak.start(job(executer))
         time.sleep(.01)
-        assert not task.done
+        assert not task.finished
         kivy_clock.tick()
-        assert task.done
+        assert task.finished
 
 
 def test_cancel_before_getting_excuted(kivy_clock):
@@ -64,11 +64,11 @@ def test_cancel_before_getting_excuted(kivy_clock):
         executer.submit(time.sleep, .1)
         task = ak.start(job(executer))
         time.sleep(.02)
-        assert not task.done
-        assert not flag.is_set()
+        assert not task.finished
+        assert not flag.is_set
         kivy_clock.tick()
         task.cancel()
         assert task.cancelled
-        assert not flag.is_set()
+        assert not flag.is_set
         time.sleep(.2)
-        assert not flag.is_set()
+        assert not flag.is_set

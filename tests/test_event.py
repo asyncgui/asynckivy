@@ -52,11 +52,11 @@ def test_event_parameter(ed):
         assert r == (ed, 3, 4, )  # kwarg is ignored
 
     task = ak.start(_test())
-    assert not task.done
+    assert not task.finished
     ed.dispatch('on_test', 1, 2)
-    assert not task.done
+    assert not task.finished
     ed.dispatch('on_test', 3, 4, kwarg='A')
-    assert task.done
+    assert task.finished
 
 
 def test_filter(ed):
@@ -69,11 +69,11 @@ def test_filter(ed):
         )
 
     task = ak.start(_test())
-    assert not task.done
+    assert not task.finished
     ed.dispatch('on_test', 1, 2)
-    assert not task.done
+    assert not task.finished
     ed.dispatch('on_test', 3, 4)
-    assert task.done
+    assert task.finished
 
 
 def test_stop_dispatching(ed):
@@ -91,16 +91,16 @@ def test_stop_dispatching(ed):
     ed.bind(on_test=increament)
     task = ak.start(_test())
     assert n == 0
-    assert not task.done
+    assert not task.finished
     ed.dispatch('on_test')
     assert n == 1
-    assert not task.done
+    assert not task.finished
     ed.dispatch('on_test')
     assert n == 1
-    assert not task.done
+    assert not task.finished
     ed.dispatch('on_test')
     assert n == 2
-    assert task.done
+    assert task.finished
 
 
 def test_cancel(ed):
@@ -114,11 +114,11 @@ def test_cancel(ed):
 
     called = False
     task = ak.start(_test(ed))
-    assert not task.done
+    assert not task.finished
     assert not called
     task.close()
-    assert not task.done
+    assert not task.finished
     assert not called
     ed.dispatch('on_test')
-    assert not task.done
+    assert not task.finished
     assert not called

@@ -1,5 +1,4 @@
 from asyncgui import *
-from asyncgui.structured_concurrency import *
 from .exceptions import *
 from ._sleep import *
 from ._event import *

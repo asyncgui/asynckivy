@@ -3,15 +3,16 @@ __all__ = ('n_frames', 'one_frame', )
 import types
 from kivy.clock import Clock
 
-_waiting = []
+_waiting_tasks = []
 
 
 def _resume(dt):
-    global _waiting
-    waiting = _waiting
-    _waiting = []
-    for step_coro in waiting:
-        step_coro()
+    global _waiting_tasks
+    tasks = _waiting_tasks
+    _waiting_tasks = []
+    for t in tasks:
+        if t is not None:
+            t._step()
 
 
 # NOTE: This hinders the 'kivy_clock'-fixture
@@ -34,7 +35,12 @@ def one_frame():
            await ak.one_frame()
     '''
     _trigger_resume()
-    yield _waiting.append
+    tasks = _waiting_tasks
+    idx = len(tasks)
+    try:
+        yield tasks.append
+    finally:
+        tasks[idx] = None
 
 
 async def n_frames(n: int):

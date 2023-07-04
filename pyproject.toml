@@ -23,7 +23,7 @@ classifiers=[
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
-asyncgui = "~0.5"
+asyncgui = {version = "0.6.0.dev1", allow-prereleases = true }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.1"

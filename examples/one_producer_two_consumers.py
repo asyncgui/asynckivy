@@ -21,7 +21,7 @@ async def main():
 
     from string import ascii_lowercase
     q = Queue(capacity=None)
-    await ak.and_(
+    await ak.wait_all(
         producer('P ', q, ascii_lowercase),
         consumer('C1', q),
         consumer('C2', q),
@@ -30,5 +30,5 @@ async def main():
     App.get_running_app().stop()
 
 
-ak.start(main())
+main_task = ak.start(main())
 App().run()

@@ -1,55 +1,34 @@
 __all__ = ('animate', )
+import typing as T
+import types
 from functools import partial
 from kivy.clock import Clock
 from kivy.animation import AnimationTransition
-from asyncgui import get_step_coro
-from asynckivy import sleep_forever
+from asyncgui import _sleep_forever, _current_task
 
 
-async def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear, **animated_properties):
+@types.coroutine
+def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear, **animated_properties) -> T.Awaitable:
     '''
-    animate
-    =======
+    Animate attibutes of any object. This is basically an async version of :class:`kivy.animation.Animation`.
 
-    An async version of ``kivy.animation.Animation``.
-
-    Usage
-    -----
-
-    .. code-block:: python
-
-        import asynckivy as ak
-
-        async def some_async_func(widget):
-            # case #1: start an animation and wait for its completion
-            await ak.animate(widget, x=100)
-
-        # case #2: start an animation but not wait for its completion
-        ak.start(ak.animate(widget, x=100))
-
-    Difference from kivy.animation.Animation
-    ----------------------------------------
-
-    ``kivy.animation.Animation`` requires the object you wanna animate to
-    have an attribute named ``uid`` but ``asynckivy`` does not. When you have
-    an object like this:
-
-    .. code-block:: python
+    .. code-block::
 
         import types
-        obj = types.SimpleNamespace(value=100)
 
-    you already can animate it by ``asynckivy.animate(obj, value=200)``.
-    Therefore, ``asynckivy.animate()`` is more broadly applicable than
-    ``kivy.animation.Animation``.
+        obj = types.SimpleNamespace(x=0, size=(200, 300, ))
+        await animate(obj, x=100, size=(400, 400))
 
-    Sequence and Parallel
-    ---------------------
+    :class:`kivy.animation.Animation` requires the object you want to animate to have an attribute named ``uid`` but
+    this function does not. Therefore, this one is more broadly applicable than the Kivy's.
 
-    Kivy has two compound animations: ``Sequence`` and ``Parallel``.
+    Kivy has two compound animations, :class:`kivy.animation.Sequence` and :class:`kivy.animation.Parallel`.
     You can achieve the same functionality in asynckivy as follows:
 
-    .. code-block:: python
+    .. code-block::
+
+        from kivy.animation import Animation
+        import asynckivy as ak
 
        def kivy_Sequence(widget):
            anim = Animation(x=100) + Animation(x=0)
@@ -67,7 +46,7 @@ async def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.l
            anim.start(widget)
 
        async def asynckivy_Parallel(widget):
-           await ak.and_(
+           await ak.wait_all(
                ak.animate(widget, x=100),
                ak.animate(widget, y=100, duration=2),
            )
@@ -92,10 +71,10 @@ async def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.l
 
     try:
         clock_event = Clock.schedule_interval(
-            partial(_update, obj, duration, transition, properties, await get_step_coro(), [0., ]),
+            partial(_update, obj, duration, transition, properties, (yield _current_task)[0][0], [0., ]),
             step,
         )
-        await sleep_forever()
+        yield _sleep_forever
     finally:
         clock_event.cancel()
 
@@ -123,7 +102,7 @@ def _calculate(a, b, t, isinstance=isinstance, list=list, tuple=tuple, dict=dict
         return (a * (1. - t)) + (b * t)
 
 
-def _update(obj, duration, transition, properties, step_coro, p_time, dt, _calculate=_calculate, setattr=setattr):
+def _update(obj, duration, transition, properties, task, p_time, dt, _calculate=_calculate, setattr=setattr):
     time = p_time[0] + dt
     p_time[0] = time
 
@@ -139,5 +118,5 @@ def _update(obj, duration, transition, properties, step_coro, p_time, dt, _calcu
 
     # time to stop ?
     if progress >= 1.:
-        step_coro()
+        task._step()
         return False

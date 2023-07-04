@@ -79,7 +79,7 @@ def test_progress(approx, sleep_then_tick, free_await):
     task = ak.start(async_fn())
     for __ in range(4):
         sleep_then_tick(.3)
-    assert task.done
+    assert task.finished
 
 
 @pytest.mark.parametrize('free_await', (False, True))
@@ -102,4 +102,4 @@ def test_dt_et_progress(approx, sleep_then_tick, free_await):
     task = ak.start(async_fn())
     for __ in range(3):
         sleep_then_tick(.2)
-    assert task.done
+    assert task.finished

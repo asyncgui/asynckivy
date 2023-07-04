@@ -81,28 +81,28 @@ async def async_func(button):
         print(f'button.x の現在の値は {x} です')
 
     # buttonが押される か 5秒経つまで待つ
-    tasks = await ak.or_(
+    tasks = await ak.wait_any(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
-    print("buttonが押されました" if tasks[0].done else "5秒経ちました")
+    print("buttonが押されました" if tasks[0].finished else "5秒経ちました")
 
     # buttonが押され なおかつ 5秒経つまで待つ
-    tasks = await ak.and_(
+    tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
 
     # buttonが押され なおかつ (5秒経つ か 'other_async_func'が完了する) まで待つ
-    tasks = await ak.and_(
+    tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
-        ak.or_(
+        ak.wait_any(
             ak.sleep(5),
             other_async_func(),
         ),
     )
     child_tasks = tasks[1].result
-    print("5秒経ちました" if child_tasks[0].done else "other_async_funcが完了しました")
+    print("5秒経ちました" if child_tasks[0].finished else "other_async_funcが完了しました")
 
 ak.start(async_func(a_button))
 ```
@@ -225,7 +225,7 @@ async def async_func(label):
 
 ### Task間の連絡および同期
 
-[trio.Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event)相当の物。
+[asyncio.Event](https://docs.python.org/3/library/asyncio-sync.html#asyncio.Event)相当の物。
 
 ```python
 import asynckivy as ak
@@ -293,21 +293,21 @@ task = asynckivy.start(async_func())
 task.cancel()
 ```
 
-その際`async_func()`の中で`GeneratorExit`例外が起きるので以下のように書けば中断に備えたコードになる。
+その際`async_func()`の中で`Cancelled`例外が起きるので以下のように書けば中断に備えたコードになる。
 
 ```python
 async def async_func():
     try:
         ...
-    except GeneratorExit:
-        # .cancel() による明示的な中断が行われた時にだけ行いたい処理をここに書くと良い。
+    except Cancelled:
+        # 中断が行われた時にだけ行いたい処理をここに書くと良い。
         ...
-        raise  # GeneratorExit例外を揉み消してはならない!!
+        raise  # Cancelled例外を揉み消してはならない!!
     finally:
         # ここで何か後始末をすると良い
 ```
 
-また中断は常に速やかに完遂させないといけないので、except-GeneratorExit節とfinally節の中で`await`する事は許されない。
+また中断は常に速やかに完遂させないといけないので、except-Cancelled節とfinally節の中で`await`する事は許されない。
 
 ```python
 async def async_func():
@@ -315,7 +315,7 @@ async def async_func():
         await something  # <-- 良い
     except Exception:
         await something  # <-- 良い
-    except GeneratorExit:
+    except Cancelled:
         await something  # <-- 駄目
         raise
     finally:
@@ -337,7 +337,7 @@ async def async_func():
 上の決まりを守っている限りは好きなだけ中断できる。
 ただもし明示的な``.cancel()``呼び出しがcode内に多く現れるようなら、
 それはcodeが正しい構造を採っていない兆しなので修正すべきである。
-多くの場合``Task.cancel()``は`asynckivy.and_()`や`asynckivy.or_()`を用いる事で無くせるのでそうするのがお薦めです。
+多くの場合``Task.cancel()``は`asynckivy.wait_all()`や`asynckivy.wait_any()`を用いる事で無くせるのでそうするのがお薦めです。
 
 ## 留意点
 
@@ -373,7 +373,7 @@ async def async_fn():
 
 (この章はまだ未完成。)
 
-`asynckivy.and_()`と`asynckivy.or_()`は[structured concurrency][sc]の考え方に従っています。
+`asynckivy.wait_all()`と`asynckivy.wait_any()`は[structured concurrency][sc]の考え方に従っています。
 
 <!--
 関連性の無いファイルがたくさん(例えば数千個)あったとして、それらを全て一つのフォルダに入れて管理する人は少ないと思います。
@@ -386,13 +386,13 @@ async def async_fn():
 import asynckivy as ak
 
 async def 根():
-    await ak.or_(子1(), 子2())
+    await ak.wait_any(子1(), 子2())
 
 async def 子1():
     ...
 
 async def 子2():
-    await ak.and_(孫1(), 孫2())
+    await ak.wait_all(孫1(), 孫2())
 
 async def 孫1():
     ...
