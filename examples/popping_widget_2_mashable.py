@@ -10,7 +10,7 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
 from asynckivy import vanim
-from asynckivy.utils import transform
+from asynckivy import transform
 
 
 degrees_per_second = float
