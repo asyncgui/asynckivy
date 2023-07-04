@@ -254,37 +254,6 @@ Unlike Trio's and asyncio's, when you call ``Event.set()``,
 the tasks waiting for it to happen will *immediately* be resumed.
 As a result, ``e.set()`` will return *after* ``A2`` and ``B2`` are printed.
 
-And there is an [asyncio.Queue](https://docs.python.org/3/library/asyncio-queue.html) equivalent.
-
-```python
-from kivy.app import App
-import asynckivy as ak
-from asynckivy.queue import Queue
-
-async def producer(q, items):
-    for i in items:
-        await q.put(i)
-    q.close()
-
-async def consumer(q):
-    assert ''.join([item async for item in q]) == 'ABCD'  # Queue is async-iterable
-
-async def consumer2(q):
-    '''The ``consumer()`` above can be written in more primitive way like this'''
-    items = []
-    try:
-        while True:
-            items.append(await q.get())
-    except ak.EndOfResource:
-        assert ''.join(items) == 'ABCD'
-
-
-q = Queue()
-ak.start(producer(q, 'ABCD'))
-ak.start(consumer(q))
-App().run()  # Queue relies on Clock so you need to run the event-loop
-```
-
 ### dealing with cancellations
 
 ``asynckivy.start()`` returns a ``Task``,

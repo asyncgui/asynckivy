@@ -252,37 +252,6 @@ e.set()
 Trioやasyncioの物とは違って``Event.set()``が呼ばれた時それを待っているtaskは即座に再開される。
 なので上の例で``e.set()``は``A2``と``B2``が出力された後に処理が戻る。
 
-[asyncio.Queue](https://docs.python.org/3/library/asyncio-queue.html)相当の物.
-
-```python
-from kivy.app import App
-import asynckivy as ak
-from asynckivy.queue import Queue
-
-async def producer(q, items):
-    for i in items:
-        await q.put(i)
-    q.close()
-
-async def consumer(q):
-    assert ''.join([item async for item in q]) == 'ABCD'  # Queueはasync-iterable
-
-async def consumer2(q):
-    '''上の ``consumer()`` と同等のコード'''
-    items = []
-    try:
-        while True:
-            items.append(await q.get())
-    except ak.EndOfResource:
-        assert ''.join(items) == 'ABCD'
-
-
-q = Queue()
-ak.start(producer(q, 'ABCD'))
-ak.start(consumer(q))
-App().run()  # QueueはClockに依存しているのでevent-loopを回してあげないと動作しない。
-```
-
 ### 中断への対処
 
 ``asynckivy.start()``が返した``Task``の``.cancel()``を呼ぶ事で処理を中断できる。
