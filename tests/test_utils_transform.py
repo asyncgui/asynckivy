@@ -26,7 +26,7 @@ def test_just_confirm_how_a_before_group_and_an_after_group_work(widget):
 @pytest.mark.parametrize('has_before', (True, False, ))
 @pytest.mark.parametrize('has_after', (True, False, ))
 def test_use_outer_canvas(widget, has_before, has_after):
-    from asynckivy.utils import transform
+    from asynckivy import transform
     c = widget.canvas
     if has_before: c.before
     if has_after: c.after
@@ -43,7 +43,7 @@ def test_use_outer_canvas(widget, has_before, has_after):
 
 @pytest.mark.parametrize('has_before', (True, False, ))
 def test_use_inner_canvas__has_after(widget, has_before):
-    from asynckivy.utils import transform
+    from asynckivy import transform
     c = widget.canvas
     c.after
     if has_before: c.before
@@ -60,7 +60,7 @@ def test_use_inner_canvas__has_after(widget, has_before):
 
 @pytest.mark.parametrize('has_before', (True, False, ))
 def test_use_inner_canvas__no_after(widget, has_before):
-    from asynckivy.utils import transform
+    from asynckivy import transform
     c = widget.canvas
     if has_before: c.before
     with transform(widget, use_outer_canvas=False):

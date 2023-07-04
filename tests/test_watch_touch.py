@@ -118,10 +118,9 @@ def test_a_touch_that_might_have_already_ended(sleep_then_tick, timeout, actuall
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
-    from asynckivy.exceptions import MotionEventAlreadyEndedError
 
     async def async_fn(w, t):
-        with pytest.raises(MotionEventAlreadyEndedError) if actually_ended else nullcontext():
+        with pytest.raises(ak.MotionEventAlreadyEndedError) if actually_ended else nullcontext():
             async with ak.watch_touch(w, t, timeout=timeout) as in_progress:
                 while await in_progress():
                     pass
