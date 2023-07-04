@@ -93,7 +93,7 @@ class SpringyButton(Label):
         self._border_color = next_(color_iter)
 
     async def _main(self):
-        from asynckivy import animate, rest_of_touch_moves, event, MotionEventAlreadyEndedError, cancel_protection
+        from asynckivy import animate, rest_of_touch_moves, event, MotionEventAlreadyEndedError, disable_cancellation
         if self.parent is None or self.disabled:
             self._border_color = self.disabled_color
             return
@@ -125,7 +125,7 @@ class SpringyButton(Label):
                     self._border_color = border_color1
                     continue
                 if collide_point(*touch.pos):
-                    async with cancel_protection():
+                    async with disable_cancellation():
                         await animate(self, _scaling=.9, duration=.05)
                         await animate(self, _scaling=1, duration=.05)
                     dispatch('on_release')

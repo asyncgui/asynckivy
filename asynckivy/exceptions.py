@@ -2,7 +2,6 @@ __all__ = (
     'MotionEventAlreadyEndedError',
     'WouldBlock', 'ClosedResourceError', 'EndOfResource',
 )
-from asyncgui.exceptions import *  # noqa
 
 
 class MotionEventAlreadyEndedError(Exception):

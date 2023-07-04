@@ -83,29 +83,29 @@ async def some_task(button):
 
     # wait until EITHER a button is pressed OR 5sec passes.
     # i.e. wait at most 5 seconds for a button to be pressed
-    tasks = await ak.or_(
+    tasks = await ak.wait_any(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
-    print("The button was pressed" if tasks[0].done else "Timeout")
+    print("The button was pressed" if tasks[0].finished else "Timeout")
 
     # wait until a button is pressed AND 5sec passes.
-    tasks = await ak.and_(
+    tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
 
     # nest as you want.
     # wait for a button to be pressed AND (5sec OR 'other_async_func' to complete)
-    tasks = await ak.and_(
+    tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
-        ak.or_(
+        ak.wait_any(
             ak.sleep(5),
             other_async_func(),
         ),
     )
     child_tasks = tasks[1].result
-    print("5sec passed" if child_tasks[0].done else "other_async_func has completed")
+    print("5sec passed" if child_tasks[0].finished else "other_async_func has completed")
 
 ak.start(some_task(some_button))
 ```
@@ -226,7 +226,7 @@ async def some_task(label):
 
 ### synchronizing and communicating between tasks
 
-There is a [trio.Event](https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event) equivalent.
+There is a [asyncio.Event](https://docs.python.org/3/library/asyncio-sync.html#asyncio.Event) equivalent.
 
 ```python
 import asynckivy as ak
@@ -296,21 +296,21 @@ task = asynckivy.start(async_func())
 task.cancel()
 ```
 
-When `.cancel()` is called, `GeneratorExit` will occur inside the task,
+When `.cancel()` is called, a `Cancelled` exception will occur inside the task,
 which means you can prepare for cancellations as follows:
 
 ```python
 async def async_func():
     try:
         ...
-    except GeneratorExit:
+    except Cancelled:
         print('cancelled')
         raise  # You must re-raise !!
     finally:
         print('cleanup resources here')
 ```
 
-You are not allowed to `await` inside `except-GeneratorExit-clause` and `finally-clause` if you want the task to be cancellable
+You are not allowed to `await` inside `except-Cancelled-clause` and `finally-clause` if you want the task to be cancellable
 because cancellations always must be done immediately.
 
 ```python
@@ -319,7 +319,7 @@ async def async_func():
         await something  # <-- ALLOWED
     except Exception:
         await something  # <-- ALLOWED
-    except GeneratorExit:
+    except Cancelled:
         await something  # <-- NOT ALLOWED
         raise
     finally:
@@ -341,7 +341,7 @@ async def async_func():  # Assuming this never gets cancelled
 As long as you follow the above rules, you can cancel tasks as you wish.
 But note that if there are lots of explicit calls to `Task.cancel()` in your code,
 **it's a sign of your code being not well-structured**.
-You can usually avoid it by using `asynckivy.and_()` and `asynckivy.or_()`.  
+You can usually avoid it by using `asynckivy.wait_all()` and `asynckivy.wait_any()`.  
 
 ## Notes
 
@@ -382,19 +382,19 @@ it might work.
 
 (This section is incomplete, and will be filled some day.)
 
-`asynckivy.and_()` and `asynckivy.or_()` follow the concept of [structured concurrency][njs_sc].
+`asynckivy.wait_all()` and `asynckivy.wait_any()` follow the concept of [structured concurrency][njs_sc].
 
 ```python
 import asynckivy as ak
 
 async def root():
-    await ak.or_(child1(), child2())
+    await ak.wait_any(child1(), child2())
 
 async def child1():
     ...
 
 async def child2():
-    await ak.and_(ground_child1(), ground_child2())
+    await ak.wait_all(ground_child1(), ground_child2())
 
 async def ground_child1():
     ...

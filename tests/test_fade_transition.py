@@ -33,7 +33,7 @@ def test_run_normally(approx, sleep_then_tick):
     sleep_then_tick(.2)
     assert w1.opacity == 1
     assert w2.opacity == 2
-    assert task.done
+    assert task.finished
 
 
 def test_cancel(approx, sleep_then_tick):

@@ -4,8 +4,9 @@ import types
 from functools import partial
 
 from kivy.clock import Clock
-from asyncgui import get_step_coro
+from asyncgui import current_task, Cancelled, sleep_forever
 
+_sleep_forever = sleep_forever.__defaults__[0]
 # NOTE: This hinders the 'kivy_clock'-fixture
 create_trigger = Clock.create_trigger
 create_trigger_free = getattr(Clock, 'create_trigger_free', None)
@@ -13,72 +14,103 @@ create_trigger_free = getattr(Clock, 'create_trigger_free', None)
 
 @types.coroutine
 def sleep(duration):
-    args, kwargs = yield lambda step_coro, _d=duration: create_trigger(step_coro, _d, False, False)()
-    return args[0]
+    clock_event = None
+
+    def _sleep(task):
+        nonlocal clock_event
+        clock_event = create_trigger(task._step, duration, False, False)
+        clock_event()
+
+    try:
+        return (yield _sleep)[0][0]
+    except Cancelled:
+        clock_event.cancel()
+        raise
 
 
 @types.coroutine
 def sleep_free(duration):
-    '''(experimental)'''
-    args, kwargs = yield lambda step_coro, _d=duration: create_trigger_free(step_coro, _d, False, False)()
-    return args[0]
+    clock_event = None
+
+    def _sleep_free(task):
+        nonlocal clock_event
+        clock_event = create_trigger_free(task._step, duration, False, False)
+        clock_event()
+
+    try:
+        return (yield _sleep_free)[0][0]
+    except Cancelled:
+        clock_event.cancel()
+        raise
 
 
 class repeat_sleeping:
-    '''(experimental)
-    Return an async context manager that provides an efficient way to repeat sleeping. When there is code like this:
+    '''
+    Return an async context manager that provides an efficient way to repeat sleeping.
 
-    .. code-block:: python
+    The following code:
+
+    .. code-block::
 
         while True:
-            await asynckivy.sleep(2)
+            await asynckivy.sleep(0)
 
-    it can be translated into this:
+    can be translated to:
 
-    .. code-block:: python
+    .. code-block::
 
-        async with asynckivy.repeat_sleeping(2) as sleep:
+        async with asynckivy.repeat_sleeping(0) as sleep:
             while True:
                 await sleep()
 
-    which is more efficient. The reason of it is that the latter only creates one ``ClockEvent``, and re-uses it
-    during the loop as opposed to the former, which creates a ``ClockEvent`` in every iteration.
+    The latter is more efficient than the former. The reason is that the latter only creates one ``ClockEvent``
+    instance while the former creates it per iteration.
 
-    Restriction
-    -----------
+    By default, you are not allowed to perform any kind of async operations inside the with-block except you can
+    ``await`` the return value of the function that is bound to the identifier of the as-clause.
 
-    By default, the only thing you can 'await' during the context manager is the sleep returned by it. If you want to
-    'await' something else, you need to set ``free_await`` to True.
+    .. code-block::
 
-    .. code-block:: python
+        async with asynckivy.repeat_sleeping(0) as sleep:
+            await sleep()  # OK
+            await something_else  # NOT ALLOWED
+            async with async_context_manager:  # NOT ALLOWED
+                ...
+            async for __ in async_iterable:  # NOT ALLOWED
+                ...
 
-        async with asynckivy.repeat_sleeping(2, free_await=True) as sleep:
-            await something_else
-            while True:
-                await sleep()
-                await something_else
+    If you wish to override that restriction, you can set the ``free_await`` parameter to True. However, please note
+    that enabling ``free_await`` may result in a slight performance sacrifice.
     '''
 
     __slots__ = ('_step', '_free_await', '_trigger', )
-
-    @types.coroutine
-    def sleep(f):
-        return (yield f)[0][0]
 
     def __init__(self, step, free_await=False):
         self._step = step
         self._free_await = free_await
 
-    async def __aenter__(
-            self, partial=partial, create_trigger=create_trigger, sleep=sleep, get_step_coro=get_step_coro,
-            do_nothing=lambda step_coro: None):
+    async def __aenter__(self):
         free = self._free_await
-        self._trigger = trigger = create_trigger(await get_step_coro(), self._step, not free, False)
+        self._trigger = trigger = create_trigger((await current_task())._step, self._step, not free, False)
         if free:
-            return partial(sleep, trigger)
+            return partial(_efficient_sleep_ver_flexible, trigger)
         else:
             trigger()
-            return partial(sleep, do_nothing)
+            return _efficient_sleep_ver_fast
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self._trigger.cancel()
+
+
+@types.coroutine
+def _efficient_sleep_ver_fast(_f=_sleep_forever):
+    return (yield _f)[0][0]
+
+
+@types.coroutine
+def _efficient_sleep_ver_flexible(f):
+    try:
+        return (yield f)[0][0]
+    except Cancelled:
+        f.cancel()
+        raise

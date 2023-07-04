@@ -24,7 +24,7 @@ def test_scalar(approx, sleep_then_tick):
     assert obj.num == approx(100)
     sleep_then_tick(.1)
     assert obj.num == approx(100)
-    assert task.done
+    assert task.finished
 
 
 def test_list(approx, sleep_then_tick):
@@ -44,7 +44,7 @@ def test_list(approx, sleep_then_tick):
     assert obj.list == approx([100, 200])
     sleep_then_tick(.1)
     assert obj.list == approx([100, 200])
-    assert task.done
+    assert task.finished
 
 
 def test_dict(approx, sleep_then_tick):
@@ -64,7 +64,7 @@ def test_dict(approx, sleep_then_tick):
     assert obj.dict == approx({'key': 100})
     sleep_then_tick(.1)
     assert obj.dict == approx({'key': 100})
-    assert task.done
+    assert task.finished
 
 
 def test_cancel(approx, sleep_then_tick):
@@ -102,4 +102,30 @@ def test_low_fps(approx, sleep_then_tick):
     assert obj.num == approx(75)
     sleep_then_tick(.1)
     assert obj.num == approx(100)
-    assert task.done
+    assert task.finished
+
+
+def test_scoped_cancel(sleep_then_tick):
+    from types import SimpleNamespace
+    import asynckivy as ak
+
+    async def async_func(ctx):
+        obj = SimpleNamespace(num=0)
+        async with ak.open_cancel_scope() as scope:
+            ctx['scope'] = scope
+            ctx['state'] = 'A'
+            await ak.animate(obj, num=100, duration=.1,)
+            pytest.fail()
+        ctx['state'] = 'B'
+        await ak.sleep_forever()
+        ctx['state'] = 'C'
+
+    ctx = {}
+    task = ak.start(async_func(ctx))
+    assert ctx['state'] == 'A'
+    ctx['scope'].cancel()
+    assert ctx['state'] == 'B'
+    sleep_then_tick(.2)
+    assert ctx['state'] == 'B'
+    task._step()
+    assert ctx['state'] == 'C'

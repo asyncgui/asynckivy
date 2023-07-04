@@ -15,9 +15,9 @@ def test_thread_id(daemon, kivy_clock):
 
     task = ak.start(job())
     time.sleep(.01)
-    assert not task.done
+    assert not task.finished
     kivy_clock.tick()
-    assert task.done
+    assert task.finished
 
 
 @pytest.mark.parametrize('daemon', (True, False))
@@ -30,9 +30,9 @@ def test_propagate_exception(daemon, kivy_clock):
 
     task = ak.start(job())
     time.sleep(.01)
-    assert not task.done
+    assert not task.finished
     kivy_clock.tick()
-    assert task.done
+    assert task.finished
 
 
 @pytest.mark.parametrize('daemon', (True, False))
@@ -44,6 +44,6 @@ def test_no_exception(daemon, kivy_clock):
 
     task = ak.start(job())
     time.sleep(.01)
-    assert not task.done
+    assert not task.finished
     kivy_clock.tick()
-    assert task.done
+    assert task.finished

@@ -79,11 +79,11 @@ def test_async_for(kivy_clock, capacity):
     q = Queue(capacity=capacity)
     p = ak.start(producer(q, 'ABC'))
     c = ak.start(consumer(q))
-    assert not p.done
-    assert not c.done
+    assert not p.finished
+    assert not c.finished
     kivy_clock.tick()
-    assert p.done
-    assert not c.done
+    assert p.finished
+    assert not c.finished
     q.close()
     assert c.result == 'ABC'
 
@@ -105,11 +105,11 @@ def test_one_producer_and_two_consumers(kivy_clock, capacity):
     p = ak.start(producer(q))
     c1 = ak.start(consumer(q))
     c2 = ak.start(consumer(q))
-    assert not p.done
-    assert not c1.done
-    assert not c2.done
+    assert not p.finished
+    assert not c1.finished
+    assert not c2.finished
     kivy_clock.tick()
-    assert p.done
+    assert p.finished
     assert c1.result == 'ABC'
     assert c2.result == '123'
 
@@ -130,13 +130,13 @@ def test_two_producers_and_one_consumer(kivy_clock, capacity):
     p1 = ak.start(producer(q, 'ABC'))
     p2 = ak.start(producer(q, '123'))
     c = ak.start(consumer(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c.finished
     kivy_clock.tick()
-    assert p1.done
-    assert p2.done
-    assert not c.done
+    assert p1.finished
+    assert p2.finished
+    assert not c.finished
     q.close()
     assert c.result == 'A1B2C3'
 
@@ -158,15 +158,15 @@ def test_two_producers_and_two_consumers(kivy_clock, capacity):
     p2 = ak.start(producer(q, '123'))
     c1 = ak.start(consumer(q))
     c2 = ak.start(consumer(q))
-    assert not p1.done
-    assert not p2.done
-    assert not c1.done
-    assert not c2.done
+    assert not p1.finished
+    assert not p2.finished
+    assert not c1.finished
+    assert not c2.finished
     kivy_clock.tick()
-    assert p1.done
-    assert p2.done
-    assert not c1.done
-    assert not c2.done
+    assert p1.finished
+    assert p2.finished
+    assert not c1.finished
+    assert not c2.finished
     q.close()
     assert c1.result == 'ABC'
     assert c2.result == '123'
@@ -191,11 +191,11 @@ def test_close_a_queue_while_it_holding_putters_and_getters(n_producers, n_consu
     producers = [ak.start(producer(q)) for __ in range(n_producers)]
     consumers = [ak.start(consumer(q)) for __ in range(n_consumers)]
     for p in producers:
-        assert not p.done
+        assert not p.finished
     for c in consumers:
-        assert not c.done
+        assert not c.finished
     q.fullclose() if fullclose else q.close()
     for p in producers:
-        assert p.done
+        assert p.finished
     for c in consumers:
-        assert c.done
+        assert c.finished

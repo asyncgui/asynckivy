@@ -1,10 +1,10 @@
 __all__ = ('run_in_thread', 'run_in_executer', )
 from threading import Thread
 from kivy.clock import Clock
-import asynckivy
+import asyncgui
 
 
-def _wrapper(func, event):
+def _wrapper(func, box):
     ret = None
     exc = None
     try:
@@ -12,27 +12,27 @@ def _wrapper(func, event):
     except Exception as e:
         exc = e
     finally:
-        Clock.schedule_once(lambda __: event.set((ret, exc, )))
+        Clock.schedule_once(lambda __: box.put(ret, exc))
 
 
 async def run_in_thread(func, *, daemon=False):
-    event = asynckivy.Event()
+    box = asyncgui.IBox()
     Thread(
         name='asynckivy.run_in_thread',
-        target=_wrapper, daemon=daemon, args=(func, event, ),
+        target=_wrapper, daemon=daemon, args=(func, box, ),
     ).start()
-    ret, exc = await event.wait()
+    ret, exc = (await box.get())[0]
     if exc is not None:
         raise exc
     return ret
 
 
 async def run_in_executer(executer, func):
-    event = asynckivy.Event()
-    future = executer.submit(_wrapper, func, event)
+    box = asyncgui.IBox()
+    future = executer.submit(_wrapper, func, box)
     try:
-        ret, exc = await event.wait()
-    except GeneratorExit:
+        ret, exc = (await box.get())[0]
+    except asyncgui.Cancelled:
         future.cancel()
         raise
     assert future.done()

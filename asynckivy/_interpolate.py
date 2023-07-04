@@ -2,6 +2,7 @@ __all__ = ('interpolate', 'fade_transition', )
 from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
+from asyncgui import Cancelled
 from ._sleep import repeat_sleeping
 
 
@@ -72,7 +73,7 @@ async def fade_transition(*widgets, duration=1.0, step=0):
         async for v in interpolate(0.0, 1.0, duration=half_duration, step=step):
             for w, o in zip(widgets, original_opacities):
                 w.opacity = v * o
-    except GeneratorExit:
+    except Cancelled:
         for w, o in zip(widgets, original_opacities):
             w.opacity = o
         raise

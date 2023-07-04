@@ -17,7 +17,7 @@ def test_complete_the_iteration(approx, sleep_then_tick):
     task = ak.start(job())
     for __ in range(4):
         sleep_then_tick(.3)
-    assert task.done
+    assert task.finished
 
 
 def test_break_during_the_iteration(approx, sleep_then_tick):
@@ -34,7 +34,7 @@ def test_break_during_the_iteration(approx, sleep_then_tick):
     task = ak.start(job())
     for __ in range(2):
         sleep_then_tick(.3)
-    assert task.done
+    assert task.finished
 
 
 def test_zero_duration(approx):
@@ -45,4 +45,4 @@ def test_zero_duration(approx):
         assert l == approx([0, 100])
 
     task = ak.start(job())
-    assert task.done
+    assert task.finished

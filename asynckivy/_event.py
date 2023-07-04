@@ -1,10 +1,10 @@
 __all__ = ('event', )
 
-import types
+from functools import partial
+from asyncgui import IBox
 
 
-@types.coroutine
-def event(ed, name, *, filter=None, stop_dispatching=False):
+async def event(ed, name, *, filter=None, stop_dispatching=False):
     '''
     event
     =====
@@ -63,22 +63,16 @@ def event(ed, name, *, filter=None, stop_dispatching=False):
                filter=lambda label, touch: label.collide_point(*touch.opos),
            )
     '''
-    bind_id = None
-    step_coro = None
-
-    def bind(step_coro_):
-        nonlocal bind_id, step_coro
-        bind_id = ed.fbind(name, callback)
-        assert bind_id  # check if binding succeeded
-        step_coro = step_coro_
-
-    def callback(*args, **kwargs):
-        if (filter is None) or filter(*args, **kwargs):
-            step_coro(*args, **kwargs)
-            return stop_dispatching
-
+    box = IBox()
+    bind_id = ed.fbind(name, partial(_callback, filter, box, stop_dispatching))
+    assert bind_id  # check if binding succeeded
     try:
-        return (yield bind)[0]
+        return (await box.get())[0]
     finally:
-        if bind_id:
-            ed.unbind_uid(name, bind_id)
+        ed.unbind_uid(name, bind_id)
+
+
+def _callback(filter, box, stop_dispatching, *args, **kwargs):
+    if (filter is None) or filter(*args, **kwargs):
+        box.put(*args)
+        return stop_dispatching

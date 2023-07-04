@@ -15,7 +15,7 @@ async def main():
 
     async def producers(*producers):
         # This function is necessary because you usually want to close the queue *after* all producers end.
-        await ak.and_from_iterable(producers)
+        await ak.wait_all(*producers)
         q.close()
 
     async def consumer(name, q):
@@ -25,7 +25,7 @@ async def main():
 
     from string import ascii_lowercase, ascii_uppercase
     q = Queue(capacity=None)
-    await ak.and_(
+    await ak.wait_all(
         producers(
             producer('P1', q, ascii_lowercase),
             producer('P2', q, ascii_uppercase),
@@ -36,5 +36,5 @@ async def main():
     App.get_running_app().stop()
 
 
-ak.start(main())
+main_task = ak.start(main())
 App().run()

@@ -45,28 +45,28 @@ class watch_touch:
         self._timeout = timeout
         self._no_cleanup = False
 
-    def _on_touch_up_sd(step_coro, touch, w, t):
+    def _on_touch_up_sd(step, touch, w, t):
         if t is touch:
             if t.grab_current is w:
                 t.ungrab(w)
-                step_coro(False)
+                step(False)
             return True
 
-    def _on_touch_move_sd(step_coro, touch, w, t):
+    def _on_touch_move_sd(step, touch, w, t):
         if t is touch:
             if t.grab_current is w:
-                step_coro(True)
+                step(True)
             return True
 
-    def _on_touch_up(step_coro, touch, w, t):
+    def _on_touch_up(step, touch, w, t):
         if t.grab_current is w and t is touch:
             t.ungrab(w)
-            step_coro(False)
+            step(False)
             return True
 
-    def _on_touch_move(step_coro, touch, w, t):
+    def _on_touch_move(step, touch, w, t):
         if t.grab_current is w and t is touch:
-            step_coro(True)
+            step(True)
             return True
 
     _callbacks = ((_on_touch_up_sd, _on_touch_move_sd, ), (_on_touch_up, _on_touch_move, ), )
@@ -82,26 +82,26 @@ class watch_touch:
         yield  # just to make this function a generator function
 
     async def __aenter__(
-        self, get_step_coro=ak.get_step_coro, partial=functools.partial, _callbacks=_callbacks, ak=ak,
+        self, current_task=ak.current_task, partial=functools.partial, _callbacks=_callbacks, ak=ak,
         _always_false=_always_false, _true_if_touch_move_false_if_touch_up=_true_if_touch_move_false_if_touch_up,
     ):
         touch = self._touch
         widget = self._widget
         if touch.time_end != -1:
             # `on_touch_up` might have been already fired so we need to find out it actually was or not.
-            tasks = await ak.or_(
+            tasks = await ak.wait_any(
                 ak.sleep(self._timeout),
                 ak.event(widget, 'on_touch_up', filter=lambda w, t: t is touch),
             )
-            if tasks[0].done:
+            if tasks[0].finished:
                 raise ak.MotionEventAlreadyEndedError(f"MotionEvent(uid={touch.uid}) has already ended")
             self._no_cleanup = True
             return _always_false
-        step_coro = await get_step_coro()
+        step = (await current_task())._step
         on_touch_up, on_touch_move = _callbacks[not self._stop_dispatching]
         touch.grab(widget)
-        self._uid_up = widget.fbind('on_touch_up', partial(on_touch_up, step_coro, touch))
-        self._uid_move = widget.fbind('on_touch_move', partial(on_touch_move, step_coro, touch))
+        self._uid_up = widget.fbind('on_touch_up', partial(on_touch_up, step, touch))
+        self._uid_move = widget.fbind('on_touch_move', partial(on_touch_move, step, touch))
         assert self._uid_up
         assert self._uid_move
         return _true_if_touch_move_false_if_touch_up

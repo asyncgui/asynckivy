@@ -25,7 +25,7 @@ def test_a_number_of_touch_moves(n_touch_moves):
     w.dispatch('on_touch_up', t)
     t.grab_current = w
     w.dispatch('on_touch_up', t)
-    assert task.done
+    assert task.finished
 
 
 def test_break_during_a_for_loop():
@@ -56,13 +56,13 @@ def test_break_during_a_for_loop():
         t.grab_current = w
         w.dispatch('on_touch_move', t)
         assert n_touch_moves == expected
-        assert not task.done
+        assert not task.finished
     t.grab_current = None
     w.dispatch('on_touch_up', t)
     t.grab_current = w
     w.dispatch('on_touch_up', t)
     assert n_touch_moves == 2
-    assert task.done
+    assert task.finished
 
 
 @pytest.mark.parametrize(
@@ -106,7 +106,7 @@ def test_stop_dispatching(stop_dispatching, expectation):
     t.grab_current = parent
     parent.dispatch('on_touch_up', t)
     assert n_touches['up'] == expectation[2]
-    assert task.done
+    assert task.finished
 
 
 @pytest.mark.parametrize('timeout', (.2, 1.))
@@ -135,4 +135,4 @@ def test_a_touch_that_might_have_already_ended(sleep_then_tick, timeout, actuall
         w.dispatch('on_touch_up', t)
         t.grab_current = w
         w.dispatch('on_touch_up', t)
-    assert task.done
+    assert task.finished
