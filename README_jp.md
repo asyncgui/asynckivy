@@ -185,10 +185,10 @@ class TouchReceiver(Widget):
 `asynckivy`はTrioやasyncioのような入出力機能を持たないので、GUIを固まらせずにそれをしたければ別のthreadで行うしかない。今のところ次の二つの方法がある。
 
 ```python
-from concurrent.futures import ThreadPoolExecuter
+from concurrent.futures import ThreadPoolExecutor
 import asynckivy as ak
 
-executer = ThreadPoolExecuter()
+executor = ThreadPoolExecutor()
 
 
 def thread_blocking_operation():
@@ -202,8 +202,8 @@ async def async_func():
     print("return value:", r)
 
     # 方法そのニ
-    # ThreadPoolExecuterで渡された関数を実行し、その完了を待つ
-    r = await ak.run_in_executer(executer, thread_blocking_operation)
+    # ThreadPoolExecutorで渡された関数を実行し、その完了を待つ
+    r = await ak.run_in_executor(executor, thread_blocking_operation)
     print("return value:", r)
 ```
 

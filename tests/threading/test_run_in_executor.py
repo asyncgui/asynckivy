@@ -7,15 +7,15 @@ import threading
 def test_thread_id(kivy_clock):
     import asynckivy as ak
 
-    async def job(executer):
+    async def job(executor):
         before = threading.get_ident()
-        await ak.run_in_executer(executer, lambda: None)
+        await ak.run_in_executor(executor, lambda: None)
         after = threading.get_ident()
         assert before == after
 
 
-    with ThreadPoolExecutor() as executer:
-        task = ak.start(job(executer))
+    with ThreadPoolExecutor() as executor:
+        task = ak.start(job(executor))
         time.sleep(.01)
         assert not task.finished
         kivy_clock.tick()
@@ -25,12 +25,12 @@ def test_thread_id(kivy_clock):
 def test_propagate_exception(kivy_clock):
     import asynckivy as ak
 
-    async def job(executer):
+    async def job(executor):
         with pytest.raises(ZeroDivisionError):
-            await ak.run_in_executer(executer, lambda: 1 / 0)
+            await ak.run_in_executor(executor, lambda: 1 / 0)
 
-    with ThreadPoolExecutor() as executer:
-        task = ak.start(job(executer))
+    with ThreadPoolExecutor() as executor:
+        task = ak.start(job(executor))
         time.sleep(.01)
         assert not task.finished
         kivy_clock.tick()
@@ -40,11 +40,11 @@ def test_propagate_exception(kivy_clock):
 def test_no_exception(kivy_clock):
     import asynckivy as ak
 
-    async def job(executer):
-        assert 'A' == await ak.run_in_executer(executer, lambda: 'A')
+    async def job(executor):
+        assert 'A' == await ak.run_in_executor(executor, lambda: 'A')
 
-    with ThreadPoolExecutor() as executer:
-        task = ak.start(job(executer))
+    with ThreadPoolExecutor() as executor:
+        task = ak.start(job(executor))
         time.sleep(.01)
         assert not task.finished
         kivy_clock.tick()
@@ -57,12 +57,12 @@ def test_cancel_before_getting_excuted(kivy_clock):
 
     flag = ak.Event()
 
-    async def job(executer):
-        await ak.run_in_executer(executer, flag.set)
+    async def job(executor):
+        await ak.run_in_executor(executor, flag.set)
 
-    with ThreadPoolExecutor(max_workers=1) as executer:
-        executer.submit(time.sleep, .1)
-        task = ak.start(job(executer))
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        executor.submit(time.sleep, .1)
+        task = ak.start(job(executor))
         time.sleep(.02)
         assert not task.finished
         assert not flag.is_set
