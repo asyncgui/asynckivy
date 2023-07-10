@@ -186,10 +186,10 @@ class TouchReceiver(Widget):
 thus threads are the only way to perform them without blocking the main-thread:
 
 ```python
-from concurrent.futures import ThreadPoolExecuter
+from concurrent.futures import ThreadPoolExecutor
 import asynckivy as ak
 
-executer = ThreadPoolExecuter()
+executor = ThreadPoolExecutor()
 
 
 def thread_blocking_operation():
@@ -202,9 +202,9 @@ async def some_task():
     r = await ak.run_in_thread(thread_blocking_operation)
     print("return value:", r)
 
-    # run a function inside a ThreadPoolExecuter, and wait for the completion
-    # (ProcessPoolExecuter is not supported)
-    r = await ak.run_in_executer(executer, thread_blocking_operation)
+    # run a function inside a ThreadPoolExecutor, and wait for the completion
+    # (ProcessPoolExecutor is not supported)
+    r = await ak.run_in_executor(executor, thread_blocking_operation)
     print("return value:", r)
 ```
 

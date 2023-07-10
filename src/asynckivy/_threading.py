@@ -1,4 +1,4 @@
-__all__ = ('run_in_thread', 'run_in_executer', )
+__all__ = ('run_in_thread', 'run_in_executor', )
 from threading import Thread
 from kivy.clock import Clock
 import asyncgui
@@ -27,9 +27,9 @@ async def run_in_thread(func, *, daemon=False):
     return ret
 
 
-async def run_in_executer(executer, func):
+async def run_in_executor(executor, func):
     box = asyncgui.IBox()
-    future = executer.submit(_wrapper, func, box)
+    future = executor.submit(_wrapper, func, box)
     try:
         ret, exc = (await box.get())[0]
     except asyncgui.Cancelled:
