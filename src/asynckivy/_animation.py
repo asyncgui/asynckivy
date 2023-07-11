@@ -10,7 +10,7 @@ from asyncgui import _sleep_forever, _current_task
 @types.coroutine
 def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear, **animated_properties) -> T.Awaitable:
     '''
-    Animate attibutes of any object. This is basically an async version of :class:`kivy.animation.Animation`.
+    Animate attibutes of any object. This is basically the async form of :class:`kivy.animation.Animation`.
 
     .. code-block::
 
@@ -19,38 +19,22 @@ def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear,
         obj = types.SimpleNamespace(x=0, size=(200, 300, ))
         await animate(obj, x=100, size=(400, 400))
 
-    :class:`kivy.animation.Animation` requires the object you want to animate to have an attribute named ``uid`` but
-    this function does not. Therefore, this one is more broadly applicable than the Kivy's.
-
     Kivy has two compound animations, :class:`kivy.animation.Sequence` and :class:`kivy.animation.Parallel`.
-    You can achieve the same functionality in asynckivy as follows:
+    You can achieve the same functionality as them in asynckivy as follows:
 
     .. code-block::
 
-        from kivy.animation import Animation
         import asynckivy as ak
 
-       def kivy_Sequence(widget):
-           anim = Animation(x=100) + Animation(x=0)
-           anim.repeat = True
-           anim.start(widget)
+        async def sequential_animation(widget):
+            await ak.animate(widget, x=100)
+            await ak.animate(widget, x=0)
 
-       async def asynckivy_Sequence(widget):
-           while True:
-               await ak.animate(widget, x=100)
-               await ak.animate(widget, x=0)
-
-       def kivy_Parallel(widget):
-           anim = Animation(x=100) & Animation(y=100, duration=2)
-           anim.bind(on_complete=lambda *args: print("completed"))
-           anim.start(widget)
-
-       async def asynckivy_Parallel(widget):
-           await ak.wait_all(
-               ak.animate(widget, x=100),
-               ak.animate(widget, y=100, duration=2),
-           )
-           print("completed")
+        async def parallel_animation(widget):
+            await ak.wait_all(
+                ak.animate(widget, x=100),
+                ak.animate(widget, y=100, duration=2),
+            )
     '''
     if not duration:
         for key, value in animated_properties.items():

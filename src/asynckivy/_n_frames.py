@@ -1,5 +1,6 @@
 __all__ = ('n_frames', 'one_frame', )
 
+import typing as T
 import types
 from kivy.clock import Clock
 
@@ -20,19 +21,13 @@ _trigger_resume = Clock.create_trigger(_resume, 0)
 
 
 @types.coroutine
-def one_frame():
-    '''(experimental)
-    wait for one frame.
+def one_frame() -> T.Awaitable:
+    '''
+    Wait for one frame.
 
-    Usage
-    -----
+    .. code-block::
 
-    .. code-block:: python
-
-       import asynckivy as ak
-
-       async def async_fn():
-           await ak.one_frame()
+        await ak.one_frame()
     '''
     _trigger_resume()
     tasks = _waiting_tasks
@@ -43,19 +38,13 @@ def one_frame():
         tasks[idx] = None
 
 
-async def n_frames(n: int):
-    '''(experimental)
-    wait for the specified number of frames.
+async def n_frames(n: int) -> T.Awaitable:
+    '''
+    Wait for the specified number of frames.
 
-    Usage
-    -----
+    .. code-block::
 
-    .. code-block:: python
-
-       import asynckivy as ak
-
-       async def async_fn():
-           await ak.n_frames(2)  # wait for two frames
+        await n_frames(2)
     '''
     if n < 0:
         raise ValueError("Cannot wait for negative number of frames")
