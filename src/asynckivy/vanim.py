@@ -8,13 +8,13 @@ The problem is ... it's a pretty specialized api because:
 * It can only interpolate between **two** values. What if you want to do it with more than two values,
   like Bézier Curve?
 
-On the contrary, ``vanim`` is low-level, and gives you more control.
-In fact, it's presumptuous to call it an animation api.
+On the contrary, ``vanim`` is low-level.
+In fact, it's presumptuous to classify it as an animation api.
 All it does is calculating elapsed-time or progression-rate or both.
 What to do with those values is all up to you.
 
 That concludes the overview.
-Now, let's dive into each individual API.
+Now, let's dive into each individual api.
 
 dt (delta time)
 ---------------
@@ -114,7 +114,7 @@ Lastly, if you want the all three above, use this.
 The ``free_await`` parameter
 ----------------------------
 
-You may notice that all the ``vanim``'s apis take a keyword argument named ``free_await``.
+You might notice that all the ``vanim``'s apis take a keyword argument named ``free_await``.
 This works exactly the same as the :class:`asynckivy.repeat_sleeping` 's.
 
 Iterations may not end in time
