@@ -76,8 +76,7 @@ def test_stop_dispatching(stop_dispatching, expectation):
     import asynckivy as ak
 
     async def async_fn(parent, t):
-        async for __ in ak.rest_of_touch_moves(
-                parent, t, stop_dispatching=stop_dispatching):
+        async for __ in ak.rest_of_touch_moves(parent, t, stop_dispatching=stop_dispatching):
             pass
 
     n_touches = {'move': 0, 'up': 0, }
