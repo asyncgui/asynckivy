@@ -69,13 +69,13 @@ async def ver_sleep():
 
 
 async def ver_repeat_sleeping():
-    async with ak.repeat_sleeping(0) as sleep:
+    async with ak.repeat_sleeping(step=0) as sleep:
         while True:
             await sleep()
 
 
 async def ver_repeat_sleeping_free_await():
-    async with ak.repeat_sleeping(0, free_await=True) as sleep:
+    async with ak.repeat_sleeping(step=0, free_await=True) as sleep:
         while True:
             await sleep()
 

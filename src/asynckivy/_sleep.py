@@ -75,7 +75,7 @@ class repeat_sleeping:
 
     .. code-block::
 
-        async with repeat_sleeping(0) as sleep:
+        async with repeat_sleeping(step=0) as sleep:
             while True:
                 dt = await sleep()
                 ...
@@ -90,7 +90,7 @@ class repeat_sleeping:
 
     .. code-block::
 
-        async with repeat_sleeping(0) as sleep:
+        async with repeat_sleeping(step=0) as sleep:
             await sleep()  # OK
             await something_else  # NOT ALLOWED
             async with async_context_manager:  # NOT ALLOWED
@@ -104,7 +104,7 @@ class repeat_sleeping:
 
     __slots__ = ('_step', '_free_await', '_trigger', )
 
-    def __init__(self, step, free_await=False):
+    def __init__(self, *, step, free_await=False):
         self._step = step
         self._free_await = free_await
 
