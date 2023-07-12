@@ -2,5 +2,4 @@
 - type hits & doc
 - callback と async/await のいいとこ取りの説明。(animationを例に用いる)
 - `scalar animate`
-- `fade_transition` に `transition` 引数
 - `suppress_event()`
