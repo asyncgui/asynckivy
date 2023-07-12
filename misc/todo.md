@@ -1,7 +1,8 @@
 - `run_in_thread` のdaemonの既定値をNoneにする。
-- `exception.py` をprivate moduleにする。
 - type hits & doc
-- src directory
-- `watch_touch` や `repeat_sleeping` の中でcancel scope を開いた場合の対処
 - callback と async/await のいいとこ取りの説明。(animationを例に用いる)
 - `scalar animate`
+- `fade_transition` に `transition` 引数
+- `suppress_event()`
+- `free_await` をkeyword-onlyに
+- `watch_touch` keyword-only

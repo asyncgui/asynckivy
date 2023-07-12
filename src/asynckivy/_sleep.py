@@ -1,5 +1,6 @@
 __all__ = ('sleep', 'sleep_free', 'repeat_sleeping', )
 
+import typing as T
 import types
 from functools import partial
 
@@ -13,7 +14,14 @@ create_trigger_free = getattr(Clock, 'create_trigger_free', None)
 
 
 @types.coroutine
-def sleep(duration):
+def sleep(duration) -> T.Awaitable[float]:
+    '''
+    The async form of :meth:`kivy.clock.Clock.schedule_once`.
+
+    .. code-block::
+
+        dt = await sleep(5)  # wait for 5 seconds
+    '''
     clock_event = None
 
     def _sleep(task):
@@ -29,7 +37,14 @@ def sleep(duration):
 
 
 @types.coroutine
-def sleep_free(duration):
+def sleep_free(duration) -> T.Awaitable[float]:
+    '''
+    The async form of :meth:`kivy.clock.Clock.schedule_once_free`.
+
+    .. code-block::
+
+        dt = await sleep_free(5)  # wait for 5 seconds
+    '''
     clock_event = None
 
     def _sleep_free(task):
@@ -48,35 +63,39 @@ class repeat_sleeping:
     '''
     Return an async context manager that provides an efficient way to repeat sleeping.
 
-    The following code:
+    When there is code like this:
 
     .. code-block::
 
         while True:
-            await asynckivy.sleep(0)
+            dt = await sleep(0)
+            ...
 
-    can be translated to:
+    it can be translated to:
 
     .. code-block::
 
-        async with asynckivy.repeat_sleeping(0) as sleep:
+        async with repeat_sleeping(0) as sleep:
             while True:
-                await sleep()
+                dt = await sleep()
+                ...
 
-    The latter is more efficient than the former. The reason is that the latter only creates one ``ClockEvent``
-    instance while the former creates it per iteration.
+    The latter is more efficient than the former because it only creates one :class:`kivy.clock.ClockEvent` instance
+    and re-uses it during the loop while the former creates it per iteration.
+
+    **Restriction**
 
     By default, you are not allowed to perform any kind of async operations inside the with-block except you can
     ``await`` the return value of the function that is bound to the identifier of the as-clause.
 
     .. code-block::
 
-        async with asynckivy.repeat_sleeping(0) as sleep:
+        async with repeat_sleeping(0) as sleep:
             await sleep()  # OK
             await something_else  # NOT ALLOWED
             async with async_context_manager:  # NOT ALLOWED
                 ...
-            async for __ in async_iterable:  # NOT ALLOWED
+            async for __ in async_iterator:  # NOT ALLOWED
                 ...
 
     If you wish to override that restriction, you can set the ``free_await`` parameter to True. However, please note
@@ -89,7 +108,7 @@ class repeat_sleeping:
         self._step = step
         self._free_await = free_await
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> T.Awaitable[T.Callable[[], T.Awaitable[float]]]:
         free = self._free_await
         self._trigger = trigger = create_trigger((await current_task())._step, self._step, not free, False)
         if free:

@@ -1,5 +1,6 @@
-__all__ = ('watch_touch', 'rest_of_touch_moves', )
+__all__ = ('watch_touch', 'rest_of_touch_moves', 'rest_of_touch_events', )
 
+import typing as T
 import types
 import functools
 import asynckivy as ak
@@ -9,32 +10,37 @@ class watch_touch:
     '''
     Return an async context manager that provides an easy way to handle touch events.
 
-    Usage
-    -----
-
-    .. code-block:: python
+    .. code-block::
 
         async with watch_touch(widget, touch) as in_progress:
             while await in_progress():
                 print('on_touch_move')
-            else:
-                print('on_touch_up')
+            print('on_touch_up')
 
-    Restriction
-    -----------
+    The ``await in_progress()`` waits for either an ``on_touch_move`` event or an ``on_touch_up`` event to occur, and
+    returns True or False respectively when they actually occurred.
 
-    1. The only thing you can 'await' inside the context manager is that the return value of the callable that is
-       bound to the identifier in the as-clause.
+    **Restriction**
 
-       .. code-block:: python
+    * You are not allowed to perform any kind of async operations inside the with-block except you can ``await`` the
+      return value of the function that is bound to the identifier of the as-clause.
 
-           async with watch_touch(widget, touch) as in_progress:
-               await in_progress()  # ALLOWED
-               await something_else   # NOT ALLOWED
+      .. code-block::
 
-    2. Since the context manager grabs/ungrabs the ``touch``, the ``widget`` must NOT grab/ungrab it. Most of the
-       widgets that interact to touches (``Button``, ``ScrollView`` and ``Carousel``, for instance) wouldn't work with
-       this context manager unless you use it in a specific way.
+          async with watch_touch(widget, touch) as in_progress:
+              await in_progress()  # OK
+              await something_else  # NOT ALLOWED
+              async with async_context_manager:  # NOT ALLOWED
+                  ...
+              async for __ in async_iterator:  # NOT ALLOWED
+                  ...
+
+    * Since the context manager grabs/ungrabs the ``touch``, the ``widget`` must NOT grab/ungrab it. Most of the
+      widget/behavior classes that interact to touches [#classes_that_interact_to_touches]_ wouldn't work with it
+      unless the ``stop_dispatching`` parameter is set to True.
+
+    .. [#classes_that_interact_to_touches] :class:`kivy.uix.behaviors.ButtonBehavior`,
+       :class:`kivy.uix.scrollview.ScrollView` and :class:`kivy.uix.carousel.Carousel` for instance.
     '''
     __slots__ = ('_widget', '_touch', '_stop_dispatching', '_timeout', '_uid_up', '_uid_move', '_no_cleanup', )
 
@@ -84,7 +90,7 @@ class watch_touch:
     async def __aenter__(
         self, current_task=ak.current_task, partial=functools.partial, _callbacks=_callbacks, ak=ak,
         _always_false=_always_false, _true_if_touch_move_false_if_touch_up=_true_if_touch_move_false_if_touch_up,
-    ):
+    ) -> T.Callable[[], T.Awaitable[bool]]:
         touch = self._touch
         widget = self._widget
         if touch.time_end != -1:
@@ -117,39 +123,23 @@ class watch_touch:
         w.unbind_uid('on_touch_move', self._uid_move)
 
 
-async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=1.):
+async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.AsyncIterator[None]:
     '''
-    Wrap ``watch_touch()`` in a more intuitive interface.
+    Return an async iterator that iterates the number of times ``on_touch_move`` occurs,
+    and ends the iteration when ``on_touch_up`` occurs.
 
-    Usage
-    -----
-
-    .. code-block:: python
+    .. code-block::
 
         async for __ in rest_of_touch_moves(widget, touch):
             print('on_touch_move')
-        else:
-            print('on_touch_up')
+        print('on_touch_up')
 
-    Restriction
-    -----------
-
-    1. You are not allowed to 'await' anything during the iterations.
-
-       .. code-block:: python
-
-           async for __ in rest_of_touch_moves(widget, touch):
-               await something  # <- NOT ALLOWED
-
-    2. Like ``watch_touch``, this wouldn't work with the widgets that interact to touches.
-
-    Downside compared to ``watch_touch``
-    ------------------------------------
-
-    1. Since this creates an async generator, it may not work if Kivy is running in asyncio/trio mode.
-       See https://peps.python.org/pep-0525/#finalization for details.
+    This is a wrapper for :class:`watch_touch`. Although this one, I believe, is more intuitive than
+    :class:`watch_touch`, it has a couple of disadvantages - see :ref:`the-problem-with-async-generators`.
     '''
-
     async with watch_touch(widget, touch, stop_dispatching, timeout) as in_progress:
         while await in_progress():
             yield
+
+
+rest_of_touch_events = rest_of_touch_moves

@@ -11,3 +11,9 @@ test_free_only_clock:
 style:
 	$(FLAKE8) --count --select=E9,F63,F7,F82 --show-source --statistics ./tests ./src/asynckivy ./examples ./investigation
 	$(FLAKE8) --count --exit-zero --max-complexity=10 --max-line-length=119 --statistics ./src/asynckivy ./examples ./investigation
+
+html:
+	sphinx-build -b html ./sphinx ./docs
+
+livehtml:
+	sphinx-autobuild -b html ./sphinx ./docs

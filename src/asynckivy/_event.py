@@ -1,67 +1,42 @@
 __all__ = ('event', )
 
+import typing as T
 from functools import partial
 from asyncgui import IBox
+from kivy.event import EventDispatcher
 
 
-async def event(ed, name, *, filter=None, stop_dispatching=False):
+async def event(ed: EventDispatcher, name: str, /, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
     '''
-    event
-    =====
+    Return an awaitable that can be used to wait for:
 
-    Returns an awaitable that can be used to wait for:
+    * a Kivy event to occur.
+    * the value of a Kivy property to transition.
 
-    * Kivy events to get fired
-    * Kivy properties to change
+    .. code-block::
 
-    Usage
-    -----
+        # Wait for a button to be pressed.
+        await event(button, 'on_press')
 
-    .. code-block:: python
+        # Wait for an 'on_touch_down' event to occur.
+        __, touch = await event(widget, 'on_touch_down')
 
-       import asynckivy as ak
+        # Wait 'widget.x' to transition.
+        __, x = await ak.event(widget, 'x')
 
-       async def async_fn(widget):
-           # wait for a widget to fire an 'on_touch_down' event.
-           __, touch = await ak.event(widget, 'on_touch_down')
-           if widget.collide_point(*touch.opos):
-               print('Someone touched me.')
 
-           # wait for 'widget.x' to change
-           __, x = await ak.event(widget, 'x')
-           print(f"x was set to {x}")
+    The ``filter`` parameter can be used to apply a filter to the object you are waiting for.
 
-    ``filter`` is useful when you want to give it a condition.
+    .. code-block::
 
-    .. code-block:: python
+        # Wait for an 'on_touch_down' event to occur inside a widget.
+        __, touch = await event(widget, 'on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
 
-       import asynckivy as ak
+        # Wait for 'widget.x' to become greater than 100.
+        if widget.x <= 100:
+            await event(widget, 'x', filter=lambda __, x: x > 100)
 
-       async def async_fn(widget):
-           # wait for a widget to get touched inside of it
-           await ak.event(
-               widget, 'on_touch_down',
-               filter=lambda widget, touch: widget.collide_point(*touch.opos)
-           )
-
-           # wait for 'widget.x' to become greater than 100
-           if widget.x <= 100:
-               await ak.event(widget, 'x', filter=lambda __, x: x > 100)
-
-    ``stop_dispatching`` is useful when you want to stop event-dispatching
-    there.
-
-    .. code-block:: python
-
-       import asynckivy as ak
-
-       async def async_fn(label):
-           # wait for a label to get touched inside of it, and stop the
-           # event-dispatching when that happened.
-           await ak.event(
-               label, 'on_touch_down', stop_dispatching=True,
-               filter=lambda label, touch: label.collide_point(*touch.opos),
-           )
+    As for ``stop_dispatching``, see :ref:`kivys-event-system`.
     '''
     box = IBox()
     bind_id = ed.fbind(name, partial(_callback, filter, box, stop_dispatching))

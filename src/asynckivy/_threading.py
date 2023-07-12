@@ -1,5 +1,7 @@
 __all__ = ('run_in_thread', 'run_in_executor', )
+import typing as T
 from threading import Thread
+from concurrent.futures import ThreadPoolExecutor
 from kivy.clock import Clock
 import asyncgui
 
@@ -15,7 +17,16 @@ def _wrapper(func, box):
         Clock.schedule_once(lambda __: box.put(ret, exc))
 
 
-async def run_in_thread(func, *, daemon=False):
+async def run_in_thread(func, *, daemon=False) -> T.Awaitable:
+    '''
+    Create a new thread, run a function within it, then wait for the completion of that function.
+
+    .. code-block::
+
+        return_value = await run_in_thread(func)
+
+    See :ref:`io-in-asynckivy` for details.
+    '''
     box = asyncgui.IBox()
     Thread(
         name='asynckivy.run_in_thread',
@@ -27,7 +38,19 @@ async def run_in_thread(func, *, daemon=False):
     return ret
 
 
-async def run_in_executor(executor, func):
+async def run_in_executor(executor: ThreadPoolExecutor, func) -> T.Awaitable:
+    '''
+    Run a function within a :class:`concurrent.futures.ThreadPoolExecutor`, and wait for the completion of the
+    function.
+
+    .. code-block::
+
+        executor = ThreadPoolExecutor()
+        ...
+        return_value = await run_in_executor(executor, func)
+
+    See :ref:`io-in-asynckivy` for details.
+    '''
     box = asyncgui.IBox()
     future = executor.submit(_wrapper, func, box)
     try:

@@ -33,6 +33,12 @@ pytest = "^7.0.1"
 flake8 = "^6.0.0"
 kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.2.1.zip"}
 
+[tool.poetry.group.doc.dependencies]
+sphinx = "^6.0.0"
+sphinx-tabs = "^3.4.1"
+sphinx-book-theme = "^1.0.1"
+sphinx-autobuild = "^2021.3.14"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
