@@ -26,8 +26,8 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
                 ig.add(rotate := Rotate(origin=widget.center))
                 await animate(rotate, angle=angle)
 
-    If you want to animate for a long period of time, you might need extra work because you might have to prepare for
-    the transition of some of widget's properties during the animation. In the above example it's ``widget.center``,
+    If you want to animate for a long time, you might need extra work because you might have to prepare for the
+    transition of some of widget's properties during the animation. In the above example it's the ``widget.center``,
     and here is an example of how to do it.
 
     .. code-block::

@@ -13,7 +13,7 @@ linear_transition = AnimationTransition.linear
 async def interpolate(start, end, *, duration=1.0, step=0, transition=AnimationTransition.linear) \
         -> T.AsyncIterator:
     '''
-    Interpolates between the values ``start`` and ``end`` in an async-manner.
+    Interpolate between the values ``start`` and ``end`` in an async-manner.
     Inspired by wasabi2d's interpolate_.
 
     .. code-block::
@@ -44,7 +44,7 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=AnimationT
             async for __ in async_iterator:  # NOT ALLOWED
                 ...
 
-    .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate  # noqa: E501
+    .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate
     '''
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
