@@ -44,7 +44,7 @@ class watch_touch:
     '''
     __slots__ = ('_widget', '_touch', '_stop_dispatching', '_timeout', '_uid_up', '_uid_move', '_no_cleanup', )
 
-    def __init__(self, widget, touch, stop_dispatching=False, timeout=1.):
+    def __init__(self, widget, touch, *, stop_dispatching=False, timeout=1.):
         self._widget = widget
         self._touch = touch
         self._stop_dispatching = stop_dispatching
@@ -137,7 +137,7 @@ async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=
     This is a wrapper for :class:`watch_touch`. Although this one, I believe, is more intuitive than
     :class:`watch_touch`, it has a couple of disadvantages - see :ref:`the-problem-with-async-generators`.
     '''
-    async with watch_touch(widget, touch, stop_dispatching, timeout) as in_progress:
+    async with watch_touch(widget, touch, stop_dispatching=stop_dispatching, timeout=timeout) as in_progress:
         while await in_progress():
             yield
 
