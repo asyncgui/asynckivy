@@ -23,7 +23,7 @@ def test_repeat_sleeping(sleep_then_tick, free_await):
 
     async def async_fn():
         nonlocal task_state
-        async with ak.repeat_sleeping(.5, free_await=free_await) as sleep:
+        async with ak.repeat_sleeping(step=.5, free_await=free_await) as sleep:
             task_state = 'A'
             await sleep()
             task_state = 'B'
@@ -47,7 +47,7 @@ def test_free_awaitが真の時は勝手にtaskを再開しない(sleep_then_tic
     import asynckivy as ak
 
     async def async_fn():
-        async with ak.repeat_sleeping(0, free_await=True) as sleep:
+        async with ak.repeat_sleeping(step=0, free_await=True) as sleep:
             await ak.sleep_forever()
 
     task = ak.start(async_fn())
@@ -93,7 +93,7 @@ def test_cancel_repeat_sleeping(sleep_then_tick, free_await):
         async with ak.open_cancel_scope() as scope:
             ctx['scope'] = scope
             ctx['state'] = 'A'
-            async with ak.repeat_sleeping(0, free_await=free_await) as sleep:
+            async with ak.repeat_sleeping(step=0, free_await=free_await) as sleep:
                 await sleep()
             pytest.fail()
         ctx['state'] = 'B'
@@ -116,7 +116,7 @@ def test_cancel_repeat_sleeping2(sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn(ctx):
-        async with ak.repeat_sleeping(0, free_await=True) as sleep:
+        async with ak.repeat_sleeping(step=0, free_await=True) as sleep:
             async with ak.open_cancel_scope() as scope:
                 ctx['scope'] = scope
                 ctx['state'] = 'A'

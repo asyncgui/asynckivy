@@ -4,5 +4,3 @@
 - `scalar animate`
 - `fade_transition` に `transition` 引数
 - `suppress_event()`
-- `free_await` をkeyword-onlyに
-- `watch_touch` keyword-only

@@ -56,7 +56,7 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=AnimationT
 
     slope = end - start
     elapsed_time = 0.
-    async with repeat_sleeping(step) as sleep:
+    async with repeat_sleeping(step=step) as sleep:
         while True:
             elapsed_time += await sleep()
             if elapsed_time >= duration:
