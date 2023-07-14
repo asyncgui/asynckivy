@@ -1,5 +1,3 @@
-- `run_in_thread` のdaemonの既定値をNoneにする。
 - type hits & doc
 - callback と async/await のいいとこ取りの説明。(animationを例に用いる)
 - `scalar animate`
-- `suppress_event()`
