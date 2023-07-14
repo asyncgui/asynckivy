@@ -1,4 +1,4 @@
-__all__ = ('transform', )
+__all__ = ('transform', 'suppress_event', )
 import typing as T
 from contextlib import contextmanager
 
@@ -116,3 +116,53 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
         after.remove(pop_mat)
         before.remove(ig)
         before.remove(push_mat)
+
+
+class suppress_event:
+    '''
+    Return a context manager that prevents the callback functions (including the default handler) bound to an event
+    from being called.
+
+    .. code-block::
+        :emphasize-lines: 4
+
+        from kivy.uix.button import Button
+
+        btn = Button()
+        btn.bind(on_press=lambda __: print("pressed"))
+        with suppress_event(btn, 'on_press'):
+            btn.dispatch('on_press')
+
+    The above code prints nothing because the callback function is not called.
+
+    Strictly speaking, this context manager doesn't prevent all callback functions from being called.
+    It only prevents the callback functions that were bound prior to it being entered.
+    Thus, the following code prints ``pressed``.
+
+    .. code-block::
+        :emphasize-lines: 5
+
+        from kivy.uix.button import Button
+
+        btn = Button()
+        with suppress_event(btn, 'on_press'):
+            btn.bind(on_press=lambda __: print("pressed"))
+            btn.dispatch('on_press')
+
+    .. warning::
+
+        You need to be careful when you suppress an ``on_touch_xxx`` event.
+        See :ref:`kivys-event-system` for details.
+    '''
+    __slots__ = ('_dispatcher', '_name', '_bind_uid', '_filter', )
+
+    def __init__(self, event_dispatcher, event_name, *, filter=lambda *args, **kwargs: True):
+        self._dispatcher = event_dispatcher
+        self._name = event_name
+        self._filter = filter
+
+    def __enter__(self):
+        self._bind_uid = self._dispatcher.fbind(self._name, self._filter)
+
+    def __exit__(self, *args):
+        self._dispatcher.unbind_uid(self._name, self._bind_uid)

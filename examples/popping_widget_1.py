@@ -1,24 +1,17 @@
-from contextlib import contextmanager, nullcontext
+from contextlib import nullcontext
 
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
-from asynckivy import vanim
-from asynckivy import transform
+from asynckivy import vanim, transform, suppress_event
 
 
-@contextmanager
-def ignore_touch_down(widget, _f=lambda w, t: w.collide_point(*t.opos)):
+def ignore_touch_down(widget):
     '''Return a context manager that makes the widget ignore ``on_touch_down`` events that collide with it. This
     is probably useful when you want to disable touch interaction of a widget without changing its appearance.
     (Setting ``disabled`` to True might change the appearance.)
     '''
-
-    uid = widget.fbind('on_touch_down', _f)
-    try:
-        yield
-    finally:
-        widget.unbind_uid('on_touch_down', uid)
+    return suppress_event(widget, 'on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
 
 
 degrees_per_second = float

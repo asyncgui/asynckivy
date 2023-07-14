@@ -9,8 +9,7 @@ and see what happens.
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
-from asynckivy import vanim
-from asynckivy import transform
+from asynckivy import vanim, transform
 
 
 degrees_per_second = float

@@ -13,6 +13,7 @@ __all__ = (
     'run_in_thread',
     'sleep',
     'sleep_free',
+    'suppress_event',
     'transform',
     'watch_touch',
 )
@@ -26,4 +27,4 @@ from ._interpolate import interpolate, fade_transition
 from ._touch import watch_touch, rest_of_touch_events, rest_of_touch_moves
 from ._threading import run_in_executor, run_in_thread
 from ._n_frames import one_frame, n_frames
-from ._utils import transform
+from ._utils import transform, suppress_event
