@@ -1,23 +1,16 @@
 '''
 * The longer you press the button, the higher it pops.
 '''
-from contextlib import contextmanager
 
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Translate, Scale
-from asynckivy import vanim
-from asynckivy import transform
+from asynckivy import vanim, transform, suppress_event
 
 
-@contextmanager
-def ignore_touch_down(widget, _f=lambda w, t: w.collide_point(*t.opos)):
+def ignore_touch_down(widget):
     '''Same as the popping_widget_1.py's '''
-    uid = widget.fbind('on_touch_down', _f)
-    try:
-        yield
-    finally:
-        widget.unbind_uid('on_touch_down', uid)
+    return suppress_event(widget, 'on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
 
 
 async def pop_widget(widget, *, max_height=600., max_scale_x=2.0):
