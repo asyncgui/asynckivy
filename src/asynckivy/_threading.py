@@ -17,7 +17,7 @@ def _wrapper(func, box):
         Clock.schedule_once(lambda __: box.put(ret, exc))
 
 
-async def run_in_thread(func, *, daemon=False) -> T.Awaitable:
+async def run_in_thread(func, *, daemon=None) -> T.Awaitable:
     '''
     Create a new thread, run a function within it, then wait for the completion of that function.
 
