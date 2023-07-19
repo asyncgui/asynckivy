@@ -1,6 +1,7 @@
 __all__ = (
     'MotionEventAlreadyEndedError',
     'animate',
+    'create_texture_from_text',
     'event',
     'fade_transition',
     'interpolate',
@@ -28,4 +29,4 @@ from ._interpolate import interpolate, fade_transition
 from ._touch import watch_touch, rest_of_touch_events, rest_of_touch_moves, touch_up_event
 from ._threading import run_in_executor, run_in_thread
 from ._n_frames import one_frame, n_frames
-from ._utils import transform, suppress_event
+from ._utils import transform, suppress_event, create_texture_from_text

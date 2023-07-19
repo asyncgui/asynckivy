@@ -1,8 +1,11 @@
-__all__ = ('transform', 'suppress_event', )
+__all__ = ('transform', 'suppress_event', 'create_texture_from_text', )
 import typing as T
 from contextlib import contextmanager
 
 from kivy.graphics import PushMatrix, PopMatrix, InstructionGroup
+from kivy.graphics.texture import Texture
+from kivy.core.text import Label as CoreLabel
+from kivy.core.text.markup import MarkupLabel as CoreMarkupLabel
 
 
 @contextmanager
@@ -166,3 +169,26 @@ class suppress_event:
 
     def __exit__(self, *args):
         self._dispatcher.unbind_uid(self._name, self._bind_uid)
+
+
+def create_texture_from_text(**label_kwargs) -> Texture:
+    '''
+    Create a :external:kivy:doc:`api-kivy.graphics.texture` from text.
+
+    .. code-block::
+
+        from kivy.metrics import sp
+
+        texture = create_texture_from_text(
+            text='Hello',
+            font_size=sp(50),
+            font_name='Roboto',
+            color=(1, 0, 0, 1),
+        )
+
+    The keyword arguments are likely to be very similar to :external:kivy:doc:`api-kivy.uix.label` 's.
+    '''
+    core = CoreMarkupLabel if label_kwargs.pop('markup', False) else CoreLabel
+    label = core(**label_kwargs)
+    label.refresh()
+    return label.texture

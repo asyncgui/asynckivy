@@ -131,7 +131,7 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
     '''
     *(experimental state)*
 
-    Return an awaitable that can be used to wait for the ``on_touch_up`` event of the given ``touch`` to occur. 
+    Return an awaitable that can be used to wait for the ``on_touch_up`` event of the given ``touch`` to occur.
 
     .. code-block::
 
