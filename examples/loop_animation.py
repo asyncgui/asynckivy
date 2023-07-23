@@ -5,7 +5,7 @@ A simple loop-animation.
 from kivy.app import App
 from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex
-import asynckivy
+import asynckivy as ak
 
 
 class TestApp(App):
@@ -18,12 +18,14 @@ class TestApp(App):
                      )
 
     def on_start(self):
-        asynckivy.start(self.main())
+        ak.start(self.main())
 
     async def main(self):
+        # LOAD_FAST
         label = self.root
-        sleep = asynckivy.sleep
-        await asynckivy.n_frames(4)
+        sleep = ak.sleep
+
+        await ak.n_frames(4)
         while True:
             label.outline_color = get_color_from_hex('#FFFFFF')
             label.text = 'Do'
@@ -41,4 +43,4 @@ class TestApp(App):
 
 
 if __name__ == '__main__':
-    TestApp().run()
+    TestApp(title=r"Do you like Kivy ?").run()

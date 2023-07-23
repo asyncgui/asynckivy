@@ -14,7 +14,7 @@ class MotionEventAlreadyEndedError(Exception):
         import asynckivy as ak
 
         class MyWidget(Widget):
-            def on_touch_up(self, touch):  # not 'on_touch_down'
+            def on_touch_up(self, touch):  # not 'on_touch_down', oops!
                 ak.start(self.handle_touch(touch))
                 return True
 
