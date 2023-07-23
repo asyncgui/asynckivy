@@ -2,6 +2,7 @@
 A simple usecase of ``asynckivy.fade_transition()``.
 '''
 
+from kivy.utils import get_random_color
 from kivy.app import App
 from kivy.uix.label import Label
 import asynckivy as ak
@@ -15,7 +16,6 @@ class TestApp(App):
         ak.start(self.main())
 
     async def main(self):
-        from kivy.utils import get_random_color
         await ak.n_frames(4)
         label = self.root
         for text in (
@@ -34,4 +34,4 @@ class TestApp(App):
 
 
 if __name__ == '__main__':
-    TestApp().run()
+    TestApp(title=r"fade_transition").run()

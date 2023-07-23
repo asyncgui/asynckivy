@@ -1,25 +1,30 @@
-'''
-Difference from popping_widget_1.py
------------------------------------
+from contextlib import nullcontext
+from functools import partial
 
-``Translate`` and ``Rotate`` are inserted into different layers of the canvas, 'canvas.before' and 'canvas'
-respectively, so they never interweave each other no matter how much animations are stacked. Try mashing the buttons
-and see what happens.
-'''
+from kivy.config import Config
+Config.set('modules', 'showborder', '')
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
-from asynckivy import vanim, transform
+from asynckivy import vanim, transform, suppress_event
+
+
+ignore_touch_down = partial(suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
+'''
+Return a context manager that makes the widget ignore ``on_touch_down`` events that collide with it. This is probably
+useful when you want to disable touch interaction of a widget without changing its appearance.
+(Setting ``disabled`` to True might change the appearance.)
+'''
 
 
 degrees_per_second = float
 
 
-async def pop_widget(widget, *, height=200., duration=1., rotation_speed: degrees_per_second=360.):
-    with transform(widget, use_outer_canvas=True) as outer_ig, transform(widget) as ig:
+async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degrees_per_second=360., ignore_touch=False):
+    with ignore_touch_down(widget) if ignore_touch else nullcontext(), transform(widget) as ig:  # <- InstructionGroup
         translate = Translate()
-        outer_ig.add(translate)
         rotate = Rotate(origin=widget.center)
+        ig.add(translate)
         ig.add(rotate)
         async for dt, et, p in vanim.delta_time_elapsed_time_progress(duration=duration):
             p = p * 2. - 1.  # convert range[0 to +1] into range[-1 to +1]
@@ -35,7 +40,8 @@ KV_CODE = r'''
     size_hint_y: None
     height: '100dp'
     font_size: '100sp'
-    on_press: ak.start(pop_widget(self))
+    on_press:
+        ak.start(pop_widget(self, ignore_touch=True))
 
 BoxLayout:
     spacing: '20dp'
@@ -57,4 +63,4 @@ class SampleApp(App):
 
 
 if __name__ == '__main__':
-    SampleApp().run()
+    SampleApp(title='popping widget').run()

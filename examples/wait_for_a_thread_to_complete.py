@@ -27,7 +27,7 @@ class TestApp(App):
         button.text = 'start heavy task'
         await ak.event(button, 'on_press')
         button.text = 'running...'
-        await ak.run_in_thread(lambda: heavy_task(5))
+        await ak.run_in_thread(lambda: heavy_task(5), daemon=True)
         button.text = 'done'
 
 

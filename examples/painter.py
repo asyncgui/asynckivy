@@ -2,18 +2,19 @@
 Painter
 =======
 
-* can only draw rectangles
 * can handle multiple touches simultaneously
 '''
 
-from kivy.utils import reify
+from functools import cached_property
+from kivy.graphics import Line, Color
+from kivy.utils import get_random_color
 from kivy.uix.relativelayout import RelativeLayout
 from kivy.app import runTouchApp
 import asynckivy as ak
 
 
 class Painter(RelativeLayout):
-    @reify
+    @cached_property
     def _ud_key(self):
         return 'Painter.' + str(self.uid)
 
@@ -27,15 +28,12 @@ class Painter(RelativeLayout):
             return True
 
     async def draw_rect(self, touch):
-        from kivy.graphics import Line, Color
-        from kivy.utils import get_random_color
-
         with self.canvas:
             Color(*get_random_color())
             line = Line(width=2)
         self_to_local = self.to_local
         ox, oy = self_to_local(*touch.opos)
-        async for __ in ak.rest_of_touch_moves(self, touch, stop_dispatching=True):
+        async for __ in ak.rest_of_touch_events(self, touch, stop_dispatching=True):
             # Don't await anything during the iteration
             x, y = self_to_local(*touch.pos)
             min_x, max_x = (x, ox) if x < ox else (ox, x)

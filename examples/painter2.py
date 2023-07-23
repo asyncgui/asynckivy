@@ -2,7 +2,6 @@
 Painter
 =======
 
-* can only draw rectangles
 * can only handle one touch at a time
 '''
 
@@ -21,7 +20,7 @@ class Painter(RelativeLayout):
         return widget.collide_point(*touch.opos) and (not touch.is_mouse_scrolling)
 
     async def main(self):
-        from asynckivy import rest_of_touch_moves, event
+        from asynckivy import rest_of_touch_events, event
         from kivy.graphics import Line, Color
         from kivy.utils import get_random_color
 
@@ -33,7 +32,7 @@ class Painter(RelativeLayout):
                 Color(*get_random_color())
                 line = Line(width=2)
             ox, oy = self_to_local(*touch.opos)
-            async for __ in rest_of_touch_moves(self, touch, stop_dispatching=True):
+            async for __ in rest_of_touch_events(self, touch, stop_dispatching=True):
                 # Don't await anything during the iteration
                 x, y = self_to_local(*touch.pos)
                 min_x, max_x = (x, ox) if x < ox else (ox, x)
