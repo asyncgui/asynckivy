@@ -1,7 +1,7 @@
 '''
-:func:`asynckivy.animate` is an imitation of an existing api, :class:`kivy.animation.Animation`,
+:func:`asynckivy.animate` is an imitation of an existing API, :class:`kivy.animation.Animation`,
 which is fine because it's easy to use for the people who are already familiar with Kivy.
-The problem is ... it's a pretty specialized api because:
+The problem is ... it's a pretty specialized API because:
 
 * It can only animate attributes. Sometimes, I just need the value without actually assigning it to an attribute.
   (:func:`asynckivy.interpolate` already solved this problem, though.)
@@ -9,17 +9,20 @@ The problem is ... it's a pretty specialized api because:
   like Bézier Curve?
 
 On the contrary, ``vanim`` is low-level.
-In fact, it's presumptuous to classify it as an animation api.
+In fact, it's presumptuous to classify it as an animation API.
 All it does is calculating elapsed-time or progression-rate or both.
 What to do with those values is all up to you.
 
 That concludes the overview.
-Now, let's dive into each individual api.
+Now, let's dive into each individual API.
+
 
 dt (delta time)
 ---------------
 
-The most low-level api in ``vanim`` is ``dt``, which is basically the async form of
+.. autofunction:: dt
+
+The most low-level API in ``vanim`` is ``dt``, which is basically the async form of
 :meth:`kivy.clock.Clock.schedule_interval`. The following callback-based code:
 
 .. code-block::
@@ -41,6 +44,8 @@ is equivalent to:
 
 et (elapsed time)
 -----------------
+
+.. autofunction:: et
 
 If you want the total elapsed time of iterations instead of delta time, this is for you.
 
@@ -69,6 +74,8 @@ which should be as performant as the former.
 dt_et
 -----
 
+.. autofunction:: dt_et
+
 If you want both ``dt`` and ``et``, this is for you.
 
 .. code-block::
@@ -81,6 +88,8 @@ If you want both ``dt`` and ``et``, this is for you.
 
 progress
 --------
+
+.. autofunction:: progress
 
 If you aren't interested in how much time elapsed, and are only interested in the progression rate, this is for you.
 
@@ -103,6 +112,8 @@ If you want non-linear progression, :class:`kivy.animation.AnimationTransition` 
 
 dt_et_progress
 --------------
+
+.. autofunction:: dt_et_progress
 
 Lastly, if you want the all three above, use this.
 
