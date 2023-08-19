@@ -32,7 +32,7 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
 
     **Restriction**
 
-    You are not allowed to perform any kind of async operations inside the with-block.
+    You are not allowed to perform any kind of async operations during the loop.
 
     .. code-block::
 
