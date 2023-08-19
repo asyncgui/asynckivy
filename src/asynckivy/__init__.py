@@ -6,7 +6,6 @@ __all__ = (
     'fade_transition',
     'interpolate',
     'n_frames',
-    'one_frame',
     'repeat_sleeping',
     'rest_of_touch_events',
     'rest_of_touch_moves',
@@ -28,5 +27,5 @@ from ._animation import animate
 from ._interpolate import interpolate, fade_transition
 from ._touch import watch_touch, rest_of_touch_events, rest_of_touch_moves, touch_up_event
 from ._threading import run_in_executor, run_in_thread
-from ._n_frames import one_frame, n_frames
+from ._n_frames import n_frames
 from ._utils import transform, suppress_event, create_texture_from_text
