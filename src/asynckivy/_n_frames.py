@@ -1,53 +1,37 @@
-__all__ = ('n_frames', 'one_frame', )
+__all__ = ('n_frames', )
 
 import typing as T
 import types
 from kivy.clock import Clock
-
-_waiting_tasks = []
-
-
-def _resume(dt):
-    global _waiting_tasks
-    tasks = _waiting_tasks
-    _waiting_tasks = []
-    for t in tasks:
-        if t is not None:
-            t._step()
-
-
-# NOTE: This hinders the 'kivy_clock'-fixture
-_trigger_resume = Clock.create_trigger(_resume, 0)
+from asyncgui import _current_task, _sleep_forever
 
 
 @types.coroutine
-def one_frame() -> T.Awaitable:
+def n_frames(n: int) -> T.Awaitable:
     '''
-    Wait for one frame.
-
-    .. code-block::
-
-        await ak.one_frame()
-    '''
-    _trigger_resume()
-    tasks = _waiting_tasks
-    idx = len(tasks)
-    try:
-        yield tasks.append
-    finally:
-        tasks[idx] = None
-
-
-async def n_frames(n: int) -> T.Awaitable:
-    '''
-    Wait for the specified number of frames.
+    Wait for a specified number of frames.
 
     .. code-block::
 
         await n_frames(2)
     '''
     if n < 0:
-        raise ValueError("Cannot wait for negative number of frames")
-    _one_frame = one_frame
-    for __ in range(n):
-        await _one_frame()
+        raise ValueError(f"Waiting for {n} frames doesn't make sense.")
+    if not n:
+        return
+
+    task = (yield _current_task)[0][0]
+
+    def callback(dt):
+        nonlocal n
+        n -= 1
+        if not n:
+            task._step()
+            return False
+
+    clock_event = Clock.schedule_interval(callback, 0)
+
+    try:
+        yield _sleep_forever
+    finally:
+        clock_event.cancel()
