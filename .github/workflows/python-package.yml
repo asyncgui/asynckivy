@@ -31,8 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pytest flake8 kivy==2.2.1
-        python -m pip install --pre asyncgui==0.6.0.dev1
+        python -m pip install pytest flake8 kivy==2.2.1 asyncgui==0.6.0
         python -m pip install .
     - name: Lint with flake8
       run: make style
