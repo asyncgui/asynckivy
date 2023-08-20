@@ -63,7 +63,7 @@ class repeat_sleeping:
     .. code-block::
 
         while True:
-            dt = await sleep(0)
+            await sleep(0)
             ...
 
     it can be translated to:
@@ -72,7 +72,7 @@ class repeat_sleeping:
 
         async with repeat_sleeping(step=0) as sleep:
             while True:
-                dt = await sleep()
+                await sleep()
                 ...
 
     The latter is more efficient than the former because it only creates one :class:`kivy.clock.ClockEvent` instance

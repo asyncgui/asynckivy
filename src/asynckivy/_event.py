@@ -3,10 +3,9 @@ __all__ = ('event', )
 import typing as T
 from functools import partial
 from asyncgui import IBox
-from kivy.event import EventDispatcher
 
 
-async def event(ed: EventDispatcher, name: str, /, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
+async def event(event_dispatcher, event_name, /, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
     '''
     Return an awaitable that can be used to wait for:
 
@@ -21,7 +20,7 @@ async def event(ed: EventDispatcher, name: str, /, *, filter=None, stop_dispatch
         # Wait for an 'on_touch_down' event to occur.
         __, touch = await event(widget, 'on_touch_down')
 
-        # Wait 'widget.x' to transition.
+        # Wait for 'widget.x' to transition.
         __, x = await ak.event(widget, 'x')
 
 
@@ -39,12 +38,12 @@ async def event(ed: EventDispatcher, name: str, /, *, filter=None, stop_dispatch
     As for ``stop_dispatching``, see :ref:`kivys-event-system`.
     '''
     box = IBox()
-    bind_id = ed.fbind(name, partial(_callback, filter, box, stop_dispatching))
+    bind_id = event_dispatcher.fbind(event_name, partial(_callback, filter, box, stop_dispatching))
     assert bind_id  # check if binding succeeded
     try:
         return (await box.get())[0]
     finally:
-        ed.unbind_uid(name, bind_id)
+        event_dispatcher.unbind_uid(event_name, bind_id)
 
 
 def _callback(filter, box, stop_dispatching, *args, **kwargs):

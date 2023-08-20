@@ -186,7 +186,7 @@ def create_texture_from_text(**label_kwargs) -> Texture:
             color=(1, 0, 0, 1),
         )
 
-    The keyword arguments are likely to be very similar to :external:kivy:doc:`api-kivy.uix.label` 's.
+    The keyword arguments are similar to :external:kivy:doc:`api-kivy.uix.label` 's.
     '''
     core = CoreMarkupLabel if label_kwargs.pop('markup', False) else CoreLabel
     label = core(**label_kwargs)
