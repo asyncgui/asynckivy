@@ -105,4 +105,4 @@ def modify_docstring(app, what, name, obj, options, lines,
 
 def setup(app):
     app.connect('autodoc-process-signature', modify_signature)
-    app.connect('autodoc-process-docstring', modify_docstring)
+    # app.connect('autodoc-process-docstring', modify_docstring)

@@ -8,7 +8,6 @@ __all__ = (
     'n_frames',
     'repeat_sleeping',
     'rest_of_touch_events',
-    'rest_of_touch_moves',
     'run_in_executor',
     'run_in_thread',
     'sleep',
