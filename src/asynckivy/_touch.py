@@ -174,14 +174,14 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
         touch.ungrab(widget)
 
 
-async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.AsyncIterator[None]:
+async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.AsyncIterator[None]:
     '''
     Return an async iterator that iterates the number of times ``on_touch_move`` occurs,
     and ends the iteration when ``on_touch_up`` occurs.
 
     .. code-block::
 
-        async for __ in rest_of_touch_moves(widget, touch):
+        async for __ in rest_of_touch_events(widget, touch):
             print('on_touch_move')
         print('on_touch_up')
 
@@ -193,4 +193,4 @@ async def rest_of_touch_moves(widget, touch, *, stop_dispatching=False, timeout=
             yield
 
 
-rest_of_touch_events = rest_of_touch_moves
+rest_of_touch_moves = rest_of_touch_events
