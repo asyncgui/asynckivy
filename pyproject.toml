@@ -26,12 +26,12 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8.1"
-asyncgui = {version = "0.6.0.dev1", allow-prereleases = true }
+asyncgui = "~0.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0.1"
 flake8 = "^6.0.0"
-kivy = {url = "https://github.com/kivy/kivy/archive/refs/tags/2.2.1.zip"}
+kivy = "^2.2.1"
 
 [tool.poetry.group.doc.dependencies]
 sphinx = "^6.0.0"
