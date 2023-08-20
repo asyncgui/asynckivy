@@ -39,8 +39,7 @@ class watch_touch:
                   ...
 
     * Since the context manager grabs/ungrabs the ``touch``, the ``widget`` must NOT grab/ungrab it. Most of the
-      widget/behavior classes that interact to touches [#classes_that_interact_to_touches]_ wouldn't work with it
-      unless the ``stop_dispatching`` parameter is set to True.
+      widget/behavior classes that interact to touches [#classes_that_interact_to_touches]_ wouldn't work with it.
 
     .. [#classes_that_interact_to_touches] :class:`kivy.uix.behaviors.ButtonBehavior`,
        :class:`kivy.uix.scrollview.ScrollView` and :class:`kivy.uix.carousel.Carousel` for instance.

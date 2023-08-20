@@ -54,8 +54,8 @@ ak.start(what_you_want_to_do(...))
 このmoduleのminor versionが変わった時は何らかの重要な互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
 
 ```text
-poetry add asynckivy@~0.5
-pip install "asynckivy>=0.5,<0.6"
+poetry add asynckivy@~0.6
+pip install "asynckivy>=0.6,<0.7"
 ```
 
 ## 使い方
@@ -93,7 +93,7 @@ async def async_func(button):
         ak.sleep(5),
     )
 
-    # buttonが押され なおかつ (5秒経つ か 'other_async_func'が完了する) まで待つ
+    # buttonが押され なおかつ [5秒経つ か 'other_async_func'が完了する] まで待つ
     tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
         ak.wait_any(
@@ -117,21 +117,21 @@ import asynckivy as ak
 async def async_func(widget1, widget2):
     obj = SimpleNamespace(attr1=10, attr2=[20, 30, ], attr3={'key': 40, })
 
-    # 任意のobjectの属性をanimationしてその完了を待つ。
+    # 任意のオブジェクトの属性をアニメーションしてその完了を待つ。
     await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400})
 
-    # 二つの数値を補間する。
-    async for v in ak.interpolate(0, 200):
+    # duration秒かけて二つの数値を補間する。中間値の計算はstep秒毎に行う。
+    async for v in ak.interpolate(0, 200, duration=2, step=0.1):
         print(v)
         # await something  # この繰り返し中にawaitは使ってはいけない
 
-    # duration/2秒かけてwidget達を徐々に透明にしてからwith blobk内を実行し、それから
+    # duration/2秒かけてwidget達を徐々に透明にしてからwith block内を実行し、それから
     # duration/2秒かけて元の透明度に戻す。透明度の更新はstep秒毎に行う。
-    async with ak.fade_transition(widget1, widget2):
+    async with ak.fade_transition(widget1, widget2, duration=3, step=0.1):
         widget1.text = 'new text'
         widget2.y = 200
 
-    # より細やかにanimationを制御したい時の為に vanim があります。詳しくはmoduleのdocを。
+    # より細やかにanimationを制御したい時の為に vanim があります。詳しくはGitHub Pagesを。
     from asynckivy import vanim
     async for dt in vanim.delta_time():
         ...
@@ -139,7 +139,7 @@ async def async_func(widget1, widget2):
 
 ### touch処理
 
-`asynckivy.rest_of_touch_moves()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができる。
+`asynckivy.rest_of_touch_events()`を用いる事で簡単に`on_touch_xxx`系のeventを捌く事ができる。
 
 ```python
 import asynckivy as ak
@@ -152,13 +152,13 @@ class TouchReceiver(Widget):
 
     async def handle_touch(self, touch):
         print('on_touch_up')
-        async for __ in ak.rest_of_touch_moves(self, touch):
+        async for __ in ak.rest_of_touch_events(self, touch):
             # この繰り返し中はawaitを使ってはいけない。
             print('on_touch_move')
         print('on_touch_up')
 ```
 
-Kivyがasyncio/trioモードで動いていると`rest_of_touch_moves()`がうまく動かない可能性があります。
+Kivyがasyncio/trioモードで動いていると`rest_of_touch_events()`がうまく動かない可能性があります。
 そんな時は`watch_touch()`を使って下さい。
 
 ```python
@@ -223,97 +223,12 @@ async def async_func(label):
         label.text = "応答有り: " + response.text
 ```
 
-### Task間の連絡および同期
-
-[asyncio.Event](https://docs.python.org/3/library/asyncio-sync.html#asyncio.Event)相当の物。
-
-```python
-import asynckivy as ak
-
-async def task_A(e):
-    print('A1')
-    await e.wait()
-    print('A2')
-async def task_B(e):
-    print('B1')
-    await e.wait()
-    print('B2')
-
-e = ak.Event()
-ak.start(task_A(e))
-# A1
-ak.start(task_B(e))
-# B1
-e.set()
-# A2
-# B2
-```
-
-Trioやasyncioの物とは違って``Event.set()``が呼ばれた時それを待っているtaskは即座に再開される。
-なので上の例で``e.set()``は``A2``と``B2``が出力された後に処理が戻る。
-
-### 中断への対処
-
-``asynckivy.start()``が返した``Task``の``.cancel()``を呼ぶ事で処理を中断できる。
-
-```python
-task = asynckivy.start(async_func())
-...
-task.cancel()
-```
-
-その際`async_func()`の中で`Cancelled`例外が起きるので以下のように書けば中断に備えたコードになる。
-
-```python
-async def async_func():
-    try:
-        ...
-    except Cancelled:
-        # 中断が行われた時にだけ行いたい処理をここに書くと良い。
-        ...
-        raise  # Cancelled例外を揉み消してはならない!!
-    finally:
-        # ここで何か後始末をすると良い
-```
-
-また中断は常に速やかに完遂させないといけないので、except-Cancelled節とfinally節の中で`await`する事は許されない。
-
-```python
-async def async_func():
-    try:
-        await something  # <-- 良い
-    except Exception:
-        await something  # <-- 良い
-    except Cancelled:
-        await something  # <-- 駄目
-        raise
-    finally:
-        await something  # <-- 駄目
-```
-
-逆にいうと中断されないのであればfinally節で`await`しても良い。
-
-```python
-async def async_func():
-    try:
-        await something  # <-- 良い
-    except Exception:
-        await something  # <-- 良い
-    finally:
-        await something  # <-- 良い (中断されない前提)
-```
-
-上の決まりを守っている限りは好きなだけ中断できる。
-ただもし明示的な``.cancel()``呼び出しがcode内に多く現れるようなら、
-それはcodeが正しい構造を採っていない兆しなので修正すべきである。
-多くの場合``Task.cancel()``は`asynckivy.wait_all()`や`asynckivy.wait_any()`を用いる事で無くせるのでそうするのがお薦めです。
-
 ## 留意点
 
 ### awaitできない場所
 
 既に上で述べたことですが再び言います。
-`rest_of_touch_moves()`や`interpolate()`による繰り返し中は`await`してはいけません。
+`rest_of_touch_events()`や`interpolate()`による繰り返し中は`await`してはいけません。
 
 ```python
 import asynckivy as ak
@@ -322,7 +237,7 @@ async def async_fn():
     async for v in ak.interpolate(...):
         await something  # 駄目
 
-    async for __ in ak.rest_of_touch_moves(...):
+    async for __ in ak.rest_of_touch_events(...):
         await something  # 駄目
 ```
 
@@ -331,50 +246,12 @@ async def async_fn():
 `asyncio`や`trio`がasync generatorに対して[付け焼き刃的な処置](https://peps.python.org/pep-0525/#finalization)を行うせいなのか、asynckivy用のasync generatorがうまく機能しない事があります。
 なので`asyncio`または`trio`を使っている場合は以下の者達を使わなのがお薦めです。
 
-- `rest_of_touch_moves()`
+- `rest_of_touch_events()`
 - `vanim` モジュールの全て
 - `fade_transition()`
 
 これにどう対処すればいいのかは現状分かっていません。
 もしかすると[PEP533](https://peps.python.org/pep-0533/)が解決してくれるかもしれません。
-
-### Structured Concurrency
-
-(この章はまだ未完成。)
-
-`asynckivy.wait_all()`と`asynckivy.wait_any()`は[structured concurrency][sc]の考え方に従っています。
-
-<!--
-関連性の無いファイルがたくさん(例えば数千個)あったとして、それらを全て一つのフォルダに入れて管理する人は少ないと思います。
-多くの人はそれらを自分なりの基準(日付、ファイルの種類、属するプロジェクト)で別にフォルダを作って小分けしていくでしょう。
-同じ事が並行処理にもいえます。
-`asyncio.create_task()`や`asynckivy.start()`や`threading.Thread.start()`等で立ち上げたtaskはフォルダに属していないファイルも同然であり
--->
-
-```python
-import asynckivy as ak
-
-async def 根():
-    await ak.wait_any(子1(), 子2())
-
-async def 子1():
-    ...
-
-async def 子2():
-    await ak.wait_all(孫1(), 孫2())
-
-async def 孫1():
-    ...
-
-async def 孫2():
-    ...
-```
-
-```mermaid
-flowchart TB
-根 --> 子1 & 子2(子2)
-子2 --> 孫1 & 孫2
-```
 
 ## Test環境
 
@@ -382,5 +259,3 @@ flowchart TB
 - CPython 3.9 + Kivy 2.2.1
 - CPython 3.10 + Kivy 2.2.1
 - CPython 3.11 + Kivy 2.2.1
-
-[sc]:https://qiita.com/gotta_dive_into_python/items/6feb3224a5fa572f1e19

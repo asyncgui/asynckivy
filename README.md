@@ -55,8 +55,8 @@ ak.start(what_you_want_to_do(...))
 It's recommended to pin the minor version, because if it changed, it means some *important* breaking changes occurred.
 
 ```text
-poetry add asynckivy@~0.5
-pip install "asynckivy>=0.5,<0.6"
+poetry add asynckivy@~0.6
+pip install "asynckivy>=0.6,<0.7"
 ```
 
 ## Usage
@@ -119,7 +119,7 @@ import asynckivy as ak
 async def async_func(widget1, widget2):
     obj = SimpleNamespace(attr1=10, attr2=[20, 30, ], attr3={'key': 40, })
 
-    # Animate attibutes of any object and wait for it to end.
+    # Animate attibutes of any object.
     await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400})
 
     # Interpolate between two values in an async-manner.
@@ -133,7 +133,6 @@ async def async_func(widget1, widget2):
         widget2.y = 200
 
     # If you want more low-level control over animations, use the vanim module.
-    # Read the module doc for details.
     from asynckivy import vanim
     async for dt in vanim.delta_time():
         ...
@@ -141,7 +140,7 @@ async def async_func(widget1, widget2):
 
 ### touch handling
 
-You can easily handle `on_touch_xxx` events via `asynckivy.rest_of_touch_moves()`.
+You can easily handle `on_touch_xxx` events via `asynckivy.rest_of_touch_events()`.
 
 ```python
 class TouchReceiver(Widget):
@@ -152,13 +151,13 @@ class TouchReceiver(Widget):
 
     async def handle_touch(self, touch):
         print('on_touch_up')
-        async for __ in ak.rest_of_touch_moves(self, touch):
+        async for __ in ak.rest_of_touch_events(self, touch):
             # await something  # DO NOT await anything during this loop
             print('on_touch_move')
         print('on_touch_up')
 ```
 
-If Kivy is running in asyncio/trio mode, `rest_of_touch_moves()` might not work.
+If Kivy is running in asyncio/trio mode, `rest_of_touch_events()` might not work.
 In that case, use `watch_touch()`.
 
 ```python
@@ -180,144 +179,12 @@ class TouchReceiver(Widget):
         print('on_touch_up')
 ```
 
-### threading
-
-`asynckivy` does not have any I/O primitives like Trio and asyncio do,
-thus threads are the only way to perform them without blocking the main-thread:
-
-```python
-from concurrent.futures import ThreadPoolExecutor
-import asynckivy as ak
-
-executor = ThreadPoolExecutor()
-
-
-def thread_blocking_operation():
-    '''This function is called from outside the main-thread, so you are not allowed to touch gui components here.'''
-
-
-async def some_task():
-    # create a new thread, run a function inside it, then
-    # wait for the completion of that thread
-    r = await ak.run_in_thread(thread_blocking_operation)
-    print("return value:", r)
-
-    # run a function inside a ThreadPoolExecutor, and wait for the completion
-    # (ProcessPoolExecutor is not supported)
-    r = await ak.run_in_executor(executor, thread_blocking_operation)
-    print("return value:", r)
-```
-
-Exceptions(not BaseExceptions) are propagated to the caller
-so you can catch them like you do in synchronous code:
-
-```python
-import requests
-import asynckivy as ak
-
-async def some_task(label):
-    try:
-        response = await ak.run_in_thread(lambda: requests.get('htt...', timeout=10))
-    except requests.Timeout:
-        label.text = "TIMEOUT!"
-    else:
-        label.text = "RECEIVED: " + response.text
-```
-
-### synchronizing and communicating between tasks
-
-There is a [asyncio.Event](https://docs.python.org/3/library/asyncio-sync.html#asyncio.Event) equivalent.
-
-```python
-import asynckivy as ak
-
-async def task_A(e):
-    print('A1')
-    await e.wait()
-    print('A2')
-async def task_B(e):
-    print('B1')
-    await e.wait()
-    print('B2')
-
-e = ak.Event()
-ak.start(task_A(e))
-# A1
-ak.start(task_B(e))
-# B1
-e.set()
-# A2
-# B2
-```
-
-Unlike Trio's and asyncio's, when you call ``Event.set()``,
-the tasks waiting for it to happen will *immediately* be resumed.
-As a result, ``e.set()`` will return *after* ``A2`` and ``B2`` are printed.
-
-### dealing with cancellations
-
-``asynckivy.start()`` returns a ``Task``,
-which can be used to cancel the execution.
-
-```python
-task = asynckivy.start(async_func())
-...
-task.cancel()
-```
-
-When `.cancel()` is called, a `Cancelled` exception will occur inside the task,
-which means you can prepare for cancellations as follows:
-
-```python
-async def async_func():
-    try:
-        ...
-    except Cancelled:
-        print('cancelled')
-        raise  # You must re-raise !!
-    finally:
-        print('cleanup resources here')
-```
-
-You are not allowed to `await` inside `except-Cancelled-clause` and `finally-clause` if you want the task to be cancellable
-because cancellations always must be done immediately.
-
-```python
-async def async_func():
-    try:
-        await something  # <-- ALLOWED
-    except Exception:
-        await something  # <-- ALLOWED
-    except Cancelled:
-        await something  # <-- NOT ALLOWED
-        raise
-    finally:
-        await something  # <-- NOT ALLOWED
-```
-
-You are allowed to `await` inside `finally-clause` if the task will never get cancelled.
-
-```python
-async def async_func():  # Assuming this never gets cancelled
-    try:
-        await something  # <-- ALLOWED
-    except Exception:
-        await something  # <-- ALLOWED
-    finally:
-        await something  # <-- ALLOWED
-```
-
-As long as you follow the above rules, you can cancel tasks as you wish.
-But note that if there are lots of explicit calls to `Task.cancel()` in your code,
-**it's a sign of your code being not well-structured**.
-You can usually avoid it by using `asynckivy.wait_all()` and `asynckivy.wait_any()`.  
-
 ## Notes
 
 ### Places you cannot await
 
 I already mentioned about this but I'll say again.
-**You cannot await while iterating `rest_of_touch_moves()` or `interpolate()`.**
+**You cannot await while iterating `rest_of_touch_events()` or `interpolate()`.**
 
 ```python
 import asynckivy as ak
@@ -326,7 +193,7 @@ async def async_fn():
     async for v in ak.interpolate(...):
         await something  # <-- NOT ALLOWED
 
-    async for __ in ak.rest_of_touch_moves(...):
+    async for __ in ak.rest_of_touch_events(...):
         await something  # <-- NOT ALLOWED
 ```
 
@@ -339,7 +206,7 @@ You can see its details [here](https://peps.python.org/pep-0525/#finalization).
 Because of that, the features that create async generators might not work perfectly.
 Here is a list of them:
 
-- `rest_of_touch_moves()`
+- `rest_of_touch_events()`
 - the entire `vanim` module
 - `fade_transition()`
 
@@ -347,37 +214,9 @@ I don't know how to make it work.
 Maybe if [PEP355](https://peps.python.org/pep-0533/) is accepted,
 it might work.
 
-### Structured Concurrency
+### No global state
 
-(This section is incomplete, and will be filled some day.)
-
-`asynckivy.wait_all()` and `asynckivy.wait_any()` follow the concept of [structured concurrency][njs_sc].
-
-```python
-import asynckivy as ak
-
-async def root():
-    await ak.wait_any(child1(), child2())
-
-async def child1():
-    ...
-
-async def child2():
-    await ak.wait_all(ground_child1(), ground_child2())
-
-async def ground_child1():
-    ...
-
-async def ground_child2():
-    ...
-```
-
-```mermaid
-flowchart TB
-root --> C1(child 1) & C2(child 2)
-C2 --> GC1(ground child 1) & GC2(ground child 2)
-```
-
+``asynckivy`` and its foundation, ``asyncgui``, don't have any type of global states.
 
 ## Tested on
 
@@ -400,12 +239,12 @@ You'll see the coordinates aren't relative to the `RelativeLayout` even though t
 The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks waiting for the `Event` to be set. They just schedule the tasks to resume.
 Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
 
-Trio and asyncio are async **I/O** libraries after all. They probably don't have to immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
-(If a touch is not handled immediately, its coordinate's origin may change, its `pos` might be updated and the previous value will be lost.)
+Trio and asyncio are async **I/O** libraries after all.
+They probably don't have to immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
+(If a touch is not handled immediately, its state may change).
 Their core design might not be suitable for GUI in the first place.
 That's why I'm still developing this `asynckivy` library to this day.
 
 [asyncio]:https://docs.python.org/3/library/asyncio.html
 [trio]:https://trio.readthedocs.io/en/stable/
 [reinventing]:https://en.wikipedia.org/wiki/Reinventing_the_wheel
-[njs_sc]:https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/
