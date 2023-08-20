@@ -8,7 +8,8 @@ import asynckivy as ak
 
 
 GRAVITY = -9.80665 * cm(100)
-ignore_touch_down = partial(ak.suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
+ignore_touch_down = partial(
+    ak.suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
 
 
 async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
@@ -24,7 +25,8 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
         # phase 1: Widget becomes wider and shorter while it being pressed.
         scale = Scale(origin=(widget.center_x, widget.y))
         ig.add(scale)
-        async with ak.run_as_secondary(ak.animate(scale, x=scale_x_max, y=1.0 / scale_x_max, duration=0.25 * scale_x_max)):
+        async with ak.run_as_secondary(
+                ak.animate(scale, x=scale_x_max, y=1.0 / scale_x_max, duration=0.25 * scale_x_max)):
             await ak.event(widget, 'on_release')
 
         # phase 2: Widget becomes thiner and taller after it got released.
