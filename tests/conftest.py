@@ -2,10 +2,9 @@ import pytest
 from kivy.tests.fixtures import kivy_clock
 
 
-@pytest.fixture(scope='session')
-def _sleep_then_tick():
+@pytest.fixture()
+def sleep_then_tick(kivy_clock):
     from functools import partial
-    from kivy.clock import Clock
     import time 
 
     def f(time_sleep, clock_time, clock_get_time, clock_tick, duration):
@@ -14,11 +13,4 @@ def _sleep_then_tick():
         time_sleep(clock_get_time() + duration - clock_time())
         clock_tick()
 
-    return partial(f, time.sleep, Clock.time, Clock.get_time, Clock.tick)
-
-
-@pytest.fixture()
-def sleep_then_tick(_sleep_then_tick):
-    from kivy.clock import Clock
-    Clock.tick()
-    return _sleep_then_tick
+    return partial(f, time.sleep, kivy_clock.time, kivy_clock.get_time, kivy_clock.tick)

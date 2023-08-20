@@ -3,11 +3,10 @@ import pytest
 p_free = pytest.mark.parametrize("free", (True, False, ))
 
 @p_free
-def test_sleep(sleep_then_tick, free):
-    from kivy.clock import Clock
+def test_sleep(kivy_clock, sleep_then_tick, free):
     import asynckivy as ak
 
-    if free and not hasattr(Clock, 'create_trigger_free'):
+    if free and not hasattr(kivy_clock, 'create_trigger_free'):
         pytest.skip("free-type Clock is not available")
     task = ak.start(ak.sleep_free(.1) if free else ak.sleep(.1))
     assert not task.finished
@@ -56,11 +55,10 @@ def test_free_awaitが真の時は勝手にtaskを再開しない(sleep_then_tic
 
 
 @p_free
-def test_sleep_cancel(sleep_then_tick, free):
-    from kivy.clock import Clock
+def test_sleep_cancel(kivy_clock, free):
     import asynckivy as ak
 
-    if free and not hasattr(Clock, 'create_trigger_free'):
+    if free and not hasattr(kivy_clock, 'create_trigger_free'):
         pytest.skip("free-type Clock is not available")
 
     async def async_fn(ctx):
@@ -78,15 +76,14 @@ def test_sleep_cancel(sleep_then_tick, free):
     assert ctx['state'] == 'A'
     ctx['scope'].cancel()
     assert ctx['state'] == 'B'
-    Clock.tick()
+    kivy_clock.tick()
     assert ctx['state'] == 'B'
     task._step()
     assert ctx['state'] == 'C'
 
 
 @pytest.mark.parametrize('free_await', (False, True))
-def test_cancel_repeat_sleeping(sleep_then_tick, free_await):
-    from kivy.clock import Clock
+def test_cancel_repeat_sleeping(kivy_clock, free_await):
     import asynckivy as ak
 
     async def async_fn(ctx):
@@ -105,14 +102,13 @@ def test_cancel_repeat_sleeping(sleep_then_tick, free_await):
     assert ctx['state'] == 'A'
     ctx['scope'].cancel()
     assert ctx['state'] == 'B'
-    Clock.tick()
+    kivy_clock.tick()
     assert ctx['state'] == 'B'
     task._step()
     assert ctx['state'] == 'C'
 
 
-def test_cancel_repeat_sleeping2(sleep_then_tick):
-    from kivy.clock import Clock
+def test_cancel_repeat_sleeping2(kivy_clock):
     import asynckivy as ak
 
     async def async_fn(ctx):
@@ -131,7 +127,7 @@ def test_cancel_repeat_sleeping2(sleep_then_tick):
     assert ctx['state'] == 'A'
     ctx['scope'].cancel()
     assert ctx['state'] == 'B'
-    Clock.tick()
+    kivy_clock.tick()
     assert ctx['state'] == 'B'
     task._step()
     assert ctx['state'] == 'C'

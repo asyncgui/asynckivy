@@ -5,12 +5,7 @@ import types
 from functools import partial
 
 from kivy.clock import Clock
-from asyncgui import current_task, Cancelled, sleep_forever
-
-_sleep_forever = sleep_forever.__defaults__[0]
-# NOTE: This hinders the 'kivy_clock'-fixture
-create_trigger = Clock.create_trigger
-create_trigger_free = getattr(Clock, 'create_trigger_free', None)
+from asyncgui import current_task, Cancelled, _sleep_forever
 
 
 @types.coroutine
@@ -26,7 +21,7 @@ def sleep(duration) -> T.Awaitable[float]:
 
     def _sleep(task):
         nonlocal clock_event
-        clock_event = create_trigger(task._step, duration, False, False)
+        clock_event = Clock.create_trigger(task._step, duration, False, False)
         clock_event()
 
     try:
@@ -49,7 +44,7 @@ def sleep_free(duration) -> T.Awaitable[float]:
 
     def _sleep_free(task):
         nonlocal clock_event
-        clock_event = create_trigger_free(task._step, duration, False, False)
+        clock_event = Clock.create_trigger_free(task._step, duration, False, False)
         clock_event()
 
     try:
@@ -110,7 +105,7 @@ class repeat_sleeping:
 
     async def __aenter__(self) -> T.Awaitable[T.Callable[[], T.Awaitable[float]]]:
         free = self._free_await
-        self._trigger = trigger = create_trigger((await current_task())._step, self._step, not free, False)
+        self._trigger = trigger = Clock.create_trigger((await current_task())._step, self._step, not free, False)
         if free:
             return partial(_efficient_sleep_ver_flexible, trigger)
         else:
