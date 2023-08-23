@@ -5,7 +5,7 @@ from functools import partial
 from asyncgui import IBox
 
 
-async def event(event_dispatcher, event_name, /, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
+async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
     '''
     Return an awaitable that can be used to wait for:
 
