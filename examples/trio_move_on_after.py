@@ -1,18 +1,6 @@
-'''
-Implementing :func:`trio.move_on_after()`.
-'''
-
 from kivy.app import App
 from kivy.uix.label import Label
 import asynckivy as ak
-
-
-def move_on_after(seconds: float):
-    '''
-    Similar to :func:`trio.move_on_after`.
-    The difference is this one returns an async context manager not a regular one.
-    '''
-    return ak.wait_any_cm(ak.sleep(seconds))
 
 
 class TestApp(App):
@@ -26,7 +14,7 @@ class TestApp(App):
     async def main(self):
         label = self.root
         await ak.n_frames(2)
-        async with move_on_after(3):
+        async with ak.move_on_after(3):
             while True:
                 label.text = 'A'
                 await ak.sleep(.4)
