@@ -5,6 +5,7 @@ __all__ = (
     'event',
     'fade_transition',
     'interpolate',
+    'move_on_after',
     'n_frames',
     'repeat_sleeping',
     'rest_of_touch_events',
@@ -20,7 +21,7 @@ __all__ = (
 
 from asyncgui import *
 from ._exceptions import MotionEventAlreadyEndedError
-from ._sleep import sleep, sleep_free, repeat_sleeping
+from ._sleep import sleep, sleep_free, repeat_sleeping, move_on_after
 from ._event import event
 from ._animation import animate
 from ._interpolate import interpolate, fade_transition

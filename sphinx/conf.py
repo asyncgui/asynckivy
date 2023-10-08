@@ -52,7 +52,7 @@ todo_include_todos = True
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'kivy': ('https://kivy.org/doc/master', None),
-    # 'trio': ('https://trio.readthedocs.io/en/stable/', None),
+    'trio': ('https://trio.readthedocs.io/en/stable/', None),
     # 'trio_util': ('https://trio-util.readthedocs.io/en/latest/', None),
     'asyncgui': ('https://gottadiveintopython.github.io/asyncgui/', None),
 }

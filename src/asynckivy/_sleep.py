@@ -1,11 +1,11 @@
-__all__ = ('sleep', 'sleep_free', 'repeat_sleeping', )
+__all__ = ('sleep', 'sleep_free', 'repeat_sleeping', 'move_on_after', )
 
 import typing as T
 import types
 from functools import partial
 
 from kivy.clock import Clock
-from asyncgui import current_task, Cancelled, _sleep_forever
+from asyncgui import current_task, Cancelled, _sleep_forever, wait_any_cm
 
 
 @types.coroutine
@@ -128,3 +128,20 @@ def _efficient_sleep_ver_flexible(f):
     except Cancelled:
         f.cancel()
         raise
+
+
+def move_on_after(seconds: float):
+    '''
+    Similar to :func:`trio.move_on_after`.
+    The difference is this one returns an async context manager not a regular one.
+
+    .. code-block::
+
+        async with move_on_after(seconds) as bg_task:
+            ...
+        if bg_task.finished:
+            print("Timeout")
+        else:
+            print("with-block completed.")
+    '''
+    return wait_any_cm(sleep(seconds))
