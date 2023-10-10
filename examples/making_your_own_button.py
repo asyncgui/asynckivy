@@ -33,7 +33,6 @@ class CustomButton(Label):
     border_blinking_interval = NumericProperty(.1)
 
     _border_color = ColorProperty(border_color1.defaultvalue)
-    _scaling = NumericProperty(1.)
     _props_that_trigger_to_restart = (
         'disabled', 'parent', 'border_color1', 'border_color2', 'border_blinking_interval',
     )
@@ -64,8 +63,8 @@ class CustomButton(Label):
         return w.collide_point(*t.opos) and (not t.is_mouse_scrolling)
 
     @staticmethod
-    def _blink_border(self, color_iter, dt):
-        self._border_color = next(color_iter)
+    def _blink_border(self, next_color, dt):
+        self._border_color = next_color()
 
     async def _main(self):
         import asynckivy as ak
@@ -76,13 +75,14 @@ class CustomButton(Label):
 
         self._border_color = self.border_color1
         blink_trigger = Clock.create_trigger(
-            partial(self._blink_border, self, itertools.cycle((self.border_color2, self.border_color1, ))),
+            partial(self._blink_border, self, itertools.cycle((self.border_color2, self.border_color1, )).__next__),
             self.border_blinking_interval, interval=True,
         )
 
         # LOAD_FAST
         blink_trigger_cancel = blink_trigger.cancel
         collide_point = self.collide_point
+        abs_ = abs
         try:
             while True:
                 __, touch = await ak.event(self, 'on_touch_down', filter=self._touch_filter, stop_dispatching=True)
@@ -108,7 +108,7 @@ class CustomButton(Label):
                         with ak.transform(self, use_outer_canvas=True) as ig:
                             ig.add(scale := Scale(origin=self.center))
                             async for v in ak.interpolate(start=-0.1, end=0.1, duration=0.1):
-                                scale.x = scale.y = abs(v) + 0.9
+                                scale.x = scale.y = abs_(v) + 0.9
                 self.dispatch('on_release', inside)
                 blink_trigger_cancel()
                 self._border_color = self.border_color1
