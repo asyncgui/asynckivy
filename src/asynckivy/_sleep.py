@@ -5,7 +5,7 @@ import types
 from functools import partial
 
 from kivy.clock import Clock
-from asyncgui import current_task, Cancelled, _sleep_forever, wait_any_cm
+from asyncgui import current_task, Cancelled, _sleep_forever, wait_any_cm, Task
 
 
 @types.coroutine
@@ -76,7 +76,7 @@ class repeat_sleeping:
                 ...
 
     The latter is more efficient than the former because it only creates one :class:`kivy.clock.ClockEvent` instance
-    and re-uses it during the loop while the former creates it per iteration.
+    and reuses it throughout the loop, while the former creates a new instance in every iteration.
 
     **Restriction**
 
@@ -99,7 +99,7 @@ class repeat_sleeping:
 
     __slots__ = ('_step', '_free_await', '_trigger', )
 
-    def __init__(self, *, step, free_await=False):
+    def __init__(self, *, step=0, free_await=False):
         self._step = step
         self._free_await = free_await
 
@@ -130,7 +130,7 @@ def _efficient_sleep_ver_flexible(f):
         raise
 
 
-def move_on_after(seconds: float):
+def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
     '''
     Similar to :func:`trio.move_on_after`.
     The difference is this one returns an async context manager not a regular one.
