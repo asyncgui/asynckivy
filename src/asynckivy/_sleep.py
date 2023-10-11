@@ -99,7 +99,7 @@ class repeat_sleeping:
 
     __slots__ = ('_step', '_free_await', '_trigger', )
 
-    def __init__(self, *, step, free_await=False):
+    def __init__(self, *, step=0, free_await=False):
         self._step = step
         self._free_await = free_await
 
