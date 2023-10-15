@@ -23,7 +23,7 @@ dt (delta time)
 .. autofunction:: dt
 
 The most low-level API in ``vanim`` is ``dt``, which is basically the async form of
-:meth:`kivy.clock.Clock.schedule_interval`. The following callback-based code:
+:meth:`kivy.clock.Clock.schedule_interval`. The following callback-style code:
 
 .. code-block::
 
@@ -31,6 +31,7 @@ The most low-level API in ``vanim`` is ``dt``, which is basically the async form
         print(dt)
         if some_condition:
             return False
+
     Clock.schedule_interval(callback, 0.1)
 
 is equivalent to:

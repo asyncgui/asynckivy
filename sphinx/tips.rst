@@ -9,7 +9,7 @@ IO in AsyncKivy
 ---------------
 
 ``asynckivy`` does not have any I/O primitives like ``trio`` and ``asyncio`` do,
-thus threads are the only way to perform them without blocking the main-thread:
+thus threads may be the best way to perform them without blocking the main-thread:
 
 .. code-block::
 

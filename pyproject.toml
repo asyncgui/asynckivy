@@ -5,8 +5,8 @@ description = "Async library for Kivy"
 authors = ["Nattōsai Mitō <flow4re2c@gmail.com>"]
 license = "MIT"
 readme = 'README.md'
-repository = 'https://github.com/gottadiveintopython/asynckivy'
-homepage = 'https://github.com/gottadiveintopython/asynckivy'
+repository = 'https://github.com/asyncgui/asynckivy'
+homepage = 'https://github.com/asyncgui/asynckivy'
 keywords = ['async', 'kivy']
 classifiers=[
     'Development Status :: 5 - Production/Stable',
