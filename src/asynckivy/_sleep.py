@@ -143,5 +143,7 @@ def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
             print("Timeout")
         else:
             print("with-block completed.")
+
+    .. versionadded:: 0.6.1
     '''
     return wait_any_cm(sleep(seconds))
