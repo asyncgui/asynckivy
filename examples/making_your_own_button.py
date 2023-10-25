@@ -105,8 +105,8 @@ class CustomButton(Label):
                 inside = collide_point(*touch.pos)
                 if inside:
                     async with ak.disable_cancellation():
-                        with ak.transform(self, use_outer_canvas=True) as ig:
-                            ig.add(scale := Scale(origin=self.center))
+                        with ak.transform(self, use_outer_canvas=True) as group:
+                            group.add(scale := Scale(origin=self.center))
                             async for v in ak.interpolate(start=-0.1, end=0.1, duration=0.1):
                                 scale.x = scale.y = abs_(v) + 0.9
                 self.dispatch('on_release', inside)

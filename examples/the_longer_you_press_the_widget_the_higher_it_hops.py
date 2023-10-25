@@ -21,10 +21,9 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
     if gravity_factor <= 0:
         raise ValueError(f"'gravity_factor' must be greater than 0. (was {gravity_factor})")
     widget = widget.__self__
-    with ignore_touch_down(widget), ak.transform(widget) as ig:
+    with ignore_touch_down(widget), ak.transform(widget) as group:
         # phase 1: Widget becomes wider and shorter while it being pressed.
-        scale = Scale(origin=(widget.center_x, widget.y))
-        ig.add(scale)
+        group.add(scale := Scale(origin=(widget.center_x, widget.y)))
         async with ak.run_as_secondary(
                 ak.animate(scale, x=scale_x_max, y=1.0 / scale_x_max, duration=0.25 * scale_x_max)):
             await ak.event(widget, 'on_release')
@@ -35,7 +34,7 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
         await ak.animate(scale, x=scale_y, y=scale_x, duration=0.1)
 
         # phase 3: Widget bounces and returns to its original size.
-        ig.insert(0, translate := Translate())
+        group.insert(0, translate := Translate())
         initial_velocity = scale_x ** 2 * 1000.0
         gravity = GRAVITY * gravity_factor
         async with ak.wait_all_cm(ak.animate(scale, x=1.0, y=1.0, duration=0.1)):
@@ -43,7 +42,7 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
                 translate.y = y = et * (initial_velocity + gravity * et)
                 if y <= 0:
                     break
-        ig.remove(translate)
+        group.remove(translate)
 
         # phase 4: Widget becomes wider and shorter on landing.
         await ak.animate(scale, x=(scale_x + 1.0) * 0.5, y=(scale_y + 1.0) * 0.5, duration=0.1)

@@ -34,7 +34,7 @@ def test_use_outer_canvas(widget, has_before, has_after):
         assert c.has_before
         assert c.has_after
         assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase']
-        assert list_children(c.before) == ['PushMatrix', 'InstructionGroup', ]
+        assert list_children(c.before) == ['PushMatrix', 'CanvasBase', ]
         assert list_children(c.after) == ['PopMatrix', ]
     assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase', ]
     assert list_children(c.before) == []
@@ -50,7 +50,7 @@ def test_use_inner_canvas__has_after(widget, has_before):
     with transform(widget, use_outer_canvas=False):
         assert c.has_before
         assert c.has_after
-        assert list_children(c) == ['CanvasBase', 'PushMatrix', 'InstructionGroup', 'Color', 'PopMatrix', 'CanvasBase', ]
+        assert list_children(c) == ['CanvasBase', 'PushMatrix', 'CanvasBase', 'Color', 'PopMatrix', 'CanvasBase', ]
         assert list_children(c.before) == []
         assert list_children(c.after) == []
     assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase', ]
@@ -66,7 +66,7 @@ def test_use_inner_canvas__no_after(widget, has_before):
     with transform(widget, use_outer_canvas=False):
         assert c.has_before
         assert not c.has_after
-        assert list_children(c) == ['CanvasBase', 'PushMatrix', 'InstructionGroup', 'Color', 'PopMatrix', ]
+        assert list_children(c) == ['CanvasBase', 'PushMatrix', 'CanvasBase', 'Color', 'PopMatrix', ]
         assert list_children(c.before) == []
     assert not c.has_after
     assert list_children(c) == ['CanvasBase', 'Color', ]

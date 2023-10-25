@@ -2,18 +2,18 @@ __all__ = ('transform', 'suppress_event', 'create_texture_from_text', )
 import typing as T
 from contextlib import contextmanager
 
-from kivy.graphics import PushMatrix, PopMatrix, InstructionGroup
+from kivy.graphics import PushMatrix, PopMatrix, CanvasBase
 from kivy.graphics.texture import Texture
 from kivy.core.text import Label as CoreLabel
 from kivy.core.text.markup import MarkupLabel as CoreMarkupLabel
 
 
 @contextmanager
-def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[InstructionGroup]:
+def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[CanvasBase]:
     '''
     Return a context manager that sandwiches the ``widget``'s existing canvas instructions between
-    a :class:`kivy.graphics.PushMatrix` and a :class:`kivy.graphics.PopMatrix`, and inserts an
-    :class:`kivy.graphics.InstructionGroup` right next to the ``PushMatrix``. Those three instructions are removed
+    a :class:`kivy.graphics.PushMatrix` and a :class:`kivy.graphics.PopMatrix`, and inserts a
+    :class:`kivy.graphics.CanvasBase` right next to the ``PushMatrix``. Those three instructions are removed
     when the context manager exits.
 
     This may be useful when you want to animate a widget for a short period of time.
@@ -25,8 +25,8 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
         from kivy.graphics import Rotate
 
         async def rotate_widget(widget, *, angle=360.):
-            with transform(widget) as ig:  # <- InstructionGroup
-                ig.add(rotate := Rotate(origin=widget.center))
+            with transform(widget) as group:  # <- CanvasBase
+                group.add(rotate := Rotate(origin=widget.center))
                 await animate(rotate, angle=angle)
 
     If you want to animate for a long time, you might need extra work because you might have to prepare for the
@@ -51,8 +51,8 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
                 ed.unbind_uid(prop_name, uid)
 
         async def rotate_widget(widget, *, angle=360.):
-            with transform(widget) as ig:  # <- InstructionGroup
-                ig.add(rotate := Rotate(origin=widget.center))
+            with transform(widget) as group:  # <- CanvasBase
+                group.add(rotate := Rotate(origin=widget.center))
                 with tmp_bind(widget, 'center', rotate, 'origin'):
                     await animate(rotate, angle=angle)
 
@@ -69,7 +69,7 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
                 ...
             canvas:
                 PushMatrix
-                InstructionGroup
+                CanvasBase
                 ...
                 PopMatrix
             canvas.after:
@@ -82,13 +82,16 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
         Widget:
             canvas.before:
                 PushMatrix
-                InstructionGroup
+                CanvasBase
                 ...
             canvas:
                 ...
             canvas.after:
                 ...
                 PopMatrix
+
+    .. versionchanged:: 0.6.1
+       Provides a :class:`kivy.graphics.CanvasBase` instead of an :class:`kivy.graphics.InstructionGroup`.
     '''
 
     c = widget.canvas
@@ -96,28 +99,28 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
         before = c.before
         after = c.after
         push_mat_idx = 0
-        ig_idx = 1
+        group_idx = 1
     else:
         c.before  # ensure 'canvas.before' exists
 
         # Index starts from 1 because 'canvas.before' is sitting at index 0 and we usually want it to remain first.
         # See https://github.com/kivy/kivy/issues/7945 for details.
         push_mat_idx = 1
-        ig_idx = 2
+        group_idx = 2
         before = after = c
 
     push_mat = PushMatrix()
-    ig = InstructionGroup()
+    group = CanvasBase()
     pop_mat = PopMatrix()
 
     before.insert(push_mat_idx, push_mat)
-    before.insert(ig_idx, ig)
+    before.insert(group_idx, group)
     after.add(pop_mat)
     try:
-        yield ig
+        yield group
     finally:
         after.remove(pop_mat)
-        before.remove(ig)
+        before.remove(group)
         before.remove(push_mat)
 
 
