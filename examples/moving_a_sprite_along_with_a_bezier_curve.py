@@ -125,10 +125,10 @@ def generate_random_2d_points(*, n_points, min_x, min_y, max_x, max_y) -> T.Sequ
 def calc_factors(control_points):
     #
     # P(t) = (p0) +
-    #        t(-3p0 + 3p1) + 
+    #        t(-3p0 + 3p1) +
     #        t2(3p0 - 6p1 + 3p2) +
     #        t3(-p0 + 3p1 - 3p2 + p3)
-    # 
+    #
     p0, p1, p2, p3 = control_points
     return (
         p0,
