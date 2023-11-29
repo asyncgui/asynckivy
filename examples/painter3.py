@@ -28,7 +28,8 @@ class Painter(RelativeLayout):
             _ud_key = self._ud_key
             nursery_start = nursery.start
             draw_rect = self.draw_rect
-            touch_down_event = partial(ak.event, self, 'on_touch_down', filter=self.accepts_touch, stop_dispatching=True)
+            touch_down_event = partial(
+                ak.event, self, 'on_touch_down', filter=self.accepts_touch, stop_dispatching=True)
 
             while True:
                 __, touch = await touch_down_event()

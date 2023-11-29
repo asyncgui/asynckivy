@@ -136,10 +136,10 @@ class suppress_event:
         with suppress_event(btn, 'on_press'):
             btn.dispatch('on_press')
 
-    The above code prints nothing because the callback function is not called.
+    The above code prints nothing because the callback function won't be called.
 
     Strictly speaking, this context manager doesn't prevent all callback functions from being called.
-    It only prevents the callback functions that were bound prior to it being entered.
+    It only prevents the callback functions that were bound to an event before the manager enters.
     Thus, the following code prints ``pressed``.
 
     .. code-block::

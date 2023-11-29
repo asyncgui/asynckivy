@@ -10,7 +10,7 @@ The problem is ... it's a pretty specialized API because:
 
 On the contrary, ``vanim`` is low-level.
 In fact, it's presumptuous to classify it as an animation API.
-All it does is calculating elapsed-time or progression-rate or both.
+All it does is to calculate elapsed-time or progression-rate or both.
 What to do with those values is all up to you.
 
 That concludes the overview.
@@ -22,8 +22,7 @@ dt (delta time)
 
 .. autofunction:: dt
 
-The most low-level API in ``vanim`` is ``dt``, which is basically the async form of
-:meth:`kivy.clock.Clock.schedule_interval`. The following callback-style code:
+The async form of :meth:`kivy.clock.Clock.schedule_interval`. The following callback-style code:
 
 .. code-block::
 
@@ -126,7 +125,7 @@ Lastly, if you want the all three above, use this.
 The ``free_await`` parameter
 ----------------------------
 
-You might notice that all the ``vanim``'s apis take a keyword argument named ``free_await``.
+You might have noticed that all the ``vanim``'s APIs take a keyword argument named ``free_await``.
 This works exactly the same as the :class:`asynckivy.repeat_sleeping` 's.
 
 Iterations may not end in time

@@ -21,12 +21,11 @@ class watch_touch:
             print('on_touch_up')
 
     The ``await in_progress()`` waits for either an ``on_touch_move`` event or an ``on_touch_up`` event to occur, and
-    returns True or False respectively when they actually occurred.
+    returns True or False respectively when they occurred.
 
-    **Restriction**
+    **Caution**
 
-    * You are not allowed to perform any kind of async operations inside the with-block except you can ``await`` the
-      return value of the function that is bound to the identifier of the as-clause.
+    * You are not allowed to perform any kind of async operations inside the with-block except ``await in_progress()``.
 
       .. code-block::
 
@@ -38,11 +37,12 @@ class watch_touch:
               async for __ in async_iterator:  # NOT ALLOWED
                   ...
 
-    * Since the context manager grabs/ungrabs the ``touch``, the ``widget`` must NOT grab/ungrab it. Most of the
-      widget/behavior classes that interact to touches [#classes_that_interact_to_touches]_ wouldn't work with it.
-
-    .. [#classes_that_interact_to_touches] :class:`kivy.uix.behaviors.ButtonBehavior`,
-       :class:`kivy.uix.scrollview.ScrollView` and :class:`kivy.uix.carousel.Carousel` for instance.
+    * If the ``widget`` is the type of widget that grabs touches by itself, such as :class:`kivy.uix.button.Button`,
+      you probably want to set the ``stop_dispatching`` parameter to True in most scenarios.
+    * There are widgets/behaviors that can simulate a touch (e.g. :class:`kivy.uix.scrollview.ScrollView`,
+      :class:`kivy.uix.behaviors.DragBehavior` and ``kivy_garden.draggable.KXDraggableBehavior``).
+      If many such widgets are in the parent stack of the ``widget``, this API might mistakenly raise a
+      :exc:`asynckivy.MotionEventAlreadyEndedError`. If that happens, increase the ``timeout`` parameter.
     '''
     __slots__ = ('_widget', '_touch', '_stop_dispatching', '_timeout', '_uid_up', '_uid_move', '_no_cleanup', )
 
@@ -134,7 +134,7 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
         ...
         await touch_up_event(widget, touch)
 
-    You might wonder what's the differences compared to the following code:
+    You might wonder what the differences are compared to the code below.
 
     .. code-block::
         :emphasize-lines: 3
@@ -144,14 +144,14 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
         await event(widget, 'on_touch_up', filter=lambda w, t: t is touch)
 
     The latter has two problems:
-    If the ``on_touch_up`` event of the ``touch`` occurred prior to the emphasized line,
-    the execution will stop at that line.
-    Even if the event didn't occur prior to that line, the execution still might stop because
+    If the ``on_touch_up`` event of the ``touch`` occurred before the highlighted line,
+    the execution will halt indefinitely at that point.
+    Even if the event didn't occur before that line, the execution still might halt because
     `Kivy does not guarantee`_ that all touch events are delivered to all widgets.
 
-    This api takes care of both problems in the same way as :func:`watch_touch`.
-    If the ``on_touch_up`` event has already occurred, it raises an :exc:`MotionEventAlreadyEndedError` exception.
-    And it grabs/ungrabs the ``touch``.
+    This API takes care of both problems in the same way as :func:`watch_touch`.
+    If the ``on_touch_up`` event has already occurred, it raises a :exc:`MotionEventAlreadyEndedError` exception.
+    And it grabs/ungrabs the ``touch`` so that it won't miss any touch events.
 
     Needless to say, if you want to wait for both ``on_touch_move`` and ``on_touch_up`` events at the same time,
     use :func:`watch_touch` or :func:`rest_of_touch_events` instead.
