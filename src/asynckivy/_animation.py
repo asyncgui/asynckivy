@@ -63,7 +63,7 @@ def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear,
         clock_event.cancel()
 
 
-def _calculate(a, b, t, isinstance=isinstance, list=list, tuple=tuple, dict=dict, range=range, len=len):
+def _calculate(isinstance, list, tuple, dict, range, len, a, b, t):
     '''The logic of this function is identical to 'kivy.animation.Animation._calculate()'
     '''
     if isinstance(a, list) or isinstance(a, tuple):
@@ -86,7 +86,7 @@ def _calculate(a, b, t, isinstance=isinstance, list=list, tuple=tuple, dict=dict
         return (a * (1. - t)) + (b * t)
 
 
-def _update(obj, duration, transition, properties, task, p_time, dt, _calculate=_calculate, setattr=setattr):
+def _update(setattr, _calculate, obj, duration, transition, properties, task, p_time, dt):
     time = p_time[0] + dt
     p_time[0] = time
 
@@ -104,3 +104,7 @@ def _update(obj, duration, transition, properties, task, p_time, dt, _calculate=
     if progress >= 1.:
         task._step()
         return False
+
+
+_calculate = partial(_calculate, isinstance, list, tuple, dict, range, len)
+_update = partial(_update, setattr, _calculate)

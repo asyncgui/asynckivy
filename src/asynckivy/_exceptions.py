@@ -5,7 +5,7 @@ __all__ = (
 
 class MotionEventAlreadyEndedError(Exception):
     '''
-    This error occurs when an already ended touch is passed to an asynckivy's api that expects an ongoing touch.
+    This error occurs when an already-ended touch is passed to an asynckivy API that expects an ongoing touch.
     For instance:
 
     .. code-block::

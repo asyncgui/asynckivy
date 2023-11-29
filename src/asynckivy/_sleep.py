@@ -58,7 +58,7 @@ class repeat_sleeping:
     '''
     Return an async context manager that provides an efficient way to repeat sleeping.
 
-    When there is code like this:
+    When there is a piece of code like this:
 
     .. code-block::
 
@@ -77,6 +77,8 @@ class repeat_sleeping:
 
     The latter is more efficient than the former because it only creates one :class:`kivy.clock.ClockEvent` instance
     and reuses it throughout the loop, while the former creates a new instance in every iteration.
+    Consequently, the latter is more suitable for situations requiring frequent sleeps, such as animating an object
+    for every frame.
 
     **Restriction**
 
@@ -132,17 +134,17 @@ def _efficient_sleep_ver_flexible(f):
 
 def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
     '''
-    Similar to :func:`trio.move_on_after`.
-    The difference is this one returns an async context manager not a regular one.
+    Returns an async context manager that applies a time limit to its code block,
+    like :func:`trio.move_on_after` does.
 
     .. code-block::
 
         async with move_on_after(seconds) as bg_task:
             ...
         if bg_task.finished:
-            print("Timeout")
+            print("The code block was interrupted due to a timeout")
         else:
-            print("with-block completed.")
+            print("The code block exited gracefully.")
 
     .. versionadded:: 0.6.1
     '''
