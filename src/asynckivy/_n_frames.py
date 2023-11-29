@@ -14,6 +14,12 @@ def n_frames(n: int) -> T.Awaitable:
     .. code-block::
 
         await n_frames(2)
+
+    If you want to wait for one frame, :func:`asynckivy.sleep` is preferable for a performance reason.
+
+    .. code-block::
+
+        await sleep(0)
     '''
     if n < 0:
         raise ValueError(f"Waiting for {n} frames doesn't make sense.")
