@@ -1,58 +1,102 @@
 import typing as T
 import enum
+from dataclasses import dataclass
 
 from kivy.clock import Clock
+from kivy.properties import ObjectProperty
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.factory import Factory as F
+from kivy.uix.modalview import ModalView
 import asynckivy as ak
 
 KV_CODE = '''
-<MessageBox@ModalView>:
+<MessageBox>:
+    size_hint: root.theme.size_hint
+    auto_dismiss: root.theme.auto_dismiss
     BoxLayout:
         padding: '10dp'
         spacing: '10dp'
         orientation: 'vertical'
         Label:
             id: label
+            font_size: root.theme.font_size
+            font_name: root.theme.font_name
         Button:
             id: ok_button
+            font_size: root.theme.font_size
+            font_name: root.theme.font_name
+            text: root.theme.text_ok
 
-<YesNoDialog@ModalView>:
+<YesNoDialog>:
+    size_hint: root.theme.size_hint
+    auto_dismiss: root.theme.auto_dismiss
     BoxLayout:
         padding: '10dp'
         spacing: '10dp'
         orientation: 'vertical'
         Label:
             id: label
+            font_size: root.theme.font_size
+            font_name: root.theme.font_name
         BoxLayout:
             spacing: '10dp'
             Button:
                 id: no_button
+                font_size: root.theme.font_size
+                font_name: root.theme.font_name
+                text: root.theme.text_no
             Button:
                 id: yes_button
+                font_size: root.theme.font_size
+                font_name: root.theme.font_name
+                text: root.theme.text_yes
 
-<InputDialog@ModalView>:
+<InputDialog>:
+    size_hint: root.theme.size_hint
+    auto_dismiss: root.theme.auto_dismiss
     BoxLayout:
         padding: '10dp'
         spacing: '10dp'
         orientation: 'vertical'
         Label:
             id: label
+            font_size: root.theme.font_size
+            font_name: root.theme.font_name
         TextInput:
             id: textinput
             multiline: False
+            font_size: root.theme.font_size
         BoxLayout:
             spacing: '10dp'
             Button:
                 id: cancel_button
-                text: 'Cancel'
+                font_size: root.theme.font_size
+                font_name: root.theme.font_name
+                text: root.theme.text_cancel
             Button:
                 id: ok_button
-                text: 'OK'
+                font_size: root.theme.font_size
+                font_name: root.theme.font_name
+                text: root.theme.text_ok
 
 Widget:
 '''
+
+
+@dataclass
+class DialogTheme:
+    size_hint: tuple = (0.8, 0.4, )
+    auto_dismiss: bool = ModalView.auto_dismiss.defaultvalue
+    font_size: int = F.Label.font_size.defaultvalue
+    font_name: int = F.Label.font_name.defaultvalue
+    text_yes: str = 'Yes'
+    text_no: str = 'No'
+    text_ok: str = 'OK'
+    text_cancel: str = 'Cancel'
+
+
+default_theme = DialogTheme()
 
 
 class DialogResponse(enum.Enum):
@@ -65,22 +109,29 @@ class DialogResponse(enum.Enum):
 R = DialogResponse
 
 
-async def show_message_box(
-        msg, *, ok_text='OK', size_hint=(0.8, 0.4, ),
-        auto_dismiss=F.ModalView.auto_dismiss.defaultvalue,
-        _cache=[]) -> T.Awaitable[R]:
+class MessageBox(ModalView):
+    theme = ObjectProperty(default_theme, rebind=True)
+
+
+class YesNoDialog(ModalView):
+    theme = ObjectProperty(default_theme, rebind=True)
+
+
+class InputDialog(ModalView):
+    theme = ObjectProperty(default_theme, rebind=True)
+
+
+async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitable[R]:
     try:
         dialog = _cache.pop()
     except IndexError:
-        dialog = F.MessageBox()
+        dialog = MessageBox()
 
     label = dialog.ids.label
     ok_button = dialog.ids.ok_button
 
-    dialog.size_hint = size_hint
-    dialog.auto_dismiss = auto_dismiss
+    dialog.theme = theme
     label.text = msg
-    ok_button.text = ok_text
     try:
         dialog.open()
         tasks = await ak.wait_any(
@@ -103,24 +154,18 @@ async def show_message_box(
         raise
 
 
-async def ask_yes_no_question(
-        question, *, yes_text='Yes', no_text='No', size_hint=(0.8, 0.4, ),
-        auto_dismiss=F.ModalView.auto_dismiss.defaultvalue,
-        _cache=[]) -> T.Awaitable[R]:
+async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.Awaitable[R]:
     try:
         dialog = _cache.pop()
     except IndexError:
-        dialog = F.YesNoDialog()
+        dialog = YesNoDialog()
 
     label = dialog.ids.label
     no_button = dialog.ids.no_button
     yes_button = dialog.ids.yes_button
 
-    dialog.size_hint = size_hint
-    dialog.auto_dismiss = auto_dismiss
+    dialog.theme = theme
     label.text = question
-    no_button.text = no_text
-    yes_button.text = yes_text
     try:
         dialog.open()
         tasks = await ak.wait_any(
@@ -144,29 +189,19 @@ async def ask_yes_no_question(
         raise
 
 
-async def ask_input(
-        msg, *, ok_text='OK', cancel_text='Cancel', size_hint=(0.8, 0.4, ),
-        auto_dismiss=F.ModalView.auto_dismiss.defaultvalue,
-        input_filter=F.TextInput.input_filter.defaultvalue,
-        input_type=F.TextInput.input_type.defaultvalue,
-        _cache=[]) -> T.Awaitable[T.Tuple[R, str]]:
+async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cache=[]) -> T.Awaitable[T.Tuple[R, str]]:
     try:
         dialog = _cache.pop()
     except IndexError:
-        dialog = F.InputDialog()
+        dialog = InputDialog()
 
     label = dialog.ids.label
     textinput = dialog.ids.textinput
     cancel_button = dialog.ids.cancel_button
     ok_button = dialog.ids.ok_button
 
-    dialog.size_hint = size_hint
-    dialog.auto_dismiss = auto_dismiss
+    dialog.theme = theme
     label.text = msg
-    cancel_button.text = cancel_text
-    ok_button.text = ok_text
-    textinput.input_filter = input_filter
-    textinput.input_type = input_type
     textinput.focus = True
     try:
         dialog.open()
@@ -205,13 +240,15 @@ class SampleApp(App):
     async def main(self):
         await ak.n_frames(2)
 
+        theme = DialogTheme(font_size='20sp')
+
         msg = "Do you like Kivy?"
-        res = await ask_yes_no_question(msg)
+        res = await ask_yes_no_question(msg, theme=theme)
         print(f"{msg!r} --> {res.name}")
 
         msg = "How long have you been using Kivy (in years) ?"
         while True:
-            res, years = await ask_input(msg, input_filter='int', input_type='number')
+            res, years = await ask_input(msg, input_filter='int', input_type='number', theme=theme)
             if res is R.OK:
                 if years:
                     print(f"{msg!r} --> {years} years")
@@ -224,7 +261,7 @@ class SampleApp(App):
                 break
 
         msg = "The armor I used to seal my all too powerful strength is now broken."
-        res = await show_message_box(msg)
+        res = await show_message_box(msg, theme=theme)
         print(f"{msg!r} --> {res.name}")
 
 
