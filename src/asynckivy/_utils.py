@@ -171,7 +171,7 @@ class suppress_event:
         self._dispatcher.unbind_uid(self._name, self._bind_uid)
 
 
-def create_texture_from_text(**label_kwargs) -> Texture:
+def create_texture_from_text(*, markup=False, **label_kwargs) -> Texture:
     '''
     Create a :external:kivy:doc:`api-kivy.graphics.texture` from text.
 
@@ -188,7 +188,7 @@ def create_texture_from_text(**label_kwargs) -> Texture:
 
     The keyword arguments are similar to :external:kivy:doc:`api-kivy.uix.label` 's.
     '''
-    core = CoreMarkupLabel if label_kwargs.pop('markup', False) else CoreLabel
-    label = core(**label_kwargs)
-    label.refresh()
-    return label.texture
+    core_cls = CoreMarkupLabel if markup else CoreLabel
+    core = core_cls(**label_kwargs)
+    core.refresh()
+    return core.texture
