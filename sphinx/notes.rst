@@ -1,6 +1,6 @@
-====
-Tips
-====
+=====
+Notes
+=====
 
 .. _io-in-asynckivy:
 
@@ -87,4 +87,13 @@ Kivy's Event System
 The Problem with Async Generators
 ---------------------------------
 
-(under construction)
+:mod:`asyncio` and :mod:`trio` do some hacky stuff, :func:`sys.set_asyncgen_hooks` and :func:`sys.get_asyncgen_hooks`,
+which likely hinders asynckivy-flavored async generators.
+You can see its details [here](https://peps.python.org/pep-0525/#finalization).
+
+Because of that, the APIs that create async generators might not work perfectly if you run Kivy in the ``asyncio`` or ``trio`` mode.
+Here is a list of them:
+
+- :func:`asynckivy.rest_of_touch_events`
+- the entire :mod:`asynckivy.vanim` module
+- :func:`asynckivy.fade_transition`

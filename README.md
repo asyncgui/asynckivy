@@ -3,7 +3,7 @@
 [Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)  
 [日本語doc](README_jp.md)  
 
-`asynckivy` is an async library that saves you from ugly callback-based code,
+`asynckivy` is an async library that saves you from ugly callback-style code,
 like most of async libraries do.
 Let's say you want to do:
 
@@ -180,39 +180,6 @@ class TouchReceiver(Widget):
 ```
 
 ## Notes
-
-### Places you cannot await
-
-I already mentioned about this but I'll say again.
-**You cannot await while iterating `rest_of_touch_events()` or `interpolate()`.**
-
-```python
-import asynckivy as ak
-
-async def async_fn():
-    async for v in ak.interpolate(...):
-        await something  # <-- NOT ALLOWED
-
-    async for __ in ak.rest_of_touch_events(...):
-        await something  # <-- NOT ALLOWED
-```
-
-### Some of features might not work if Kivy is running in asyncio/trio mode
-
-`asyncio` and `trio` do some hacky stuff, `sys.set_asyncgen_hooks()` and `sys.get_asyncgen_hooks`,
-which likely hinders asynckivy-flavored async generators.
-You can see its details [here](https://peps.python.org/pep-0525/#finalization).
-
-Because of that, the features that create async generators might not work perfectly.
-Here is a list of them:
-
-- `rest_of_touch_events()`
-- the entire `vanim` module
-- `fade_transition()`
-
-I don't know how to make it work.
-Maybe if [PEP355](https://peps.python.org/pep-0533/) is accepted,
-it might work.
 
 ### No global state
 

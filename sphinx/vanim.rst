@@ -12,7 +12,6 @@ The problem is ... it's a pretty specialized API because:
   like Bézier Curve?
 
 On the contrary, ``vanim`` is low-level.
-In fact, it's presumptuous to classify it as an animation API.
 All it does is to calculate elapsed-time or progression-rate or both.
 What to do with those values is all up to you.
 
@@ -23,7 +22,7 @@ Now, let's dive into each individual API.
 dt (delta time)
 ---------------
 
-.. autofunction:: dt
+.. autofunction:: asynckivy.vanim.dt
 
 The async form of :meth:`kivy.clock.Clock.schedule_interval`. The following callback-style code:
 
@@ -48,7 +47,7 @@ is equivalent to:
 et (elapsed time)
 -----------------
 
-.. autofunction:: et
+.. autofunction:: asynckivy.vanim.et
 
 If you want the total elapsed time of iterations instead of delta time, this is for you.
 
@@ -77,7 +76,7 @@ which should be as performant as the former.
 dt_et
 -----
 
-.. autofunction:: dt_et
+.. autofunction:: asynckivy.vanim.dt_et
 
 If you want both ``dt`` and ``et``, this is for you.
 
@@ -92,7 +91,7 @@ If you want both ``dt`` and ``et``, this is for you.
 progress
 --------
 
-.. autofunction:: progress
+.. autofunction:: asynckivy.vanim.progress
 
 If you aren't interested in how much time elapsed, and are only interested in the progression rate, this is for you.
 
@@ -116,7 +115,7 @@ If you want non-linear progression, :class:`kivy.animation.AnimationTransition` 
 dt_et_progress
 --------------
 
-.. autofunction:: dt_et_progress
+.. autofunction:: asynckivy.vanim.dt_et_progress
 
 Lastly, if you want the all three above, use this.
 
@@ -152,6 +151,13 @@ happen.
 ==== ========= =========
 
 Look at the bottom row. ``et`` largely exceeds the ``duration`` and ``p`` largely exceeds 1.0.
+If you really want the iterations to end within a specific time, consider wrapping it in :func:`asynckivy.move_on_after`.
+
+.. code-block::
+
+    async with asynckivy.move_on_after(2.0):
+        async for dt, et, p in vanim.dt_et_progress(duration=2.0, step=0.6):
+            print(dt, et, p)
 
 Alias
 -----
