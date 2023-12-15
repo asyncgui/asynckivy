@@ -9,6 +9,7 @@ import asynckivy as ak
 
 KV_CODE = '''
 <YesNoDialog@ModalView>:
+    size_hint: 0.8, 0.4
     BoxLayout:
         padding: '10dp'
         spacing: '10dp'
@@ -19,8 +20,10 @@ KV_CODE = '''
             spacing: '10dp'
             Button:
                 id: no_button
+                text: 'No'
             Button:
                 id: yes_button
+                text: 'Yes'
 
 Widget:
 '''
@@ -35,24 +38,16 @@ class DialogResponse(enum.Enum):
 R = DialogResponse
 
 
-async def ask_yes_no_question(
-        question, *, yes_text='Yes', no_text='No', size_hint=(0.8, 0.4, ),
-        auto_dismiss=F.ModalView.auto_dismiss.defaultvalue,
-        _cache=[]) -> T.Awaitable[R]:
+async def ask_yes_no_question(question, *, _cache=[]) -> T.Awaitable[R]:
     try:
         dialog = _cache.pop()
     except IndexError:
         dialog = F.YesNoDialog()
 
-    label = dialog.ids.label
     no_button = dialog.ids.no_button
     yes_button = dialog.ids.yes_button
 
-    dialog.size_hint = size_hint
-    dialog.auto_dismiss = auto_dismiss
-    label.text = question
-    no_button.text = no_text
-    yes_button.text = yes_text
+    dialog.ids.label.text = question
     try:
         dialog.open()
         tasks = await ak.wait_any(

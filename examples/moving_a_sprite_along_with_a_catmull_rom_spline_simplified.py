@@ -1,3 +1,6 @@
+'''
+* The code is intentionally written in an unoptimized way in favor of readability.
+'''
 import typing as T
 import math
 import random
@@ -7,7 +10,7 @@ from functools import partial
 from kivy.vector import Vector
 from kivy.utils import get_random_color
 from kivy.graphics import (
-    Rectangle, Point, Line, Color,
+    Rectangle, Point, Line, Color, CanvasBase,
     PushMatrix, PopMatrix, Translate, Rotate,
 )
 from kivy.app import App
@@ -30,55 +33,58 @@ class SampleApp(App):
     async def main(self):
         await ak.n_frames(2)
         while True:
-            await self.play_animation(self.root, speed=2.0)
+            await self.play_animation(draw_target=self.root, speed=2.0, n_spline_segments=3)
+
+    async def play_animation(self, *, draw_target, speed=1.0, n_spline_segments):
+        draw_target.canvas.add(root_group := CanvasBase())
+        try:
+            n_control_points = n_spline_segments + 3
+            padding = 30.0
+            control_points = generate_random_2d_points(
+                n_points=n_control_points,
+                min_x=padding, min_y=padding,
+                max_x=draw_target.width - padding, max_y=draw_target.height - padding,
+            )
+            flattened = tuple(itertools.chain.from_iterable(control_points))
+            texture = ak.create_texture_from_text(text='@', font_size=80, color=get_random_color())
+            interpolating_functions: T.Sequence[T.Tuple[T.Callable, T.Callable]] = tuple(
+                (
+                    partial(calc_position, f := calc_factors(control_points[i:i + 4])),
+                    partial(calc_angle, (f[1], f[2] * 2, f[3] * 3)),
+                )
+                for i in range(n_spline_segments)
+            )
+
+            with root_group:
+                Color(1.0, 1.0, 1.0, 1.0)
+                Point(pointsize=4.0, points=flattened)
+                Line(points=flattened)
+                PushMatrix()
+                f = interpolating_functions[0]
+                translate = Translate(*f[0](0))
+                rotate = Rotate()
+                rotate.angle = rotate.angle = f[1](0)
+                Rectangle(
+                    pos=(-texture.width / 2, -texture.height / 2, ),
+                    size=texture.size,
+                    texture=texture,
+                )
+                PopMatrix()
+            await ak.sleep(1.0 / speed)
+            async for p in vanim.progress(duration=n_spline_segments * 2.0 / speed):
+                if p >= 1.0:
+                    f = interpolating_functions[-1]
+                    t = 1.0
+                else:
+                    idx, t = divmod(p * n_spline_segments, 1.0)
+                    f = interpolating_functions[int(idx)]
+                x, y = f[0](t)
+                translate.x = x
+                translate.y = y
+                rotate.angle = f[1](t)
             await ak.sleep(1)
-            self.root.canvas.clear()
-
-    async def play_animation(self, widget, *, speed=1.0):
-        n_control_points = 6
-        padding = 30.0
-        control_points = generate_random_2d_points(
-            n_points=n_control_points,
-            min_x=padding, min_y=padding,
-            max_x=widget.width - padding, max_y=widget.height - padding,
-        )
-        flattened = tuple(itertools.chain.from_iterable(control_points))
-        texture = ak.create_texture_from_text(text='@', font_size=80, color=get_random_color())
-        n_segments = n_control_points - 3
-        interpolating_functions: T.Sequence[T.Tuple[T.Callable, T.Callable]] = tuple(
-            (
-                partial(calc_position, f := calc_factors(control_points[i:i + 4])),
-                partial(calc_angle, (f[1], f[2] * 2, f[3] * 3)),
-            )
-            for i in range(n_segments)
-        )
-
-        with widget.canvas:
-            Color(1.0, 1.0, 1.0, 1.0)
-            Point(pointsize=4.0, points=flattened)
-            Line(points=flattened)
-            PushMatrix()
-            f = interpolating_functions[0]
-            translate = Translate(*f[0](0))
-            rotate = Rotate()
-            rotate.angle = rotate.angle = f[1](0)
-            Rectangle(
-                pos=(-texture.width / 2, -texture.height / 2, ),
-                size=texture.size,
-                texture=texture,
-            )
-            PopMatrix()
-        async for p in vanim.progress(duration=n_segments * 2.0 / speed):
-            if p >= 1.0:
-                f = interpolating_functions[-1]
-                t = 1.0
-            else:
-                idx, t = divmod(p * n_segments, 1.0)
-                f = interpolating_functions[int(idx)]
-            x, y = f[0](t)
-            translate.x = x
-            translate.y = y
-            rotate.angle = f[1](t)
+        finally:
+            draw_target.canvas.remove(root_group)
 
 
 def generate_random_2d_points(*, n_points, min_x, min_y, max_x, max_y) -> T.Sequence[Vector]:

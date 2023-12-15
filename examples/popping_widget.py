@@ -11,9 +11,14 @@ from asynckivy import vanim, transform, suppress_event
 
 ignore_touch_down = partial(suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
 '''
-Return a context manager that makes the widget ignore ``on_touch_down`` events that collide with it. This is probably
-useful when you want to disable touch interaction of a widget without changing its appearance.
-(Setting ``disabled`` to True might change the appearance.)
+.. code-block::
+
+    with ignore_touch_down(widget):
+        ...
+
+Returns a context manager that causes a specified ``widget`` to ignore ``on_touch_down`` events that intersect with it.
+This can be particularly useful when you need to disable touch interaction for a widget without altering its
+appearance. (Setting the ``disabled`` property to True might alter the appearance.)
 '''
 
 
