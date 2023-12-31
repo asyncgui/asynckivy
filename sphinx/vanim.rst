@@ -124,12 +124,6 @@ Lastly, if you want the all three above, use this.
     async for dt, et, p in vanim.dt_et_progress(duration=3.0):
         ...
 
-The ``free_await`` parameter
-----------------------------
-
-You might have noticed that all the ``vanim``'s APIs take a keyword argument named ``free_await``.
-This works exactly the same as the :class:`asynckivy.repeat_sleeping` 's.
-
 Iterations may not end in time
 ------------------------------
 

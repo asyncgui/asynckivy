@@ -7,13 +7,12 @@ def approx():
     return partial(pytest.approx, abs=0.004)
 
 
-@pytest.mark.parametrize('free_await', (False, True))
-def test_dt(approx, sleep_then_tick, free_await):
+def test_dt(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn(result: list):
         from asynckivy import vanim
-        async for dt in vanim.dt(free_await=free_await):
+        async for dt in vanim.dt():
             result.append(dt)
 
     result = []
@@ -25,14 +24,13 @@ def test_dt(approx, sleep_then_tick, free_await):
     task.cancel()
 
 
-@pytest.mark.parametrize('free_await', (False, True))
-def test_et(approx, sleep_then_tick, free_await):
+def test_et(approx, sleep_then_tick):
     from itertools import accumulate
     import asynckivy as ak
 
     async def async_fn(result: list):
         from asynckivy import vanim
-        async for et in vanim.et(free_await=free_await):
+        async for et in vanim.et():
             result.append(et)
 
     result = []
@@ -44,14 +42,13 @@ def test_et(approx, sleep_then_tick, free_await):
     task.cancel()
 
 
-@pytest.mark.parametrize('free_await', (False, True))
-def test_dt_et(approx, sleep_then_tick, free_await):
+def test_dt_et(approx, sleep_then_tick):
     from itertools import accumulate
     import asynckivy as ak
 
     async def async_fn(dt_result: list, et_result: list):
         from asynckivy import vanim
-        async for dt, et in vanim.dt_et(free_await=free_await):
+        async for dt, et in vanim.dt_et():
             dt_result.append(dt)
             et_result.append(et)
 
@@ -67,13 +64,12 @@ def test_dt_et(approx, sleep_then_tick, free_await):
     task.cancel()
 
 
-@pytest.mark.parametrize('free_await', (False, True))
-def test_progress(approx, sleep_then_tick, free_await):
+def test_progress(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn():
         from asynckivy import vanim
-        l = [p async for p in vanim.progress(duration=1, free_await=free_await)]
+        l = [p async for p in vanim.progress(duration=1)]
         assert l == approx([0.3, 0.6, 0.9, 1.2, ])
 
     task = ak.start(async_fn())
@@ -82,8 +78,7 @@ def test_progress(approx, sleep_then_tick, free_await):
     assert task.finished
 
 
-@pytest.mark.parametrize('free_await', (False, True))
-def test_dt_et_progress(approx, sleep_then_tick, free_await):
+def test_dt_et_progress(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn():
@@ -91,7 +86,7 @@ def test_dt_et_progress(approx, sleep_then_tick, free_await):
         dt_result = []
         et_result = []
         progress_result = []
-        async for dt, et, p in vanim.dt_et_progress(duration=.5, free_await=free_await):
+        async for dt, et, p in vanim.dt_et_progress(duration=.5):
             dt_result.append(dt)
             et_result.append(et)
             progress_result.append(p)

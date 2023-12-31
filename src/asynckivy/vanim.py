@@ -9,40 +9,40 @@ __all__ = (
 from asynckivy import repeat_sleeping
 
 
-async def dt(*, step=0, free_await=False):
-    async with repeat_sleeping(step=step, free_await=free_await) as sleep:
+async def dt(*, step=0):
+    async with repeat_sleeping(step=step) as sleep:
         while True:
             yield await sleep()
 
 
-async def et(*, step=0, free_await=False):
+async def et(*, step=0):
     et = 0.
-    async with repeat_sleeping(step=step, free_await=free_await) as sleep:
+    async with repeat_sleeping(step=step) as sleep:
         while True:
             et += await sleep()
             yield et
 
 
-async def dt_et(*, step=0, free_await=False):
+async def dt_et(*, step=0):
     et = 0.
-    async with repeat_sleeping(step=step, free_await=free_await) as sleep:
+    async with repeat_sleeping(step=step) as sleep:
         while True:
             dt = await sleep()
             et += dt
             yield dt, et
 
 
-async def progress(*, duration=1., step=0, free_await=False):
+async def progress(*, duration=1., step=0):
     et = 0.
-    async with repeat_sleeping(step=step, free_await=free_await) as sleep:
+    async with repeat_sleeping(step=step) as sleep:
         while et < duration:
             et += await sleep()
             yield et / duration
 
 
-async def dt_et_progress(*, duration=1., step=0, free_await=False):
+async def dt_et_progress(*, duration=1., step=0):
     et = 0.
-    async with repeat_sleeping(step=step, free_await=free_await) as sleep:
+    async with repeat_sleeping(step=step) as sleep:
         while et < duration:
             dt = await sleep()
             et += dt

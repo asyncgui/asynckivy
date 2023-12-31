@@ -16,13 +16,12 @@ def test_sleep(kivy_clock, sleep_then_tick, free):
     assert task.finished
 
 
-@pytest.mark.parametrize('free_await', (False, True))
-def test_repeat_sleeping(sleep_then_tick, free_await):
+def test_repeat_sleeping(sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn():
         nonlocal task_state
-        async with ak.repeat_sleeping(step=.5, free_await=free_await) as sleep:
+        async with ak.repeat_sleeping(step=.5) as sleep:
             task_state = 'A'
             await sleep()
             task_state = 'B'
@@ -40,18 +39,6 @@ def test_repeat_sleeping(sleep_then_tick, free_await):
     sleep_then_tick(.5)
     assert task_state == 'C'
     assert task.finished
-
-
-def test_free_awaitが真の時は勝手にtaskを再開しない(sleep_then_tick):
-    import asynckivy as ak
-
-    async def async_fn():
-        async with ak.repeat_sleeping(step=0, free_await=True) as sleep:
-            await ak.sleep_forever()
-
-    task = ak.start(async_fn())
-    sleep_then_tick(.1)
-    assert not task.finished
 
 
 @p_free
@@ -82,45 +69,19 @@ def test_sleep_cancel(kivy_clock, free):
     assert ctx['state'] == 'C'
 
 
-@pytest.mark.parametrize('free_await', (False, True))
-def test_cancel_repeat_sleeping(kivy_clock, free_await):
+def test_cancel_repeat_sleeping(kivy_clock):
     import asynckivy as ak
 
     async def async_fn(ctx):
         async with ak.open_cancel_scope() as scope:
             ctx['scope'] = scope
             ctx['state'] = 'A'
-            async with ak.repeat_sleeping(step=0, free_await=free_await) as sleep:
+            async with ak.repeat_sleeping(step=0) as sleep:
                 await sleep()
             pytest.fail()
         ctx['state'] = 'B'
         await ak.sleep_forever()
         ctx['state'] = 'C'
-
-    ctx = {}
-    task = ak.start(async_fn(ctx))
-    assert ctx['state'] == 'A'
-    ctx['scope'].cancel()
-    assert ctx['state'] == 'B'
-    kivy_clock.tick()
-    assert ctx['state'] == 'B'
-    task._step()
-    assert ctx['state'] == 'C'
-
-
-def test_cancel_repeat_sleeping2(kivy_clock):
-    import asynckivy as ak
-
-    async def async_fn(ctx):
-        async with ak.repeat_sleeping(step=0, free_await=True) as sleep:
-            async with ak.open_cancel_scope() as scope:
-                ctx['scope'] = scope
-                ctx['state'] = 'A'
-                await sleep()
-                pytest.fail()
-            ctx['state'] = 'B'
-            await ak.sleep_forever()
-            ctx['state'] = 'C'
 
     ctx = {}
     task = ak.start(async_fn(ctx))
