@@ -2,7 +2,6 @@ __all__ = ('sleep', 'sleep_free', 'repeat_sleeping', 'move_on_after', )
 
 import typing as T
 import types
-from functools import partial
 
 from kivy.clock import Clock
 from asyncgui import current_task, Cancelled, _sleep_forever, wait_any_cm, Task
@@ -82,7 +81,7 @@ class repeat_sleeping:
 
     **Restriction**
 
-    By default, you are not allowed to perform any kind of async operations inside the with-block except you can
+    You are not allowed to perform any kind of async operations inside the with-block except you can
     ``await`` the return value of the function that is bound to the identifier of the as-clause.
 
     .. code-block::
@@ -94,42 +93,24 @@ class repeat_sleeping:
                 ...
             async for __ in async_iterator:  # NOT ALLOWED
                 ...
-
-    If you wish to override that restriction, you can set the ``free_await`` parameter to True. However, please note
-    that enabling ``free_await`` may result in a slight performance sacrifice.
     '''
 
-    __slots__ = ('_step', '_free_await', '_trigger', )
+    __slots__ = ('_step', '_trigger', )
 
-    def __init__(self, *, step=0, free_await=False):
+    @types.coroutine
+    def _sleep(_f=_sleep_forever):
+        return (yield _f)[0][0]
+
+    def __init__(self, *, step=0):
         self._step = step
-        self._free_await = free_await
 
-    async def __aenter__(self) -> T.Awaitable[T.Callable[[], T.Awaitable[float]]]:
-        free = self._free_await
-        self._trigger = trigger = Clock.create_trigger((await current_task())._step, self._step, not free, False)
-        if free:
-            return partial(_efficient_sleep_ver_flexible, trigger)
-        else:
-            trigger()
-            return _efficient_sleep_ver_fast
+    async def __aenter__(self, _sleep=_sleep) -> T.Awaitable[T.Callable[[], T.Awaitable[float]]]:
+        self._trigger = Clock.create_trigger((await current_task())._step, self._step, True, False)
+        self._trigger()
+        return _sleep
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self._trigger.cancel()
-
-
-@types.coroutine
-def _efficient_sleep_ver_fast(_f=_sleep_forever):
-    return (yield _f)[0][0]
-
-
-@types.coroutine
-def _efficient_sleep_ver_flexible(f):
-    try:
-        return (yield f)[0][0]
-    except Cancelled:
-        f.cancel()
-        raise
 
 
 def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
