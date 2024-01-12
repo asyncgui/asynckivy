@@ -30,19 +30,6 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     **1.2 sec**  100
     ============ ======
 
-    **Restriction**
-
-    You are not allowed to perform any kind of async operations during the loop.
-
-    .. code-block::
-
-        async for v in interpolate(...):
-            await awaitable  # NOT ALLOWED
-            async with async_context_manager:  # NOT ALLOWED
-                ...
-            async for __ in async_iterator:  # NOT ALLOWED
-                ...
-
     .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate
     '''
     if isinstance(transition, str):

@@ -6,7 +6,7 @@ Config.set('modules', 'showborder', '')
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
-from asynckivy import vanim, transform, suppress_event
+from asynckivy import anim_with_dt_et_ratio, transform, suppress_event
 
 
 ignore_touch_down = partial(suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
@@ -31,7 +31,7 @@ async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degree
         rotate = Rotate(origin=widget.center)
         ig.add(translate)
         ig.add(rotate)
-        async for dt, et, p in vanim.delta_time_elapsed_time_progress(duration=duration):
+        async for dt, et, p in anim_with_dt_et_ratio(duration=duration):
             p = p * 2. - 1.  # convert range[0 to +1] into range[-1 to +1]
             translate.y = (-(p * p) + 1.) * height
             rotate.angle = et * rotation_speed

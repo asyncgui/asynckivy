@@ -130,11 +130,6 @@ async def async_func(widget1, widget2):
     async with ak.fade_transition(widget1, widget2, duration=3, step=0.1):
         widget1.text = 'new text'
         widget2.y = 200
-
-    # より細やかにanimationを制御したい時の為に vanim があります。詳しくはGitHub Pagesを。
-    from asynckivy import vanim
-    async for dt in vanim.delta_time():
-        ...
 ```
 
 ### touch処理
@@ -246,9 +241,10 @@ async def async_fn():
 `asyncio`や`trio`がasync generatorに対して[付け焼き刃的な処置](https://peps.python.org/pep-0525/#finalization)を行うせいなのか、asynckivy用のasync generatorがうまく機能しない事があります。
 なので`asyncio`または`trio`を使っている場合は以下の者達を使わなのがお薦めです。
 
-- `rest_of_touch_events()`
-- `vanim` モジュールの全て
-- `fade_transition()`
+- `rest_of_touch_events()` (代わりに `watch_touch` を用いる)
+- `anim_with_xxx` (代わりに `repeat_sleeping` を用いる)
+- `interpolate` (現状は代替策無し)
+- `fade_transition()` (現状は代替策無し)
 
 これにどう対処すればいいのかは現状分かっていません。
 もしかすると[PEP533](https://peps.python.org/pep-0533/)が解決してくれるかもしれません。

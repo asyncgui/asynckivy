@@ -15,7 +15,6 @@ from kivy.graphics import (
 from kivy.app import App
 from kivy.uix.relativelayout import RelativeLayout
 import asynckivy as ak
-from asynckivy import vanim
 
 
 class SampleApp(App):
@@ -59,7 +58,7 @@ class SampleApp(App):
                 )
                 PopMatrix()
             await ak.sleep(1.0 / speed)
-            async for t in vanim.progress(duration=2.0 / speed):
+            async for t in ak.anim_with_ratio(duration=2.0 / speed):
                 x, y = calc_position(factors, t)
                 translate.x = x
                 translate.y = y
