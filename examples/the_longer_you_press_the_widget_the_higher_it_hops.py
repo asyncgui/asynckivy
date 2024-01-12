@@ -14,7 +14,6 @@ ignore_touch_down = partial(
 
 async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
     import asynckivy as ak
-    from asynckivy import vanim
 
     if scale_x_max <= 1.0:
         raise ValueError(f"'scale_x_max' must be greater than 1.0. (was {scale_x_max})")
@@ -39,7 +38,7 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
         initial_velocity = scale_x ** 2 * 1000.0
         gravity = GRAVITY * gravity_factor
         async with ak.wait_all_cm(ak.animate(scale, x=1.0, y=1.0, duration=0.1)):
-            async for et in vanim.elapsed_time():
+            async for et in ak.anim_with_et():
                 translate.y = y = et * (initial_velocity + gravity * et)
                 if y <= 0:
                     break

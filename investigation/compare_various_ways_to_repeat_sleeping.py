@@ -24,9 +24,9 @@ BoxLayout:
     MyToggleButton:
         text: 'repeat_sleeping'
     MyToggleButton:
-        text: 'vanim_dt'
+        text: 'anim_with_dt'
     MyToggleButton:
-        text: 'vanim_dt_et'
+        text: 'anim_with_dt_et'
 '''
 
 
@@ -68,15 +68,13 @@ async def ver_repeat_sleeping():
             await sleep()
 
 
-async def ver_vanim_dt():
-    from asynckivy import vanim
-    async for dt in vanim.dt():
+async def ver_anim_with_dt():
+    async for dt in ak.anim_with_dt():
         pass
 
 
-async def ver_vanim_dt_et():
-    from asynckivy import vanim
-    async for dt, et in vanim.dt_et():
+async def ver_anim_with_dt_et():
+    async for dt, et in ak.anim_with_dt_et():
         pass
 
 

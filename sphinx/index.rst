@@ -8,7 +8,6 @@ You may also want to read the `asyncgui's documentation`_ as it is the foundatio
 .. toctree::
    :maxdepth: 1
 
-   vanim
    notes
    reference
 

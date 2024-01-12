@@ -131,11 +131,6 @@ async def async_func(widget1, widget2):
     async with ak.fade_transition(widget1, widget2):
         widget.text = 'new text'
         widget2.y = 200
-
-    # If you want more low-level control over animations, use the vanim module.
-    from asynckivy import vanim
-    async for dt in vanim.delta_time():
-        ...
 ```
 
 ### touch handling

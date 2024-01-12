@@ -11,8 +11,7 @@ def test_dt(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn(result: list):
-        from asynckivy import vanim
-        async for dt in vanim.dt():
+        async for dt in ak.anim_with_dt():
             result.append(dt)
 
     result = []
@@ -29,8 +28,7 @@ def test_et(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn(result: list):
-        from asynckivy import vanim
-        async for et in vanim.et():
+        async for et in ak.anim_with_et():
             result.append(et)
 
     result = []
@@ -47,8 +45,7 @@ def test_dt_et(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn(dt_result: list, et_result: list):
-        from asynckivy import vanim
-        async for dt, et in vanim.dt_et():
+        async for dt, et in ak.anim_with_dt_et():
             dt_result.append(dt)
             et_result.append(et)
 
@@ -68,8 +65,7 @@ def test_progress(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn():
-        from asynckivy import vanim
-        l = [p async for p in vanim.progress(duration=1)]
+        l = [p async for p in ak.anim_with_ratio(duration=1)]
         assert l == approx([0.3, 0.6, 0.9, 1.2, ])
 
     task = ak.start(async_fn())
@@ -82,11 +78,10 @@ def test_dt_et_progress(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn():
-        from asynckivy import vanim
         dt_result = []
         et_result = []
         progress_result = []
-        async for dt, et, p in vanim.dt_et_progress(duration=.5):
+        async for dt, et, p in ak.anim_with_dt_et_ratio(duration=.5):
             dt_result.append(dt)
             et_result.append(et)
             progress_result.append(p)

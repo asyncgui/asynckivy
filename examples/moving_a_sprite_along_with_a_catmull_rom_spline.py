@@ -17,7 +17,6 @@ from kivy.graphics import (
 from kivy.app import App
 from kivy.uix.relativelayout import RelativeLayout
 import asynckivy as ak
-from asynckivy import vanim
 
 
 SPLINE_TYPE = 'Catmull-Rom'
@@ -87,7 +86,7 @@ class SampleApp(App):
                 color_inst3 = Color(1.0, 1.0, 1.0, 1.0)
                 point_inst = Point(pointsize=1.0)
             flattened = array.array('f')
-            async for p in vanim.progress(duration=n_segments * 2.0 / speed):
+            async for p in ak.anim_with_ratio(duration=n_segments * 2.0 / speed):
                 if p >= 1.0:
                     f = interpolating_functions[-1]
                     t = 1.0
@@ -121,7 +120,7 @@ class SampleApp(App):
                     texture=texture,
                 )
                 PopMatrix()
-            async for p in vanim.progress(duration=n_segments * 2.0 / speed):
+            async for p in ak.anim_with_ratio(duration=n_segments * 2.0 / speed):
                 if p >= 1.0:
                     f = interpolating_functions[-1]
                     t = 1.0
