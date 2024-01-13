@@ -1,7 +1,9 @@
-__all__ = ('transform', 'suppress_event', 'create_texture_from_text', )
+__all__ = ('transform', 'suppress_event', 'create_texture_from_text', 'sync_attr', 'sync_attrs', )
 import typing as T
 from contextlib import contextmanager
+from functools import partial
 
+from kivy.event import EventDispatcher
 from kivy.graphics import PushMatrix, PopMatrix, InstructionGroup
 from kivy.graphics.texture import Texture
 from kivy.core.text import Label as CoreLabel
@@ -11,12 +13,12 @@ from kivy.core.text.markup import MarkupLabel as CoreMarkupLabel
 @contextmanager
 def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[InstructionGroup]:
     '''
-    Return a context manager that sandwiches the ``widget``'s existing canvas instructions between
+    Returns a context manager that sandwiches the ``widget``'s existing canvas instructions between
     a :class:`kivy.graphics.PushMatrix` and a :class:`kivy.graphics.PopMatrix`, and inserts an
-    :class:`kivy.graphics.InstructionGroup` right next to the ``PushMatrix``. Those three instructions are removed
+    :class:`kivy.graphics.InstructionGroup` right next to the ``PushMatrix``. Those three instructions will be removed
     when the context manager exits.
 
-    This may be useful when you want to animate a widget for a short period of time.
+    This may be useful when you want to animate a widget out of the constraints caused by its parent.
 
     **Usage**
 
@@ -29,32 +31,7 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
                 ig.add(rotate := Rotate(origin=widget.center))
                 await animate(rotate, angle=angle)
 
-    If you want to animate for a long time, you might need extra work because you might have to prepare for the
-    transition of some of widget's properties during the animation. In the above example it's the ``widget.center``,
-    and here is an example of how to do it.
-
-    .. code-block::
-        :emphasize-lines: 4-5, 7-13, 18
-
-        from contextlib import contextmanager
-        from kivy.graphics import Rotate
-
-        def _setter(obj, attr_name, event_dispatcher, prop_value):
-            setattr(obj, attr_name, prop_value)
-
-        @contextmanager
-        def tmp_bind(event_dispatcher, prop_name, obj, attr_name):
-            uid = event_dispatcher.fbind(prop_name, _setter, obj, attr_name)
-            try:
-                yield
-            finally:
-                ed.unbind_uid(prop_name, uid)
-
-        async def rotate_widget(widget, *, angle=360.):
-            with transform(widget) as ig:  # <- InstructionGroup
-                ig.add(rotate := Rotate(origin=widget.center))
-                with tmp_bind(widget, 'center', rotate, 'origin'):
-                    await animate(rotate, angle=angle)
+    If the position or size of the ``widget`` changes during the animation, you might need :class:`sync_attr`.
 
     **The** ``use_outer_canvas`` **parameter**
 
@@ -192,3 +169,90 @@ def create_texture_from_text(*, markup=False, **label_kwargs) -> Texture:
     core = core_cls(**label_kwargs)
     core.refresh()
     return core.texture
+
+
+class sync_attr:
+    '''
+    Returns a context manager that creates one-directional binding between attributes.
+
+    .. code-block::
+
+        import types
+
+        widget = Widget()
+        obj = types.SimpleNamespace()
+
+        with sync_attr(from_=(widget, 'x'), to_=(obj, 'xx')):
+            widget.x = 10
+            assert obj.xx == 10  # synchronized
+            obj.xx = 20
+            assert widget.x == 10  # but not the other way around
+
+    This can be particularly useful when combined with :func:`transform`.
+
+    .. code-block::
+
+        from kivy.graphics import Rotate
+
+        async def rotate_widget(widget, *, angle=360.):
+            with transform(widget) as ig:
+                ig.add(rotate := Rotate(origin=widget.center))
+                with sync_attr(from_=(widget, 'center'), to_=(rotate, 'origin')):
+                    await animate(rotate, angle=angle)
+
+    .. versionadded:: 0.6.1
+    '''
+    __slots__ = ('_from', '_to', '_bind_uid', )
+
+    def __init__(self, from_: T.Tuple[EventDispatcher, str], to_: T.Tuple[T.Any, str]):
+        self._from = from_
+        self._to = to_
+
+    def _sync(setattr, obj, attr_name, event_dispatcher, new_value):
+        setattr(obj, attr_name, new_value)
+
+    def __enter__(self, partial=partial, sync=partial(_sync, setattr)):
+        self._bind_uid = self._from[0].fbind(self._from[1], partial(sync, *self._to))
+
+    def __exit__(self, *args):
+        self._from[0].unbind_uid(self._from[1], self._bind_uid)
+
+    del _sync
+
+
+class sync_attrs:
+    '''
+    When multiple :class:`sync_attr` call take the same ``from_`` parameter, they can be merged into a single
+    :class:`sync_attrs` call. For instance, the following code:
+
+    .. code-block::
+
+        with sync_attr((widget, 'x'), (obj1, 'x')), sync_attr((widget, 'x'), (obj2, 'xx')):
+            ...
+
+    is quivalent to the following one:
+
+    .. code-block::
+
+        with sync_attrs((widget, 'x'), (obj1, 'x'), (obj2, 'xx')):
+            ...
+
+    .. versionadded:: 0.6.1
+    '''
+    __slots__ = ('_from', '_to', '_bind_uid', )
+
+    def __init__(self, from_: T.Tuple[EventDispatcher, str], *to_):
+        self._from = from_
+        self._to = to_
+
+    def _sync(setattr, to_, event_dispatcher, new_value):
+        for obj, attr_name in to_:
+            setattr(obj, attr_name, new_value)
+
+    def __enter__(self, partial=partial, sync=partial(_sync, setattr)):
+        self._bind_uid = self._from[0].fbind(self._from[1], partial(sync, self._to))
+
+    def __exit__(self, *args):
+        self._from[0].unbind_uid(self._from[1], self._bind_uid)
+
+    del _sync
