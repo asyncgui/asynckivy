@@ -35,6 +35,11 @@ def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear,
                 ak.animate(widget, x=100),
                 ak.animate(widget, y=100, duration=2),
             )
+
+    .. deprecated:: 0.6.1
+
+        This will be removed before version 1.0.0.
+        Use :func:`asynckivy.anim_attrs` or :func:`asynckivy.anim_attrs_abbr` instead.
     '''
     if not duration:
         for key, value in animated_properties.items():
