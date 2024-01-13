@@ -29,7 +29,7 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
         async def rotate_widget(widget, *, angle=360.):
             with transform(widget) as ig:  # <- InstructionGroup
                 ig.add(rotate := Rotate(origin=widget.center))
-                await animate(rotate, angle=angle)
+                await anim_attrs(rotate, angle=angle)
 
     If the position or size of the ``widget`` changes during the animation, you might need :class:`sync_attr`.
 
@@ -198,7 +198,7 @@ class sync_attr:
             with transform(widget) as ig:
                 ig.add(rotate := Rotate(origin=widget.center))
                 with sync_attr(from_=(widget, 'center'), to_=(rotate, 'origin')):
-                    await animate(rotate, angle=angle)
+                    await anim_attrs(rotate, angle=angle)
 
     .. versionadded:: 0.6.1
     '''

@@ -63,12 +63,12 @@ class SampleApp(App):
             with group1:
                 color_inst2 = Color(1.0, 1.0, 1.0, 0.0)
                 Line(points=flattened)
-            await ak.animate(color_inst2, a=1.0, duration=1.0 / speed)
+            await ak.anim_attrs(color_inst2, a=1.0, duration=1.0 / speed)
             await slp()
 
             # Make the above two darker.
             group1.remove(color_inst2)
-            await ak.animate(color_inst1, r=0.3, g=0.3, b=0.3, duration=1.0 / speed)
+            await ak.anim_attrs(color_inst1, r=0.3, g=0.3, b=0.3, duration=1.0 / speed)
             del color_inst2, point_inst, flattened
 
             n_segments = n_control_points - 3
@@ -99,8 +99,8 @@ class SampleApp(App):
             # Fade-out the group1, and make the above points darker
             await slp()
             await ak.wait_all(
-                ak.animate(color_inst1, a=0, duration=1.0 / speed),
-                ak.animate(color_inst3, r=0.3, g=0.3, b=0.3, duration=1.0 / speed),
+                ak.anim_attrs(color_inst1, a=0, duration=1.0 / speed),
+                ak.anim_attrs(color_inst3, r=0.3, g=0.3, b=0.3, duration=1.0 / speed),
             )
             root_group.remove(group1)
             del color_inst1, color_inst3, point_inst

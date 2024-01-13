@@ -29,28 +29,28 @@ class TestApp(App):
         ak.start(self.main())
 
     async def main(self):
-        from asynckivy import wait_any, event, animate
+        from asynckivy import wait_any, event, anim_attrs
         root = self.root
         label = root.ids.label.__self__
         while True:
             await wait_any(
                 event(root, 'on_touch_down'),
-                animate(label, right=root.width),
+                anim_attrs(label, right=root.width),
             )
             label.right = root.width
             await wait_any(
                 event(root, 'on_touch_down'),
-                animate(label, top=root.height),
+                anim_attrs(label, top=root.height),
             )
             label.top = root.height
             await wait_any(
                 event(root, 'on_touch_down'),
-                animate(label, x=0),
+                anim_attrs(label, x=0),
             )
             label.x = 0
             await wait_any(
                 event(root, 'on_touch_down'),
-                animate(label, y=0),
+                anim_attrs(label, y=0),
             )
             label.y = 0
 

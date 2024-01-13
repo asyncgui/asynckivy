@@ -120,7 +120,7 @@ async def async_func(widget1, widget2):
     obj = SimpleNamespace(attr1=10, attr2=[20, 30, ], attr3={'key': 40, })
 
     # Animate attibutes of any object.
-    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400})
+    await ak.anim_attrs(obj, attr1=200, attr2=[200, 100])
 
     # Interpolate between two values in an async-manner.
     async for v in ak.interpolate(0, 200):
