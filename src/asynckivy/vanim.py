@@ -10,7 +10,7 @@ import warnings
 from . import _anim_with_xxx
 
 
-warnings.warn("The 'vanim' module is deprecated and will be removed before version 1.0.0.", DeprecationWarning)
+warnings.warn("The 'vanim' module is deprecated. Use 'asynckivy.anim_with_xxx' instead.")
 
 
 delta_time = dt = _anim_with_xxx.anim_with_dt
