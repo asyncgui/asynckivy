@@ -61,7 +61,7 @@ def test_dt_et(approx, sleep_then_tick):
     task.cancel()
 
 
-def test_progress(approx, sleep_then_tick):
+def test_ratio(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn():
@@ -74,7 +74,7 @@ def test_progress(approx, sleep_then_tick):
     assert task.finished
 
 
-def test_dt_et_progress(approx, sleep_then_tick):
+def test_dt_et_ratio(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def async_fn():
