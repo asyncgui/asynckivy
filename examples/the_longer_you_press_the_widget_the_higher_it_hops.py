@@ -25,19 +25,19 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
         scale = Scale(origin=(widget.center_x, widget.y))
         ig.add(scale)
         async with ak.run_as_secondary(
-                ak.animate(scale, x=scale_x_max, y=1.0 / scale_x_max, duration=0.25 * scale_x_max)):
+                ak.anim_attrs(scale, x=scale_x_max, y=1.0 / scale_x_max, duration=0.25 * scale_x_max)):
             await ak.event(widget, 'on_release')
 
         # phase 2: Widget becomes thiner and taller after it got released.
         scale_x = scale.x
         scale_y = scale.y
-        await ak.animate(scale, x=scale_y, y=scale_x, duration=0.1)
+        await ak.anim_attrs(scale, x=scale_y, y=scale_x, duration=0.1)
 
         # phase 3: Widget bounces and returns to its original size.
         ig.insert(0, translate := Translate())
         initial_velocity = scale_x ** 2 * 1000.0
         gravity = GRAVITY * gravity_factor
-        async with ak.wait_all_cm(ak.animate(scale, x=1.0, y=1.0, duration=0.1)):
+        async with ak.wait_all_cm(ak.anim_attrs(scale, x=1.0, y=1.0, duration=0.1)):
             async for et in ak.anim_with_et():
                 translate.y = y = et * (initial_velocity + gravity * et)
                 if y <= 0:
@@ -45,10 +45,10 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
         ig.remove(translate)
 
         # phase 4: Widget becomes wider and shorter on landing.
-        await ak.animate(scale, x=(scale_x + 1.0) * 0.5, y=(scale_y + 1.0) * 0.5, duration=0.1)
+        await ak.anim_attrs(scale, x=(scale_x + 1.0) * 0.5, y=(scale_y + 1.0) * 0.5, duration=0.1)
 
         # phase 5: Widget returns to its original size.
-        await ak.animate(scale, x=1.0, y=1.0, duration=0.1)
+        await ak.anim_attrs(scale, x=1.0, y=1.0, duration=0.1)
 
 
 KV_CODE = r'''

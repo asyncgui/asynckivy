@@ -118,7 +118,7 @@ async def async_func(widget1, widget2):
     obj = SimpleNamespace(attr1=10, attr2=[20, 30, ], attr3={'key': 40, })
 
     # 任意のオブジェクトの属性をアニメーションしてその完了を待つ。
-    await ak.animate(obj, attr1=200, attr2=[200, 100], attr3={'key': 400})
+    await ak.anim_attrs(obj, attr1=200, attr2=[200, 100])
 
     # duration秒かけて二つの数値を補間する。中間値の計算はstep秒毎に行う。
     async for v in ak.interpolate(0, 200, duration=2, step=0.1):
