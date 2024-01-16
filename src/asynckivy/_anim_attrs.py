@@ -7,7 +7,7 @@ from kivy.animation import AnimationTransition
 import asyncgui
 
 
-def _update(setattr, isinstance, zip, tuple, min, obj, duration, transition, anim_params, task, p_time, dt):
+def _update(setattr, zip, tuple, min, obj, duration, transition, anim_params, task, p_time, dt):
     time = p_time[0] + dt
     p_time[0] = time
 
@@ -16,8 +16,8 @@ def _update(setattr, isinstance, zip, tuple, min, obj, duration, transition, ani
     t = transition(progress)
 
     # apply progression on obj
-    for attr_name, org_value, slope in anim_params:
-        if isinstance(org_value, tuple):
+    for attr_name, org_value, slope, is_seq in anim_params:
+        if is_seq:
             new_value = tuple(
                 slope_elem * t + org_elem
                 for org_elem, slope_elem in zip(org_value, slope)
@@ -32,7 +32,7 @@ def _update(setattr, isinstance, zip, tuple, min, obj, duration, transition, ani
         return False
 
 
-_update = partial(_update, setattr, isinstance, zip, tuple, min)
+_update = partial(_update, setattr, zip, tuple, min)
 
 
 @types.coroutine
@@ -48,11 +48,12 @@ def _anim_attrs(
     anim_params = tuple(
         (
             org_value := getattr(obj, attr_name),
+            is_seq := isinstance(org_value, native_seq_types),
             (
                 org_value := tuple(org_value),
                 slope := tuple(goal_elem - org_elem for goal_elem, org_elem in zip(goal_value, org_value)),
-            ) if isinstance(org_value, native_seq_types) else (slope := goal_value - org_value),
-        ) and (attr_name, org_value, slope, )
+            ) if is_seq else (slope := goal_value - org_value),
+        ) and (attr_name, org_value, slope, is_seq, )
         for attr_name, goal_value in animated_properties.items()
     )
 
@@ -69,7 +70,7 @@ def _anim_attrs(
 def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear,
                **animated_properties) -> T.Awaitable:
     '''
-    Animate attibutes of any object.
+    Animates attibutes of any object.
 
     .. code-block::
 
@@ -88,6 +89,8 @@ def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.line
             await anim_attrs(obj, nested_sequence=[[10, 20, ]])  # not supported
 
             await anim_attrs(obj, color=(1, 0, 0, 1), pos=(100, 200))  # OK
+
+    .. versionadded:: 0.6.1
     '''
     return _anim_attrs(obj, duration, step, transition, animated_properties)
 
@@ -95,5 +98,7 @@ def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.line
 def anim_attrs_abbr(obj, *, d=1.0, s=0, t=AnimationTransition.linear, **animated_properties) -> T.Awaitable:
     '''
     :func:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
+
+    .. versionadded:: 0.6.1
     '''
     return _anim_attrs(obj, d, s, t, animated_properties)
