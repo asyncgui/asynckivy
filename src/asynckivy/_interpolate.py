@@ -5,6 +5,7 @@ from kivy.animation import AnimationTransition
 
 from asyncgui import Cancelled
 from ._sleep import repeat_sleeping
+from ._anim_with_xxx import anim_with_ratio
 
 
 linear = AnimationTransition.linear
@@ -55,7 +56,7 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
 @asynccontextmanager
 async def fade_transition(*widgets, duration=1.0, step=0) -> T.AsyncContextManager:
     '''
-    Return an async context manager that:
+    Returns an async context manager that:
 
     * fades-out the given widgets on ``__aenter__``.
     * fades-in the given widgets on ``__aexit__``.
@@ -64,18 +65,21 @@ async def fade_transition(*widgets, duration=1.0, step=0) -> T.AsyncContextManag
 
         async with fade_transition(widget1, widget2):
             ...
+
+    The ``widgets`` don't have to be actual Kivy widgets.
+    Anything that has an attribute named ``opacity`` would work.
     '''
     half_duration = duration / 2.
-    org_opacity = tuple(w.opacity for w in widgets)
+    org_opas = tuple(w.opacity for w in widgets)
     try:
-        async for v in interpolate(1.0, 0.0, duration=half_duration, step=step):
-            for w, o in zip(widgets, org_opacity):
-                w.opacity = v * o
+        async for p in anim_with_ratio(duration=half_duration, step=step):
+            p = 1.0 - p
+            for w, o in zip(widgets, org_opas):
+                w.opacity = p * o
         yield
-        async for v in interpolate(0.0, 1.0, duration=half_duration, step=step):
-            for w, o in zip(widgets, org_opacity):
-                w.opacity = v * o
-    except Cancelled:
-        for w, o in zip(widgets, org_opacity):
+        async for p in anim_with_ratio(duration=half_duration, step=step):
+            for w, o in zip(widgets, org_opas):
+                w.opacity = p * o
+    finally:
+        for w, o in zip(widgets, org_opas):
             w.opacity = o
-        raise
