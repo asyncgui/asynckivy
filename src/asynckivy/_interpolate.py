@@ -3,7 +3,6 @@ import typing as T
 from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
-from asyncgui import Cancelled
 from ._sleep import repeat_sleeping
 from ._anim_with_xxx import anim_with_ratio
 
