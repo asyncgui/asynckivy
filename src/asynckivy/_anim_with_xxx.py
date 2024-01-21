@@ -2,7 +2,7 @@ __all__ = (
     'anim_with_dt', 'anim_with_et', 'anim_with_ratio', 'anim_with_dt_et', 'anim_with_dt_et_ratio',
 )
 
-from asynckivy import repeat_sleeping
+from ._sleep import repeat_sleeping
 
 
 async def anim_with_dt(*, step=0):
@@ -108,8 +108,12 @@ async def anim_with_ratio(*, duration=1., step=0):
 
     .. versionadded:: 0.6.1
     '''
-    et = 0.
     async with repeat_sleeping(step=step) as sleep:
+        if not duration:
+            await sleep()
+            yield 1.0
+            return
+        et = 0.
         while et < duration:
             et += await sleep()
             yield et / duration
@@ -126,8 +130,12 @@ async def anim_with_dt_et_ratio(*, duration=1., step=0):
 
     .. versionadded:: 0.6.1
     '''
-    et = 0.
     async with repeat_sleeping(step=step) as sleep:
+        if not duration:
+            dt = await sleep()
+            yield dt, dt, 1.0
+            return
+        et = 0.
         while et < duration:
             dt = await sleep()
             et += dt

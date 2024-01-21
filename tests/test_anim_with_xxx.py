@@ -74,6 +74,18 @@ def test_ratio(approx, sleep_then_tick):
     assert task.finished
 
 
+def test_ratio_zero_duration(approx, sleep_then_tick):
+    import asynckivy as ak
+
+    async def async_fn():
+        l = [p async for p in ak.anim_with_ratio(duration=0)]
+        assert l == approx([1.0, ])
+
+    task = ak.start(async_fn())
+    sleep_then_tick(.1)
+    assert task.finished
+
+
 def test_dt_et_ratio(approx, sleep_then_tick):
     import asynckivy as ak
 
@@ -92,4 +104,19 @@ def test_dt_et_ratio(approx, sleep_then_tick):
     task = ak.start(async_fn())
     for __ in range(3):
         sleep_then_tick(.2)
+    assert task.finished
+
+
+def test_dt_et_ratio_zero_duration(approx, sleep_then_tick):
+    import asynckivy as ak
+
+    async def async_fn():
+        l = [v async for v in ak.anim_with_dt_et_ratio(duration=0)]
+        # assert l == approx([(0.2, 0.2, 1.0, ), ])  # This doesn't work for some reason.
+        assert l[0][0] == approx(0.2)
+        assert l[0][1] == approx(0.2)
+        assert l[0][2] == approx(1.0)
+
+    task = ak.start(async_fn())
+    sleep_then_tick(.2)
     assert task.finished
