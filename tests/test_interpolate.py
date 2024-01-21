@@ -37,7 +37,7 @@ def test_break_during_the_iteration(approx, sleep_then_tick):
     assert task.finished
 
 
-def test_zero_duration(approx):
+def test_zero_duration(approx, sleep_then_tick):
     import asynckivy as ak
 
     async def job():
@@ -45,4 +45,5 @@ def test_zero_duration(approx):
         assert l == approx([0, 100])
 
     task = ak.start(job())
+    sleep_then_tick(.1)
     assert task.finished

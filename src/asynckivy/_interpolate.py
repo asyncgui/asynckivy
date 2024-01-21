@@ -3,7 +3,6 @@ import typing as T
 from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
-from ._sleep import repeat_sleeping
 from ._anim_with_xxx import anim_with_ratio
 
 
@@ -35,21 +34,13 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
 
-    yield start
-    if not duration:
-        yield end
-        return
-
     slope = end - start
-    elapsed_time = 0.
-    async with repeat_sleeping(step=step) as sleep:
-        while True:
-            elapsed_time += await sleep()
-            if elapsed_time >= duration:
-                break
-            progress = transition(elapsed_time / duration)
-            yield progress * slope + start
-    yield end
+    yield transition(0.) * slope + start
+    async for p in anim_with_ratio(step=step, duration=duration):
+        if p >= 1.0:
+            break
+        yield transition(p) * slope + start
+    yield transition(1.) * slope + start
 
 
 @asynccontextmanager
