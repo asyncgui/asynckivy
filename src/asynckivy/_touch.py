@@ -11,7 +11,7 @@ from ._event import event
 
 class watch_touch:
     '''
-    Return an async context manager that provides an easy way to handle touch events.
+    Returns an async context manager that provides an easy way to handle touch events.
 
     .. code-block::
 
@@ -126,7 +126,7 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
     '''
     *(experimental state)*
 
-    Return an awaitable that can be used to wait for the ``on_touch_up`` event of the given ``touch`` to occur.
+    Returns an awaitable that can be used to wait for the ``on_touch_up`` event of the given ``touch`` to occur.
 
     .. code-block::
 
@@ -176,7 +176,7 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
 
 async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.AsyncIterator[None]:
     '''
-    Return an async iterator that iterates the number of times ``on_touch_move`` occurs,
+    Returns an async iterator that iterates the number of times ``on_touch_move`` occurs,
     and ends the iteration when ``on_touch_up`` occurs.
 
     .. code-block::

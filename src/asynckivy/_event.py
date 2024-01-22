@@ -7,10 +7,10 @@ from asyncgui import IBox
 
 async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
     '''
-    Return an awaitable that can be used to wait for:
+    Returns an awaitable that can be used to wait for:
 
     * a Kivy event to occur.
-    * the value of a Kivy property to transition.
+    * a Kivy property's value to change.
 
     .. code-block::
 
@@ -20,11 +20,11 @@ async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=F
         # Wait for an 'on_touch_down' event to occur.
         __, touch = await event(widget, 'on_touch_down')
 
-        # Wait for 'widget.x' to transition.
+        # Wait for 'widget.x' to change.
         __, x = await ak.event(widget, 'x')
 
 
-    The ``filter`` parameter can be used to apply a filter to the object you are waiting for.
+    The ``filter`` parameter:
 
     .. code-block::
 

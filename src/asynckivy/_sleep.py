@@ -10,7 +10,7 @@ from asyncgui import current_task, Cancelled, _sleep_forever, wait_any_cm, Task
 @types.coroutine
 def sleep(duration) -> T.Awaitable[float]:
     '''
-    The async form of :meth:`kivy.clock.Clock.schedule_once`.
+    An async form of :meth:`kivy.clock.Clock.schedule_once`.
 
     .. code-block::
 
@@ -33,7 +33,7 @@ def sleep(duration) -> T.Awaitable[float]:
 @types.coroutine
 def sleep_free(duration) -> T.Awaitable[float]:
     '''
-    The async form of :meth:`kivy.clock.Clock.schedule_once_free`.
+    An async form of :meth:`kivy.clock.Clock.schedule_once_free`.
 
     .. code-block::
 
@@ -55,7 +55,7 @@ def sleep_free(duration) -> T.Awaitable[float]:
 
 class repeat_sleeping:
     '''
-    Return an async context manager that provides an efficient way to repeat sleeping.
+    Returns an async context manager that provides an efficient way to repeat sleeping.
 
     When there is a piece of code like this:
 
@@ -74,10 +74,7 @@ class repeat_sleeping:
                 await sleep()
                 ...
 
-    The latter is more efficient than the former because it only creates one :class:`kivy.clock.ClockEvent` instance
-    and reuses it throughout the loop, while the former creates a new instance in every iteration.
-    Consequently, the latter is more suitable for situations requiring frequent sleeps, such as animating an object
-    for every frame.
+    The latter is more suitable for situations requiring frequent sleeps, such as moving an object in every frame.
 
     **Restriction**
 

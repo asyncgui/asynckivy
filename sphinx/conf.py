@@ -12,6 +12,9 @@ copyright = '2023, Mitō Nattōsai'
 author = 'Mitō Nattōsai'
 release = importlib.metadata.version(project)
 
+rst_epilog = """
+.. |ja| replace:: 🇯🇵
+"""
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

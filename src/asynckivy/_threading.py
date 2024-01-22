@@ -19,7 +19,7 @@ def _wrapper(func, box):
 
 async def run_in_thread(func, *, daemon=None) -> T.Awaitable:
     '''
-    Create a new thread, run a function within it, then wait for the completion of that function.
+    Creates a new thread, runs a function within it, then waits for the completion of that function.
 
     .. code-block::
 
@@ -40,7 +40,7 @@ async def run_in_thread(func, *, daemon=None) -> T.Awaitable:
 
 async def run_in_executor(executor: ThreadPoolExecutor, func) -> T.Awaitable:
     '''
-    Run a function within a :class:`concurrent.futures.ThreadPoolExecutor`, and wait for the completion of the
+    Runs a function within a :class:`concurrent.futures.ThreadPoolExecutor`, and waits for the completion of the
     function.
 
     .. code-block::

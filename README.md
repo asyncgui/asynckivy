@@ -65,23 +65,23 @@ pip install "asynckivy>=0.6,<0.7"
 import asynckivy as ak
 
 async def some_task(button):
-    # wait for 1sec
+    # waits for 1sec
     dt = await ak.sleep(1)
     print(f'{dt} seconds have passed')
 
-    # wait until a button is pressed
+    # waits until a button is pressed
     await ak.event(button, 'on_press')
 
-    # wait until 'button.x' changes
+    # waits until 'button.x' changes
     __, x = await ak.event(button, 'x')
     print(f'button.x is now {x}')
 
-    # wait until 'button.x' becomes greater than 100
+    # waits until 'button.x' becomes greater than 100
     if button.x <= 100:
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
         print(f'button.x is now {x}')
 
-    # wait until EITHER a button is pressed OR 5sec passes.
+    # waits until EITHER a button is pressed OR 5sec passes.
     # i.e. wait at most 5 seconds for a button to be pressed
     tasks = await ak.wait_any(
         ak.event(button, 'on_press'),
@@ -89,14 +89,19 @@ async def some_task(button):
     )
     print("The button was pressed" if tasks[0].finished else "Timeout")
 
-    # wait until a button is pressed AND 5sec passes.
+    # same as the above
+    async with ak.move_on_after(5) as bg_task:
+        await ak.event(button, 'on_press')
+    print("Timeout" if bg_task.finished else "The button was pressed")
+
+    # waits until a button is pressed AND 5sec passes.
     tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
         ak.sleep(5),
     )
 
     # nest as you want.
-    # wait for a button to be pressed AND (5sec OR 'other_async_func' to complete)
+    # waits for a button to be pressed AND (5sec OR 'other_async_func' to complete)
     tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
         ak.wait_any(
@@ -109,76 +114,6 @@ async def some_task(button):
 
 ak.start(some_task(some_button))
 ```
-
-### animation
-
-```python
-from types import SimpleNamespace
-import asynckivy as ak
-
-async def async_func(widget1, widget2):
-    obj = SimpleNamespace(attr1=10, attr2=[20, 30, ], attr3={'key': 40, })
-
-    # Animate attibutes of any object.
-    await ak.anim_attrs(obj, attr1=200, attr2=[200, 100])
-
-    # Interpolate between two values in an async-manner.
-    async for v in ak.interpolate(0, 200):
-        print(v)
-        # await something  # DO NOT await anything during this loop
-
-    # fade-out widgets, excute the with-block, fade-in widgets.
-    async with ak.fade_transition(widget1, widget2):
-        widget.text = 'new text'
-        widget2.y = 200
-```
-
-### touch handling
-
-You can easily handle `on_touch_xxx` events via `asynckivy.rest_of_touch_events()`.
-
-```python
-class TouchReceiver(Widget):
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.opos):
-            ak.start(self.handle_touch(touch))
-            return True
-
-    async def handle_touch(self, touch):
-        print('on_touch_up')
-        async for __ in ak.rest_of_touch_events(self, touch):
-            # await something  # DO NOT await anything during this loop
-            print('on_touch_move')
-        print('on_touch_up')
-```
-
-If Kivy is running in asyncio/trio mode, `rest_of_touch_events()` might not work.
-In that case, use `watch_touch()`.
-
-```python
-import asynckivy as ak
-
-class TouchReceiver(Widget):
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.opos):
-            ak.start(self.handle_touch(touch))
-            return True
-        return super().on_touch_down(touch)
-
-    async def handle_touch(self, touch):
-        print('on_touch_up')
-        async with ak.watch_watch(self, touch) as in_progress:
-            # DO NOT await anything inside this with-block except the return value of 'in_progress()'.
-            while await in_progress():
-                print('on_touch_move')
-        print('on_touch_up')
-```
-
-## Notes
-
-### No global state
-
-``asynckivy`` and its foundation, ``asyncgui``, don't have any type of global states.
 
 ## Tested on
 
