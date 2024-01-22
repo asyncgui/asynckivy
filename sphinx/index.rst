@@ -54,7 +54,8 @@ You may also want to read the ``asyncgui``'s documentation as it is the foundati
    :hidden:
 
    notes
+   notes-ja
    reference
 
-* https://asyncgui.github.io/asyncgui/
-* https://asyncgui.github.io/asynckivy/
+* https://github.com/asyncgui/asyncgui
+* https://github.com/asyncgui/asynckivy

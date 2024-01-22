@@ -10,7 +10,7 @@ from asyncgui import _sleep_forever, _current_task
 @types.coroutine
 def animate(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear, **animated_properties) -> T.Awaitable:
     '''
-    Animate attibutes of any object. This is basically the async form of :class:`kivy.animation.Animation`.
+    Animates attibutes of any object. This is basically an async form of :class:`kivy.animation.Animation`.
 
     .. code-block::
 

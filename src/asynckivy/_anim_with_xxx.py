@@ -36,6 +36,9 @@ async def anim_with_dt(*, step=0):
 
 async def anim_with_et(*, step=0):
     '''
+    Same as :func:`anim_with_dt` except this one generates the total elapsed time of the loop instead of the elapsed
+    time between frames.
+
     .. code-block::
 
         timeout = 3.0
@@ -69,7 +72,7 @@ async def anim_with_et(*, step=0):
 
 async def anim_with_dt_et(*, step=0):
     '''
-    :func:`anim_with_dt` and :func:`anim_widh_et` combined.
+    :func:`anim_with_dt` and :func:`anim_with_et` combined.
 
     .. code-block::
 
@@ -88,13 +91,14 @@ async def anim_with_dt_et(*, step=0):
 
 async def anim_with_ratio(*, duration=1., step=0):
     '''
+    Same as :func:`anim_with_et` except this one generates the total progression ratio of the loop.
+
     .. code-block::
 
         async for p in anim_with_ratio(duration=3.0):
             print(p * 100, "%")
 
-    If you want to progress an animation with a non-consistant rate, :class:`kivy.animation.AnimationTransition` may
-    be helpful.
+    If you want to progress at a non-consistant rate, :class:`kivy.animation.AnimationTransition` may be helpful.
 
     .. code-block::
 

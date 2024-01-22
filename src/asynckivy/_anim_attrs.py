@@ -80,7 +80,7 @@ def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.line
         obj = types.SimpleNamespace(x=0, size=(200, 300))
         await anim_attrs(obj, x=100, size=(400, 400))
 
-    The ``output_seq_type`` parameter.
+    The ``output_seq_type`` parameter:
 
     .. code-block::
 

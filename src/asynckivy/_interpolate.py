@@ -11,7 +11,7 @@ linear = AnimationTransition.linear
 
 async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) -> T.AsyncIterator:
     '''
-    Interpolate between the values ``start`` and ``end`` in an async-manner.
+    Interpolates between the values ``start`` and ``end`` in an async-manner.
     Inspired by wasabi2d's interpolate_.
 
     .. code-block::

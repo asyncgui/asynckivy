@@ -18,7 +18,7 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
     :class:`kivy.graphics.InstructionGroup` right next to the ``PushMatrix``. Those three instructions will be removed
     when the context manager exits.
 
-    This may be useful when you want to animate a widget out of the constraints caused by its parent.
+    This may be useful when you want to animate a widget.
 
     **Usage**
 
@@ -31,9 +31,9 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
                 ig.add(rotate := Rotate(origin=widget.center))
                 await anim_attrs(rotate, angle=angle)
 
-    If the position or size of the ``widget`` changes during the animation, you might need :class:`sync_attr`.
+    If the position or size of the ``widget`` will change during the animation, you might need :class:`sync_attr`.
 
-    **The** ``use_outer_canvas`` **parameter**
+    **The use_outer_canvas parameter**
 
     While the context manager is active, the content of the widget's canvas would be:
 
@@ -100,7 +100,7 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
 
 class suppress_event:
     '''
-    Return a context manager that prevents the callback functions (including the default handler) bound to an event
+    Returns a context manager that prevents the callback functions (including the default handler) bound to an event
     from being called.
 
     .. code-block::
@@ -150,7 +150,7 @@ class suppress_event:
 
 def create_texture_from_text(*, markup=False, **label_kwargs) -> Texture:
     '''
-    Create a :external:kivy:doc:`api-kivy.graphics.texture` from text.
+    Creates a :external:kivy:doc:`api-kivy.graphics.texture` from text.
 
     .. code-block::
 
