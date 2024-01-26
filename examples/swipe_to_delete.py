@@ -77,7 +77,7 @@ class SampleApp(App):
         root = Builder.load_string(KV_CODE)
         add_widget = root.ids.container.add_widget
         for i in range(20):
-            add_widget(Button(text=str(i), size_hint_min_y='50dp'))
+            add_widget(Button(text=str(i), size_hint_y=None, height='50dp'))
         return root
 
 
