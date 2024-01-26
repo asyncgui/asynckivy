@@ -1,21 +1,11 @@
-'''
-https://youtu.be/T5mZPIsK9-o
-'''
-
 from functools import partial
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Translate
-from kivy.uix.button import Button
 import asynckivy as ak
 
 
 async def swipe_to_delete(layout, *, swipe_distance=400.):
-    '''
-    指定されたlayoutの子widget達をスワイプ操作で取り除けるようにする。
-    この効力があるのはこの関数の実行中のみであり、実行が中断されるとlayoutは元の状態に戻る。
-    また実行中はlayoutへ伝わるはずのtouchイベントを全て遮る。
-    '''
     layout = layout.__self__
     se = partial(ak.suppress_event, layout, filter=lambda w, t: w.collide_point(*t.pos))
     with se("on_touch_down"), se("on_touch_move"), se("on_touch_up"):
@@ -35,7 +25,7 @@ async def swipe_to_delete(layout, *, swipe_distance=400.):
                         translate.x = dx = touch.x - ox
                         c.opacity = 1.0 - abs(dx) / swipe_distance
                     if c.opacity < 0.3:
-                        layout.remove_widget(c)
+                        layout.recycleview.data.pop(layout.get_view_index_at(c.center))
             finally:
                 c.opacity = 1.0
 
@@ -58,24 +48,24 @@ BoxLayout:
             )
         size_hint_y: None
         height: '50dp'
-    ScrollView:
-        BoxLayout:
+    RecycleView:
+        data: [{'text': str(i), } for i in range(200)]
+        viewclass: 'Button'
+        RecycleBoxLayout:
             id: container
             orientation: 'vertical'
             size_hint_y: None
             height: self.minimum_height
             spacing: '10dp'
+            default_size_hint: 1, 1
+            default_size_hint_y_min: '50dp'
 '''
 
 
 class SampleApp(App):
     def build(self):
-        root = Builder.load_string(KV_CODE)
-        add_widget = root.ids.container.add_widget
-        for i in range(20):
-            add_widget(Button(text=str(i), size_hint_min_y='50dp'))
-        return root
+        return Builder.load_string(KV_CODE)
 
 
 if __name__ == '__main__':
-    SampleApp(title='Swipe to Delete').run()
+    SampleApp(title='Swipe to Delete (RecycleView)').run()
