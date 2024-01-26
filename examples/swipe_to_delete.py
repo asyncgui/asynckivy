@@ -13,10 +13,11 @@ import asynckivy as ak
 async def swipe_to_delete(layout, *, swipe_distance=400.):
     '''
     指定されたlayoutの子widget達をスワイプ操作で取り除けるようにする。
-    この効力があるのはこの関数の実行中のみであり、実行が中断されるとlayoutは元の状態に戻る。
+    この効力があるのはこの関数の実行中のみであり、それが終わり次第layoutは元の状態に戻る。
     また実行中はlayoutへ伝わるはずのtouchイベントを全て遮る。
     '''
     layout = layout.__self__
+    is_recycle_type = hasattr(layout, 'recycleview')
     se = partial(ak.suppress_event, layout, filter=lambda w, t: w.collide_point(*t.pos))
     with se("on_touch_down"), se("on_touch_move"), se("on_touch_up"):
         while True:
@@ -35,7 +36,10 @@ async def swipe_to_delete(layout, *, swipe_distance=400.):
                         translate.x = dx = touch.x - ox
                         c.opacity = 1.0 - abs(dx) / swipe_distance
                     if c.opacity < 0.3:
-                        layout.remove_widget(c)
+                        if is_recycle_type:
+                            layout.recycleview.data.pop(layout.get_view_index_at(c.center))
+                        else:
+                            layout.remove_widget(c)
             finally:
                 c.opacity = 1.0
 
