@@ -117,10 +117,11 @@ ak.start(some_task(some_button))
 
 ## Tested on
 
-- CPython 3.8 + Kivy 2.2.1
-- CPython 3.9 + Kivy 2.2.1
-- CPython 3.10 + Kivy 2.2.1
-- CPython 3.11 + Kivy 2.2.1
+- CPython 3.8 + Kivy 2.3.0
+- CPython 3.9 + Kivy 2.3.0
+- CPython 3.10 + Kivy 2.3.0
+- CPython 3.11 + Kivy 2.3.0
+- CPython 3.12 + Kivy 2.3.0 (3.12.0 is not supported due to [this issue](https://github.com/python/cpython/issues/111058))
 
 ## Why this even exists
 
