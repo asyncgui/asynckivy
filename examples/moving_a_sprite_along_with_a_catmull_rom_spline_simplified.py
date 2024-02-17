@@ -18,10 +18,6 @@ from kivy.uix.relativelayout import RelativeLayout
 import asynckivy as ak
 
 
-SPLINE_TYPE = 'Catmull-Rom'
-# SPLINE_TYPE = 'B-Spline'
-
-
 class SampleApp(App):
     def build(self):
         return RelativeLayout()
@@ -96,26 +92,14 @@ def generate_random_2d_points(*, n_points, min_x, min_y, max_x, max_y) -> T.Sequ
     )
 
 
-if SPLINE_TYPE == 'Catmull-Rom':
-    def calc_factors(control_points):
-        p0, p1, p2, p3 = control_points
-        return (
-            p1,
-            (p2 - p0) * 0.5,
-            p0 + 2 * p2 - 2.5 * p1 - 0.5 * p3,
-            (p3 - p0) * 0.5 + (p1 - p2) * 1.5,
-        )
-elif SPLINE_TYPE == 'B-Spline':
-    def calc_factors(control_points):
-        p0, p1, p2, p3 = control_points
-        return (
-            (p0 + p2) / 6.0 + p1 * 2.0 / 3.0,
-            (p2 - p0) * 0.5,
-            (p0 + p2) * 0.5 - p1,
-            (p3 - p0) / 6.0 + (p1 - p2) * 0.5,
-        )
-else:
-    raise ValueError("Invalid SPLINE_TYPE:", SPLINE_TYPE)
+def calc_factors(control_points):
+    p0, p1, p2, p3 = control_points
+    return (
+        p1,
+        (p2 - p0) * 0.5,
+        p0 + 2 * p2 - 2.5 * p1 - 0.5 * p3,
+        (p3 - p0) * 0.5 + (p1 - p2) * 1.5,
+    )
 
 
 def calc_position(factors, t):
