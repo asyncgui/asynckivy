@@ -57,8 +57,7 @@ class SampleApp(App):
                 PushMatrix()
                 f = interpolating_functions[0]
                 translate = Translate(*f[0](0))
-                rotate = Rotate()
-                rotate.angle = rotate.angle = f[1](0)
+                rotate = Rotate(angle=f[1](0))
                 Rectangle(
                     pos=(-texture.width / 2, -texture.height / 2, ),
                     size=texture.size,
@@ -121,4 +120,4 @@ def calc_angle(factors, t):
 
 
 if __name__ == '__main__':
-    SampleApp(title="Moving a aprite along with a Catmull-Rom spline").run()
+    SampleApp(title="Catmull-Rom spline").run()

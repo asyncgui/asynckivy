@@ -49,8 +49,7 @@ class SampleApp(App):
                 Line(points=flattened)
                 PushMatrix()
                 translate = Translate(*calc_position(factors, 0))
-                rotate = Rotate()
-                rotate.angle = rotate.angle = calc_angle(velocity_factors, 0)
+                rotate = Rotate(angle=calc_angle(velocity_factors, 0))
                 Rectangle(
                     pos=(-texture.width / 2, -texture.height / 2, ),
                     size=texture.size,
@@ -113,4 +112,4 @@ def calc_angle(factors, t):
 
 
 if __name__ == '__main__':
-    SampleApp(title="Moving a sprite slong with a Bézier Curve").run()
+    SampleApp(title="Bézier Curve").run()

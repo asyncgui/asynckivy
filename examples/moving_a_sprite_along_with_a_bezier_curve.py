@@ -96,8 +96,7 @@ class SampleApp(App):
                 Color(1.0, 1.0, 1.0, 1.0)
                 PushMatrix()
                 translate = Translate(*calc_position(factors, 0))
-                rotate = Rotate()
-                rotate.angle = rotate.angle = calc_angle(velocity_factors, 0)
+                rotate = Rotate(angle=calc_angle(velocity_factors, 0))
                 Rectangle(
                     pos=(-texture.width / 2, -texture.height / 2, ),
                     size=texture.size,
@@ -159,4 +158,4 @@ def calc_angle(factors, t):
 
 
 if __name__ == '__main__':
-    SampleApp().run()
+    SampleApp(title="Bézier Curve").run()

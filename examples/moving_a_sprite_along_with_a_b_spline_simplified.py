@@ -15,4 +15,4 @@ xxx.calc_factors = calc_factors
 
 
 if __name__ == '__main__':
-    xxx.SampleApp(title="Moving a aprite along with a B-Splie").run()
+    xxx.SampleApp(title="B-Spline").run()
