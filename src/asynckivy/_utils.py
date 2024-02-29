@@ -31,7 +31,7 @@ def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[Instruction
                 ig.add(rotate := Rotate(origin=widget.center))
                 await anim_attrs(rotate, angle=angle)
 
-    If the position or size of the ``widget`` will change during the animation, you might need :class:`sync_attr`.
+    If the position or size of the ``widget`` changes during the animation, you might need :class:`sync_attr`.
 
     **The use_outer_canvas parameter**
 
@@ -116,7 +116,7 @@ class suppress_event:
     The above code prints nothing because the callback function won't be called.
 
     Strictly speaking, this context manager doesn't prevent all callback functions from being called.
-    It only prevents the callback functions that were bound to an event before the manager enters.
+    It only prevents the callback functions that were bound to an event before the context manager enters.
     Thus, the following code prints ``pressed``.
 
     .. code-block::
@@ -150,8 +150,6 @@ class suppress_event:
 
 def create_texture_from_text(*, markup=False, **label_kwargs) -> Texture:
     '''
-    Creates a :external:kivy:doc:`api-kivy.graphics.texture` from text.
-
     .. code-block::
 
         from kivy.metrics import sp
@@ -222,7 +220,7 @@ class sync_attr:
 
 class sync_attrs:
     '''
-    When multiple :class:`sync_attr` call take the same ``from_`` parameter, they can be merged into a single
+    When multiple :class:`sync_attr` calls take the same ``from_`` argument, they can be merged into a single
     :class:`sync_attrs` call. For instance, the following code:
 
     .. code-block::
@@ -230,7 +228,7 @@ class sync_attrs:
         with sync_attr((widget, 'x'), (obj1, 'x')), sync_attr((widget, 'x'), (obj2, 'xx')):
             ...
 
-    is quivalent to the following one:
+    can be replaced with the following one:
 
     .. code-block::
 

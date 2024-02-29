@@ -8,7 +8,7 @@ Notes
 IO in AsyncKivy
 ---------------
 
-``asynckivy`` does not have any I/O primitives like ``trio`` and ``asyncio`` do,
+``asynckivy`` does not have any I/O primitives unlike ``trio`` and ``asyncio`` do,
 thus threads may be the best way to perform them without blocking the main-thread:
 
 .. code-block::
@@ -33,7 +33,7 @@ thus threads may be the best way to perform them without blocking the main-threa
         r = await ak.run_in_executor(executor, thread_blocking_operation)
         print("return value:", r)
 
-Unhandled :exc:`Exception` (not :exc:`BaseException`) is propagated to the caller so you can catch it like you do in
+Unhandled exceptions (not :exc:`BaseException`) are propagated to the caller so you can catch them like you do in
 synchronous code:
 
 .. code-block::
@@ -91,7 +91,7 @@ The Problem with Async Generators
 which likely hinders asynckivy-flavored async generators.
 You can see its details [here](https://peps.python.org/pep-0525/#finalization).
 
-Because of that, the APIs that create async generators might not work perfectly if you run Kivy in the ``asyncio`` or ``trio`` mode.
+Because of that, the APIs that create async generators might not work perfectly if ``asyncio`` or ``trio`` is running.
 Here is a list of them:
 
 - :func:`asynckivy.rest_of_touch_events`

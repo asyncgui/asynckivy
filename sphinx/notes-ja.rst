@@ -49,7 +49,7 @@ Asyncジェネレータが抱える問題
 
 ``asyncio`` や ``trio`` がasyncジェネレータに対して `付け焼き刃的な処置 <https://peps.python.org/pep-0525/#finalization>`__
 を行うせいなのか、asynckivy用のasyncジェネレータがうまく機能しない事があります。
-なので ``Kivy`` をasyncioモード或いはtrioモードで使っている場合は以下のAPI達を使わなのがお薦めです。
+なので ``asyncio`` 或いは ``trio`` を使っている場合は以下のAPI達を使わなのがお薦めです。
 
 * `rest_of_touch_events()` (代わりに `watch_touch` を用いる)
 * `anim_with_xxx` (代わりに `repeat_sleeping` を用いる)

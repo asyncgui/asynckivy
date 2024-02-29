@@ -33,7 +33,7 @@ Your code would look like this:
    what_you_want_to_do(...)
 
 It's not easy to understand.
-If you use ``asynckivy``, the above code will become:
+If you use ``asynckivy``, the code above will become:
 
 .. code-block::
 
