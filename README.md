@@ -35,7 +35,7 @@ what_you_want_to_do(...)
 ```
 
 It's not easy to understand.
-If you use `asynckivy`, the above code will become:
+If you use `asynckivy`, the code above will become:
 
 ```python
 import asynckivy as ak
@@ -82,7 +82,7 @@ async def some_task(button):
         print(f'button.x is now {x}')
 
     # waits until EITHER a button is pressed OR 5sec passes.
-    # i.e. wait at most 5 seconds for a button to be pressed
+    # i.e. waits at most 5 seconds for a button to be pressed
     tasks = await ak.wait_any(
         ak.event(button, 'on_press'),
         ak.sleep(5),
@@ -139,7 +139,7 @@ Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
 
 Trio and asyncio are async **I/O** libraries after all.
 They probably don't have to immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
-(If a touch is not handled immediately, its state may change).
+(If you fail to handle touches promptly, their state might undergo changes, leaving no time to wait for tasks to resume).
 Their core design might not be suitable for GUI in the first place.
 That's why I'm still developing this `asynckivy` library to this day.
 

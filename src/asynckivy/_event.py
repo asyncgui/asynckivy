@@ -35,7 +35,10 @@ async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=F
         if widget.x <= 100:
             await event(widget, 'x', filter=lambda __, x: x > 100)
 
-    As for ``stop_dispatching``, see :ref:`kivys-event-system`.
+    The ``stop_dispatching`` parameter:
+
+      It only works for events not for properties.
+      See :ref:`kivys-event-system` for details.
     '''
     box = IBox()
     bind_id = event_dispatcher.fbind(event_name, partial(_callback, filter, box, stop_dispatching))

@@ -38,7 +38,7 @@ class watch_touch:
                   ...
 
     * If the ``widget`` is the type of widget that grabs touches by itself, such as :class:`kivy.uix.button.Button`,
-      you probably want to set the ``stop_dispatching`` parameter to True in most scenarios.
+      you probably want to set the ``stop_dispatching`` parameter to True in most cases.
     * There are widgets/behaviors that can simulate a touch (e.g. :class:`kivy.uix.scrollview.ScrollView`,
       :class:`kivy.uix.behaviors.DragBehavior` and ``kivy_garden.draggable.KXDraggableBehavior``).
       If many such widgets are in the parent stack of the ``widget``, this API might mistakenly raise a
