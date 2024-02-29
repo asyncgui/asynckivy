@@ -30,7 +30,6 @@ class TestApp(App):
                 label.text = text
                 label.color = get_random_color()
             await ak.event(label, 'on_touch_down')
-        self.stop()
 
 
 if __name__ == '__main__':
