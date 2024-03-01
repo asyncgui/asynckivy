@@ -106,7 +106,7 @@ async操作が禁じられている場所
 
 .. code-block::
 
-    async with asynckivy.move_on_after(2.0):
+    async with move_on_after(2.0):
         async for dt, et, p in anim_with_dt_et_progress(duration=2.0, step=0.6):
             print(dt, et, p)
 

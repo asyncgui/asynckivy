@@ -89,7 +89,7 @@ The Problem with Async Generators
 
 :mod:`asyncio` and :mod:`trio` do some hacky stuff, :func:`sys.set_asyncgen_hooks` and :func:`sys.get_asyncgen_hooks`,
 which likely hinders asynckivy-flavored async generators.
-You can see its details [here](https://peps.python.org/pep-0525/#finalization).
+You can see its details `here <https://peps.python.org/pep-0525/#finalization>`__.
 
 Because of that, the APIs that create async generators might not work perfectly if ``asyncio`` or ``trio`` is running.
 Here is a list of them:
@@ -148,7 +148,7 @@ If you really want it to end in time, consider wrapping it in :func:`asynckivy.m
 
 .. code-block::
 
-    async with asynckivy.move_on_after(2.0):
+    async with move_on_after(2.0):
         async for dt, et, p in anim_with_dt_et_progress(duration=2.0, step=0.6):
             print(dt, et, p)
 
