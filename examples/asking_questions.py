@@ -122,11 +122,7 @@ class InputDialog(ModalView):
 
 
 async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitable[R]:
-    try:
-        dialog = _cache.pop()
-    except IndexError:
-        dialog = MessageBox()
-
+    dialog = _cache.pop() if _cache else MessageBox()
     label = dialog.ids.label
     ok_button = dialog.ids.ok_button
 
@@ -141,25 +137,17 @@ async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitabl
         for task, r in zip(tasks, (R.CANCEL, R.OK, )):
             if task.finished:
                 break
-        dialog.dismiss()
-        await ak.sleep(dialog._anim_duration + 0.1)
-        _cache.append(dialog)
         return r
-    except ak.Cancelled:
+    finally:
         dialog.dismiss()
         Clock.schedule_once(
             lambda dt: _cache.append(dialog),
             dialog._anim_duration + 0.1,
         )
-        raise
 
 
 async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.Awaitable[R]:
-    try:
-        dialog = _cache.pop()
-    except IndexError:
-        dialog = YesNoDialog()
-
+    dialog = _cache.pop() if _cache else YesNoDialog()
     label = dialog.ids.label
     no_button = dialog.ids.no_button
     yes_button = dialog.ids.yes_button
@@ -176,25 +164,17 @@ async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.
         for task, r in zip(tasks, (R.CANCEL, R.NO, R.YES, )):
             if task.finished:
                 break
-        dialog.dismiss()
-        await ak.sleep(dialog._anim_duration + 0.1)
-        _cache.append(dialog)
         return r
-    except ak.Cancelled:
+    finally:
         dialog.dismiss()
         Clock.schedule_once(
             lambda dt: _cache.append(dialog),
             dialog._anim_duration + 0.1,
         )
-        raise
 
 
 async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cache=[]) -> T.Awaitable[T.Tuple[R, str]]:
-    try:
-        dialog = _cache.pop()
-    except IndexError:
-        dialog = InputDialog()
-
+    dialog = _cache.pop() if _cache else InputDialog()
     label = dialog.ids.label
     textinput = dialog.ids.textinput
     cancel_button = dialog.ids.cancel_button
@@ -214,17 +194,13 @@ async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cach
         for task, r in zip(tasks, (R.CANCEL, R.CANCEL, R.OK, R.OK, )):
             if task.finished:
                 break
-        dialog.dismiss()
-        await ak.sleep(dialog._anim_duration + 0.1)
-        _cache.append(dialog)
         return r, textinput.text
-    except ak.Cancelled:
+    finally:
         dialog.dismiss()
         Clock.schedule_once(
             lambda dt: _cache.append(dialog),
             dialog._anim_duration + 0.1,
         )
-        raise
 
 
 class SampleApp(App):

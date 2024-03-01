@@ -1,5 +1,4 @@
 import typing as T
-import enum
 
 from kivy.clock import Clock
 from kivy.app import App
@@ -29,21 +28,8 @@ Widget:
 '''
 
 
-class DialogResponse(enum.Enum):
-    YES = enum.auto()
-    NO = enum.auto()
-    CANCEL = enum.auto()
-
-
-R = DialogResponse
-
-
-async def ask_yes_no_question(question, *, _cache=[]) -> T.Awaitable[R]:
-    try:
-        dialog = _cache.pop()
-    except IndexError:
-        dialog = F.YesNoDialog()
-
+async def ask_yes_no_question(question, *, _cache=[]) -> T.Awaitable[str]:
+    dialog = _cache.pop() if _cache else F.YesNoDialog()
     no_button = dialog.ids.no_button
     yes_button = dialog.ids.yes_button
 
@@ -55,20 +41,16 @@ async def ask_yes_no_question(question, *, _cache=[]) -> T.Awaitable[R]:
             ak.event(no_button, 'on_press'),
             ak.event(yes_button, 'on_press'),
         )
-        for task, r in zip(tasks, (R.CANCEL, R.NO, R.YES, )):
+        for task, r in zip(tasks, ('CANCEL', 'NO', 'YES', )):
             if task.finished:
                 break
-        dialog.dismiss()
-        await ak.sleep(dialog._anim_duration + 0.1)
-        _cache.append(dialog)
         return r
-    except ak.Cancelled:
+    finally:
         dialog.dismiss()
         Clock.schedule_once(
             lambda dt: _cache.append(dialog),
             dialog._anim_duration + 0.1,
         )
-        raise
 
 
 class SampleApp(App):
@@ -86,13 +68,13 @@ class SampleApp(App):
 
         msg = "Do you like Kivy?"
         res = await ask_yes_no_question(msg)
-        print(f"{msg!r} --> {res.name}")
+        print(f"{msg!r} --> {res}")
 
         await ak.sleep(.5)
 
         msg = "Do you like Python?"
         res = await ask_yes_no_question(msg)
-        print(f"{msg!r} --> {res.name}")
+        print(f"{msg!r} --> {res}")
 
 
 if __name__ == '__main__':
