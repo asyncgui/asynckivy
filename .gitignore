@@ -9,4 +9,3 @@ bin/
 /Pipfile.lock
 /poetry.lock
 /dist
-/docs/
