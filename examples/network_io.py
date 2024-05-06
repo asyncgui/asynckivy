@@ -1,17 +1,10 @@
 '''
-A simple example of using ``asynckivy.run_in_thread()``.
+Demonstrates how to perform an I/O operation in asynckivy.
 '''
-
+import requests
 from kivy.app import App
 from kivy.uix.button import Button
 import asynckivy as ak
-
-
-def heavy_task(n):
-    import time
-    for i in range(n):
-        time.sleep(1)
-        print('heavy task:', i)
 
 
 class TestApp(App):
@@ -24,11 +17,11 @@ class TestApp(App):
 
     async def main(self):
         button = self.root
-        button.text = 'start heavy task'
+        button.text = 'start a http request'
         await ak.event(button, 'on_press')
-        button.text = 'running...'
-        await ak.run_in_thread(lambda: heavy_task(5), daemon=True)
-        button.text = 'done'
+        button.text = 'waiting for the server to respond...'
+        res = await ak.run_in_thread(lambda: requests.get("https://httpbin.org/delay/2"), daemon=True)
+        button.text = res.json()['headers']['User-Agent']
 
 
 if __name__ == '__main__':
