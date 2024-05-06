@@ -52,7 +52,7 @@ ak.start(what_you_want_to_do(...))
 
 ## Installation
 
-It's recommended to pin the minor version, because if it changed, it means some *important* breaking changes occurred.
+Pin the minor version.
 
 ```text
 poetry add asynckivy@~0.6
@@ -65,43 +65,43 @@ pip install "asynckivy>=0.6,<0.7"
 import asynckivy as ak
 
 async def some_task(button):
-    # waits for 1sec
-    dt = await ak.sleep(1)
-    print(f'{dt} seconds have passed')
+    # waits for 2 seconds to elapse
+    dt = await ak.sleep(2)
+    print(f'{dt} seconds have elapsed')
 
-    # waits until a button is pressed
+    # waits for a button to be pressed
     await ak.event(button, 'on_press')
 
-    # waits until 'button.x' changes
+    # waits for the value of 'button.x' to change
     __, x = await ak.event(button, 'x')
     print(f'button.x is now {x}')
 
-    # waits until 'button.x' becomes greater than 100
+    # waits for the value of 'button.x' to become greater than 100
     if button.x <= 100:
         __, x = await ak.event(button, 'x', filter=lambda __, x: x>100)
         print(f'button.x is now {x}')
 
-    # waits until EITHER a button is pressed OR 5sec passes.
+    # waits for either 5 seconds to elapse or a button to be pressed.
     # i.e. waits at most 5 seconds for a button to be pressed
     tasks = await ak.wait_any(
-        ak.event(button, 'on_press'),
         ak.sleep(5),
+        ak.event(button, 'on_press'),
     )
-    print("The button was pressed" if tasks[0].finished else "Timeout")
+    print("Timeout" if tasks[0].finished else "The button was pressed")
 
     # same as the above
     async with ak.move_on_after(5) as bg_task:
         await ak.event(button, 'on_press')
     print("Timeout" if bg_task.finished else "The button was pressed")
 
-    # waits until a button is pressed AND 5sec passes.
+    # waits for both 5 seconds to elapse and a button to be pressed.
     tasks = await ak.wait_all(
-        ak.event(button, 'on_press'),
         ak.sleep(5),
+        ak.event(button, 'on_press'),
     )
 
     # nest as you want.
-    # waits for a button to be pressed AND (5sec OR 'other_async_func' to complete)
+    # waits for a button to be pressed, and either 5 seconds to elapse or 'other_async_func' to complete.
     tasks = await ak.wait_all(
         ak.event(button, 'on_press'),
         ak.wait_any(
@@ -110,7 +110,7 @@ async def some_task(button):
         ),
     )
     child_tasks = tasks[1].result
-    print("5sec passed" if child_tasks[0].finished else "other_async_func has completed")
+    print("5 seconds elapsed" if child_tasks[0].finished else "other_async_func has completed")
 
 ak.start(some_task(some_button))
 ```
@@ -125,21 +125,22 @@ ak.start(some_task(some_button))
 
 ## Why this even exists
 
-Kivy supports two legit async libraries, [asyncio][asyncio] and [Trio][trio], from version 2.0.0 so developing another one seems [reinventing the wheel][reinventing].
-Actually, I started this one just for learning how async/await works so it *was* initially "reinventing the wheel".
+Kivy supports two legitimate async libraries, [asyncio][asyncio] and [Trio][trio], starting from version 2.0.0, so developing another one seems like [reinventing the wheel][reinventing].
+Actually, I started this one just to learn how the async/await syntax works, so it initially was "reinventing the wheel".
 
 But after playing with Trio and Kivy for a while, I noticed that Trio is not suitable for the situation where fast reactions are required e.g. touch events.
 The same is true of asyncio.
-You can confirm it by running `investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`, and mashing a mouse button.
+You can confirm that by running `investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`, and mashing a mouse button as quickly as possible.
 You'll see sometimes `up` is not paired with `down`.
 You'll see the coordinates aren't relative to the `RelativeLayout` even though the `target` belongs to it.
 
-The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks waiting for the `Event` to be set. They just schedule the tasks to resume.
+The cause of those problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks waiting for the `Event` to be set.
+They just schedule the tasks to resume.
 Same thing can be said to `nursery.start_soon()` and `asyncio.create_task()`.
 
 Trio and asyncio are async **I/O** libraries after all.
-They probably don't have to immediately resumes/starts tasks, which I think necessary for Kivy's touch handling.
-(If you fail to handle touches promptly, their state might undergo changes, leaving no time to wait for tasks to resume).
+They probably don't have to immediately resumes/starts tasks, which I think necessary for touch handling in Kivy.
+(If you fail to handle touches promptly, their state might undergo changes, leaving no time to wait for tasks to resume/start).
 Their core design might not be suitable for GUI in the first place.
 That's why I'm still developing this `asynckivy` library to this day.
 
