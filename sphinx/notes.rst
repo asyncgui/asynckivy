@@ -4,9 +4,9 @@ Notes
 
 .. _io-in-asynckivy:
 
----------------
-IO in AsyncKivy
----------------
+----------------
+I/O in AsyncKivy
+----------------
 
 ``asynckivy`` does not have any I/O primitives unlike ``trio`` and ``asyncio`` do,
 thus threads may be the best way to perform them without blocking the main-thread:

@@ -51,7 +51,7 @@ ak.start(what_you_want_to_do(...))
 
 ## Install方法
 
-このmoduleのminor versionが変わった時は何らかの重要な互換性の無い変更が加えられた可能性が高いので、使う際はminor versionまでを固定してください。
+マイナーバージョンが変わった時は何らかの重要な互換性の無い変更が加えられた事を意味するので使う際はマイナーバージョンまでを固定してください。
 
 ```text
 poetry add asynckivy@~0.6
