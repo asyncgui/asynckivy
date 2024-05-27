@@ -111,3 +111,5 @@ async def async_func(button):
 
 ak.start(async_func(a_button))
 ```
+
+より詳しい使い方は[こちら](https://asyncgui.github.io/asynckivy/)をご覧ください。
