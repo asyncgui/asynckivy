@@ -115,6 +115,8 @@ async def some_task(button):
 ak.start(some_task(some_button))
 ```
 
+For more details, read the [documentation](https://asyncgui.github.io/asynckivy/).
+
 ## Tested on
 
 - CPython 3.8 + Kivy 2.3.0
