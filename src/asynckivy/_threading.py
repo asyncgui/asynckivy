@@ -27,7 +27,7 @@ async def run_in_thread(func, *, daemon=None) -> T.Awaitable:
 
     See :ref:`io-in-asynckivy` for details.
     '''
-    box = asyncgui.IBox()
+    box = asyncgui.AsyncBox()
     Thread(
         name='asynckivy.run_in_thread',
         target=_wrapper, daemon=daemon, args=(func, box, ),
@@ -51,7 +51,7 @@ async def run_in_executor(executor: ThreadPoolExecutor, func) -> T.Awaitable:
 
     See :ref:`io-in-asynckivy` for details.
     '''
-    box = asyncgui.IBox()
+    box = asyncgui.AsyncBox()
     future = executor.submit(_wrapper, func, box)
     try:
         ret, exc = (await box.get())[0]
