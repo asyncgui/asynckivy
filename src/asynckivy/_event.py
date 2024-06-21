@@ -2,7 +2,7 @@ __all__ = ('event', )
 
 import typing as T
 from functools import partial
-from asyncgui import IBox
+from asyncgui import AsyncEvent
 
 
 async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
@@ -40,16 +40,16 @@ async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=F
       It only works for events not for properties.
       See :ref:`kivys-event-system` for details.
     '''
-    box = IBox()
-    bind_id = event_dispatcher.fbind(event_name, partial(_callback, filter, box, stop_dispatching))
+    ev = AsyncEvent()
+    bind_id = event_dispatcher.fbind(event_name, partial(_callback, filter, ev, stop_dispatching))
     assert bind_id  # check if binding succeeded
     try:
-        return (await box.get())[0]
+        return (await ev.wait())[0]
     finally:
         event_dispatcher.unbind_uid(event_name, bind_id)
 
 
-def _callback(filter, box, stop_dispatching, *args, **kwargs):
+def _callback(filter, ev, stop_dispatching, *args, **kwargs):
     if (filter is None) or filter(*args, **kwargs):
-        box.put(*args)
+        ev.fire(*args)
         return stop_dispatching
