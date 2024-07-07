@@ -1,23 +1,16 @@
-from kivy.app import App
 from kivy.lang import Builder
+
+from swipe_to_delete import SampleApp as BaseApp
 
 
 KV_CODE = r'''
-#:import ak asynckivy
-#:import swipe_to_delete swipe_to_delete.swipe_to_delete
-
 BoxLayout:
     spacing: '10dp'
     padding: '10dp'
     orientation: 'vertical'
     Switch:
+        id: switch
         active: False
-        on_active:
-            (
-            setattr(container, '_swipe_to_delete_task', ak.start(swipe_to_delete(container)))
-            if args[1] else
-            container._swipe_to_delete_task.cancel()
-            )
         size_hint_y: None
         height: '50dp'
     RecycleView:
@@ -34,7 +27,7 @@ BoxLayout:
 '''
 
 
-class SampleApp(App):
+class SampleApp(BaseApp):
     def build(self):
         return Builder.load_string(KV_CODE)
 

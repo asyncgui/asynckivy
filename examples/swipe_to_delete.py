@@ -47,21 +47,13 @@ async def swipe_to_delete(layout, *, swipe_distance=400.):
 
 
 KV_CODE = r'''
-#:import ak asynckivy
-#:import swipe_to_delete __main__.swipe_to_delete
-
 BoxLayout:
     spacing: '10dp'
     padding: '10dp'
     orientation: 'vertical'
     Switch:
+        id: switch
         active: False
-        on_active:
-            (
-            setattr(container, '_swipe_to_delete_task', ak.start(swipe_to_delete(container)))
-            if args[1] else
-            container._swipe_to_delete_task.cancel()
-            )
         size_hint_y: None
         height: '50dp'
     ScrollView:
@@ -81,6 +73,21 @@ class SampleApp(App):
         for i in range(20):
             add_widget(Button(text=str(i), size_hint_y=None, height='50dp'))
         return root
+
+    def on_start(self):
+        self._main_task = ak.start(self.main())
+
+    def on_stop(self):
+        self._main_task.cancel()
+
+    async def main(self):
+        ids = self.root.ids
+        switch = ids.switch
+        container = ids.container
+        while True:
+            await ak.event(switch, 'active', filter=lambda _, active: active)
+            async with ak.run_as_main(ak.event(switch, 'active')):
+                await swipe_to_delete(container)
 
 
 if __name__ == '__main__':

@@ -99,14 +99,15 @@ class DialogTheme:
 default_theme = DialogTheme()
 
 
-class DialogResponse(enum.Enum):
+class CauseOfDismissal(enum.Enum):
+    AUTO_DISMISS = enum.auto()
     YES = enum.auto()
     NO = enum.auto()
     OK = enum.auto()
     CANCEL = enum.auto()
 
 
-R = DialogResponse
+C = CauseOfDismissal
 
 
 class MessageBox(ModalView):
@@ -121,7 +122,7 @@ class InputDialog(ModalView):
     theme = ObjectProperty(default_theme, rebind=True)
 
 
-async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitable[R]:
+async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitable[C]:
     dialog = _cache.pop() if _cache else MessageBox()
     label = dialog.ids.label
     ok_button = dialog.ids.ok_button
@@ -134,10 +135,10 @@ async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitabl
             ak.event(dialog, 'on_pre_dismiss'),
             ak.event(ok_button, 'on_press'),
         )
-        for task, r in zip(tasks, (R.CANCEL, R.OK, )):
+        for task, cause in zip(tasks, (C.AUTO_DISMISS, C.OK, )):
             if task.finished:
                 break
-        return r
+        return cause
     finally:
         dialog.dismiss()
         Clock.schedule_once(
@@ -146,7 +147,7 @@ async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitabl
         )
 
 
-async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.Awaitable[R]:
+async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.Awaitable[C]:
     dialog = _cache.pop() if _cache else YesNoDialog()
     label = dialog.ids.label
     no_button = dialog.ids.no_button
@@ -161,10 +162,10 @@ async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.
             ak.event(no_button, 'on_press'),
             ak.event(yes_button, 'on_press'),
         )
-        for task, r in zip(tasks, (R.CANCEL, R.NO, R.YES, )):
+        for task, cause in zip(tasks, (C.AUTO_DISMISS, C.NO, C.YES, )):
             if task.finished:
                 break
-        return r
+        return cause
     finally:
         dialog.dismiss()
         Clock.schedule_once(
@@ -173,7 +174,7 @@ async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.
         )
 
 
-async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cache=[]) -> T.Awaitable[T.Tuple[R, str]]:
+async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cache=[]) -> T.Awaitable[T.Tuple[C, str]]:
     dialog = _cache.pop() if _cache else InputDialog()
     label = dialog.ids.label
     textinput = dialog.ids.textinput
@@ -182,6 +183,8 @@ async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cach
 
     dialog.theme = theme
     label.text = msg
+    textinput.input_filter = input_filter
+    textinput.input_type = input_type
     textinput.focus = True
     try:
         dialog.open()
@@ -191,10 +194,10 @@ async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cach
             ak.event(ok_button, 'on_press'),
             ak.event(textinput, 'on_text_validate'),
         )
-        for task, r in zip(tasks, (R.CANCEL, R.CANCEL, R.OK, R.OK, )):
+        for task, cause in zip(tasks, (C.AUTO_DISMISS, C.CANCEL, C.OK, C.OK, )):
             if task.finished:
                 break
-        return r, textinput.text
+        return cause, textinput.text
     finally:
         dialog.dismiss()
         Clock.schedule_once(
@@ -219,13 +222,13 @@ class SampleApp(App):
         theme = DialogTheme(font_size='20sp')
 
         msg = "Do you like Kivy?"
-        res = await ask_yes_no_question(msg, theme=theme)
-        print(f"{msg!r} --> {res.name}")
+        cause = await ask_yes_no_question(msg, theme=theme)
+        print(f"{msg!r} --> {cause.name}")
 
         msg = "How long have you been using Kivy (in years) ?"
         while True:
-            res, years = await ask_input(msg, input_filter='int', input_type='number', theme=theme)
-            if res is R.OK:
+            cause, years = await ask_input(msg, input_filter='int', input_type='number', theme=theme)
+            if cause is C.OK:
                 if years:
                     print(f"{msg!r} --> {years} years")
                     break
@@ -233,12 +236,12 @@ class SampleApp(App):
                     await show_message_box("The text box is empty. Try again.")
                     continue
             else:
-                print(f"{msg!r} --> {res.name}")
+                print(f"{msg!r} --> {cause.name}")
                 break
 
         msg = "The armor I used to seal my all too powerful strength is now broken."
-        res = await show_message_box(msg, theme=theme)
-        print(f"{msg!r} --> {res.name}")
+        cause = await show_message_box(msg, theme=theme)
+        print(f"{msg!r} --> {cause.name}")
 
 
 if __name__ == '__main__':
