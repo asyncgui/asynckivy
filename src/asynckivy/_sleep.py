@@ -4,7 +4,7 @@ import typing as T
 import types
 
 from kivy.clock import Clock
-from asyncgui import _current_task, _sleep_forever, wait_any_cm, Task, Cancelled
+from asyncgui import _current_task, _sleep_forever, move_on_when, Task, Cancelled
 
 
 @types.coroutine
@@ -122,4 +122,4 @@ def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
 
     .. versionadded:: 0.6.1
     '''
-    return wait_any_cm(sleep(seconds))
+    return move_on_when(sleep(seconds))
