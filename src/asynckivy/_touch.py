@@ -1,4 +1,4 @@
-__all__ = ('watch_touch', 'rest_of_touch_moves', 'rest_of_touch_events', 'touch_up_event', )
+__all__ = ('watch_touch', 'rest_of_touch_events', 'touch_up_event', )
 
 import typing as T
 import types
@@ -191,6 +191,3 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout
     async with watch_touch(widget, touch, stop_dispatching=stop_dispatching, timeout=timeout) as in_progress:
         while await in_progress():
             yield
-
-
-rest_of_touch_moves = rest_of_touch_events

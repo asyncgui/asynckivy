@@ -89,21 +89,5 @@ def modify_signature(app, what: str, name: str, obj, options, signature, return_
     return (signature, return_annotation, )
 
 
-def modify_docstring(app, what, name, obj, options, lines,
-                     prefix="asynckivy.",
-                     len_prefix=len("asynckivy."),
-                     group1={'rest_of_touch_events': ':func:`rest_of_touch_moves`', },
-                     ):
-    if not name.startswith(prefix):
-        return
-    name = name[len_prefix:]
-    if name in group1:
-        print(f"Edit the docstring of {name!r}")
-        lines.clear()
-        lines.append(''.join(("An alias for ", group1[name], '.', )))
-        return
-
-
 def setup(app):
     app.connect('autodoc-process-signature', modify_signature)
-    # app.connect('autodoc-process-docstring', modify_docstring)
