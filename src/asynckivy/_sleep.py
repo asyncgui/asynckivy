@@ -4,7 +4,7 @@ import typing as T
 import types
 
 from kivy.clock import Clock
-from asyncgui import current_task, Cancelled, _sleep_forever, wait_any_cm, Task
+from asyncgui import _current_task, _sleep_forever, wait_any_cm, Task, Cancelled
 
 
 @types.coroutine
@@ -16,15 +16,12 @@ def sleep(duration) -> T.Awaitable[float]:
 
         dt = await sleep(5)  # wait for 5 seconds
     '''
-    clock_event = None
-
-    def _sleep(task):
-        nonlocal clock_event
-        clock_event = Clock.create_trigger(task._step, duration, False, False)
-        clock_event()
+    task = (yield _current_task)[0][0]
+    clock_event = Clock.create_trigger(task._step, duration, False, False)
+    clock_event()
 
     try:
-        return (yield _sleep)[0][0]
+        return (yield _sleep_forever)[0][0]
     except Cancelled:
         clock_event.cancel()
         raise
@@ -39,15 +36,12 @@ def sleep_free(duration) -> T.Awaitable[float]:
 
         dt = await sleep_free(5)  # wait for 5 seconds
     '''
-    clock_event = None
-
-    def _sleep_free(task):
-        nonlocal clock_event
-        clock_event = Clock.create_trigger_free(task._step, duration, False, False)
-        clock_event()
+    task = (yield _current_task)[0][0]
+    clock_event = Clock.create_trigger_free(task._step, duration, False, False)
+    clock_event()
 
     try:
-        return (yield _sleep_free)[0][0]
+        return (yield _sleep_forever)[0][0]
     except Cancelled:
         clock_event.cancel()
         raise
@@ -101,8 +95,10 @@ class repeat_sleeping:
     def __init__(self, *, step=0):
         self._step = step
 
-    async def __aenter__(self, _sleep=_sleep) -> T.Awaitable[T.Callable[[], T.Awaitable[float]]]:
-        self._trigger = Clock.create_trigger((await current_task())._step, self._step, True, False)
+    @types.coroutine
+    def __aenter__(self, _sleep=_sleep) -> T.Awaitable[T.Callable[[], T.Awaitable[float]]]:
+        task = (yield _current_task)[0][0]
+        self._trigger = Clock.create_trigger(task._step, self._step, True, False)
         self._trigger()
         return _sleep
 
