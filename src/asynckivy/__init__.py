@@ -36,7 +36,7 @@ from ._anim_with_xxx import anim_with_dt, anim_with_et, anim_with_ratio, anim_wi
 from ._animation import animate
 from ._anim_attrs import anim_attrs, anim_attrs_abbr
 from ._interpolate import interpolate, fade_transition
-from ._touch import watch_touch, rest_of_touch_events, rest_of_touch_moves, touch_up_event
+from ._touch import watch_touch, rest_of_touch_events, touch_up_event
 from ._threading import run_in_executor, run_in_thread
 from ._n_frames import n_frames
 from ._utils import transform, suppress_event, create_texture_from_text, sync_attr, sync_attrs
