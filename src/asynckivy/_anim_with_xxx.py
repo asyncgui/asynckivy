@@ -36,30 +36,21 @@ async def anim_with_dt(*, step=0):
 
 async def anim_with_et(*, step=0):
     '''
-    Same as :func:`anim_with_dt` except this one generates the total elapsed time of the loop instead of the elapsed
-    time between frames.
+    Generates the elapsed time of the loop.
 
     .. code-block::
 
-        timeout = 3.0
         async for et in anim_with_et(...):
-            ...
-            if et > timeout:
-                break
+            print(et)
 
-    You can calculate ``et`` by yourself if you want to:
+    The code above is equivalent to the following:
 
     .. code-block::
 
         et = 0.
-        timeout = 3.0
         async for dt in anim_with_dt(...):
             et += dt
-            ...
-            if et > timeout:
-                break
-
-    which should be as performant as the former.
+            print(et)
 
     .. versionadded:: 0.6.1
     '''
@@ -89,16 +80,23 @@ async def anim_with_dt_et(*, step=0):
             yield dt, et
 
 
-async def anim_with_ratio(*, duration=1., step=0):
+async def anim_with_ratio(*, base, step=0):
     '''
-    Same as :func:`anim_with_et` except this one generates the total progression ratio of the loop.
+    .. code-block::
+
+        async for p in anim_with_ratio(base=3):
+            print(p)
+
+    The code above is equivalent to the following:
 
     .. code-block::
 
-        async for p in anim_with_ratio(duration=3.0):
-            print(p * 100, "%")
+        base = 3
+        async for et in anim_with_et(...):
+            p = et / base
+            print(p)
 
-    If you want to progress at a non-consistant rate, :class:`kivy.animation.AnimationTransition` may be helpful.
+    If you want non-linear ratio values, you may find :class:`kivy.animation.AnimationTransition` helpful.
 
     .. code-block::
 
@@ -106,24 +104,25 @@ async def anim_with_ratio(*, duration=1., step=0):
 
         in_cubic = AnimationTransition.in_cubic
 
-        async for p in anim_with_ratio(duration=3.0):
+        async for p in anim_with_ratio(base=...):
             p = in_cubic(p)
-            print(p * 100, "%")
+            print(p)
 
     .. versionadded:: 0.6.1
+
+    .. versionchanged:: 0.7.0
+
+        The ``duration`` parameter was replaced with ``base``.
+        The loop no longer ends on its own.
     '''
     async with repeat_sleeping(step=step) as sleep:
-        if not duration:
-            await sleep()
-            yield 1.0
-            return
         et = 0.
-        while et < duration:
+        while True:
             et += await sleep()
-            yield et / duration
+            yield et / base
 
 
-async def anim_with_dt_et_ratio(*, duration=1., step=0):
+async def anim_with_dt_et_ratio(*, base, step=0):
     '''
     :func:`anim_with_dt`, :func:`anim_with_et` and :func:`anim_with_ratio` combined.
 
@@ -133,14 +132,14 @@ async def anim_with_dt_et_ratio(*, duration=1., step=0):
             ...
 
     .. versionadded:: 0.6.1
+
+    .. versionchanged:: 0.7.0
+        The ``duration`` parameter was replaced with ``base``.
+        The loop no longer ends on its own.
     '''
     async with repeat_sleeping(step=step) as sleep:
-        if not duration:
-            dt = await sleep()
-            yield dt, dt, 1.0
-            return
         et = 0.
-        while et < duration:
+        while True:
             dt = await sleep()
             et += dt
-            yield dt, et, et / duration
+            yield dt, et, et / base
