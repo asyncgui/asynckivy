@@ -1,11 +1,13 @@
 __all__ = ('event', )
 
 import typing as T
+import types
 from functools import partial
-from asyncgui import AsyncEvent
+from asyncgui import _current_task, _sleep_forever
 
 
-async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
+@types.coroutine
+def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
     '''
     Returns an awaitable that can be used to wait for:
 
@@ -40,16 +42,16 @@ async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=F
       It only works for events not for properties.
       See :ref:`kivys-event-system` for details.
     '''
-    ev = AsyncEvent()
-    bind_id = event_dispatcher.fbind(event_name, partial(_callback, filter, ev, stop_dispatching))
+    task = (yield _current_task)[0][0]
+    bind_id = event_dispatcher.fbind(event_name, partial(_callback, filter, task, stop_dispatching))
     assert bind_id  # check if binding succeeded
     try:
-        return (await ev.wait())[0]
+        return (yield _sleep_forever)[0]
     finally:
         event_dispatcher.unbind_uid(event_name, bind_id)
 
 
-def _callback(filter, ev, stop_dispatching, *args, **kwargs):
+def _callback(filter, task, stop_dispatching, *args, **kwargs):
     if (filter is None) or filter(*args, **kwargs):
-        ev.fire(*args)
+        task._step(*args)
         return stop_dispatching
