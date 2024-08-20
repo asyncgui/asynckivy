@@ -64,59 +64,63 @@ def test_dt_et(approx, sleep_then_tick):
 def test_ratio(approx, sleep_then_tick):
     import asynckivy as ak
 
+    values = []
     async def async_fn():
-        l = [p async for p in ak.anim_with_ratio(duration=1)]
-        assert l == approx([0.3, 0.6, 0.9, 1.2, ])
+        async for p in ak.anim_with_ratio(base=3.0):
+            values.append(p)
 
     task = ak.start(async_fn())
     for __ in range(4):
         sleep_then_tick(.3)
-    assert task.finished
+    assert values == approx([0.1, 0.2, 0.3, 0.4, ])
+    assert task.state is ak.TaskState.STARTED
+    task.cancel()
 
 
-def test_ratio_zero_duration(approx, sleep_then_tick):
+def test_ratio_zero_base(kivy_clock):
     import asynckivy as ak
 
     async def async_fn():
-        l = [p async for p in ak.anim_with_ratio(duration=0)]
-        assert l == approx([1.0, ])
+        with pytest.raises(ZeroDivisionError):
+            async for p in ak.anim_with_ratio(base=0):
+                pass
 
     task = ak.start(async_fn())
-    sleep_then_tick(.1)
+    kivy_clock.tick()
     assert task.finished
 
 
 def test_dt_et_ratio(approx, sleep_then_tick):
     import asynckivy as ak
 
+    dt_values = []
+    et_values = []
+    p_values = []
+
     async def async_fn():
-        dt_result = []
-        et_result = []
-        progress_result = []
-        async for dt, et, p in ak.anim_with_dt_et_ratio(duration=.5):
-            dt_result.append(dt)
-            et_result.append(et)
-            progress_result.append(p)
-        assert dt_result == approx([0.2, 0.2, 0.2, ])
-        assert et_result == approx([0.2, 0.4, 0.6, ])
-        assert progress_result == approx([0.4, 0.8, 1.2, ])
+        async for dt, et, p in ak.anim_with_dt_et_ratio(base=.5):
+            dt_values.append(dt)
+            et_values.append(et)
+            p_values.append(p)
 
     task = ak.start(async_fn())
-    for __ in range(3):
+    for __ in range(4):
         sleep_then_tick(.2)
-    assert task.finished
+    assert dt_values == approx([0.2, 0.2, 0.2, 0.2, ])
+    assert et_values == approx([0.2, 0.4, 0.6, 0.8, ])
+    assert p_values == approx([0.4, 0.8, 1.2, 1.6, ])
+    assert task.state is ak.TaskState.STARTED
+    task.cancel()
 
 
-def test_dt_et_ratio_zero_duration(approx, sleep_then_tick):
+def test_dt_et_ratio_zero_base(kivy_clock):
     import asynckivy as ak
 
     async def async_fn():
-        l = [v async for v in ak.anim_with_dt_et_ratio(duration=0)]
-        # assert l == approx([(0.2, 0.2, 1.0, ), ])  # This doesn't work for some reason.
-        assert l[0][0] == approx(0.2)
-        assert l[0][1] == approx(0.2)
-        assert l[0][2] == approx(1.0)
+        with pytest.raises(ZeroDivisionError):
+            async for dt, et, p in ak.anim_with_dt_et_ratio(base=0):
+                pass
 
     task = ak.start(async_fn())
-    sleep_then_tick(.2)
+    kivy_clock.tick()
     assert task.finished

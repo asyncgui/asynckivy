@@ -3,6 +3,7 @@ import typing as T
 from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
+from ._sleep import sleep
 from ._anim_with_xxx import anim_with_ratio
 
 
@@ -36,10 +37,13 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
 
     slope = end - start
     yield transition(0.) * slope + start
-    async for p in anim_with_ratio(step=step, duration=duration):
-        if p >= 1.0:
-            break
-        yield transition(p) * slope + start
+    if duration:
+        async for p in anim_with_ratio(step=step, base=duration):
+            if p >= 1.0:
+                break
+            yield transition(p) * slope + start
+    else:
+        await sleep(0)
     yield transition(1.) * slope + start
 
 
@@ -62,14 +66,18 @@ async def fade_transition(*widgets, duration=1.0, step=0) -> T.AsyncContextManag
     half_duration = duration / 2.
     org_opas = tuple(w.opacity for w in widgets)
     try:
-        async for p in anim_with_ratio(duration=half_duration, step=step):
+        async for p in anim_with_ratio(base=half_duration, step=step):
             p = 1.0 - p
             for w, o in zip(widgets, org_opas):
                 w.opacity = p * o
+            if p <= 0.:
+                break
         yield
-        async for p in anim_with_ratio(duration=half_duration, step=step):
+        async for p in anim_with_ratio(base=half_duration, step=step):
             for w, o in zip(widgets, org_opas):
                 w.opacity = p * o
+            if p >= 1.:
+                break
     finally:
         for w, o in zip(widgets, org_opas):
             w.opacity = o
