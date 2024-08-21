@@ -113,9 +113,9 @@ def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
 
     .. code-block::
 
-        async with move_on_after(seconds) as bg_task:
+        async with move_on_after(seconds) as timeout_tracker:
             ...
-        if bg_task.finished:
+        if timeout_tracker.finished:
             print("The code block was interrupted due to a timeout")
         else:
             print("The code block exited gracefully.")

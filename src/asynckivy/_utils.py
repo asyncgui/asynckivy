@@ -161,7 +161,7 @@ def create_texture_from_text(*, markup=False, **label_kwargs) -> Texture:
             color=(1, 0, 0, 1),
         )
 
-    The keyword arguments are similar to :external:kivy:doc:`api-kivy.uix.label` 's.
+    See :class:`kivy.core.text.LabelBase` for all the available keyword parameters.
     '''
     core_cls = CoreMarkupLabel if markup else CoreLabel
     core = core_cls(**label_kwargs)
