@@ -11,6 +11,7 @@ __all__ = (
     'event',
     'fade_transition',
     'interpolate',
+    'interpolate_seq',
     'move_on_after',
     'n_frames',
     'repeat_sleeping',
@@ -33,7 +34,7 @@ from ._sleep import sleep, sleep_free, repeat_sleeping, move_on_after
 from ._event import event
 from ._anim_with_xxx import anim_with_dt, anim_with_et, anim_with_ratio, anim_with_dt_et, anim_with_dt_et_ratio
 from ._anim_attrs import anim_attrs, anim_attrs_abbr
-from ._interpolate import interpolate, fade_transition
+from ._interpolate import interpolate, interpolate_seq, fade_transition
 from ._touch import watch_touch, rest_of_touch_events, touch_up_event
 from ._threading import run_in_executor, run_in_thread
 from ._n_frames import n_frames
