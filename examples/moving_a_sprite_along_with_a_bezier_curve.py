@@ -103,11 +103,13 @@ class SampleApp(App):
                     texture=texture,
                 )
                 PopMatrix()
-            async for t in ak.anim_with_ratio(duration=1.5 / speed):
+            async for t in ak.anim_with_ratio(base=1.5 / speed):
                 x, y = calc_position(factors, t)
                 translate.x = x
                 translate.y = y
                 rotate.angle = calc_angle(velocity_factors, t)
+                if t >= 1.0:
+                    break
             await ak.sleep(1)
         finally:
             draw_target.canvas.remove(root_group)
