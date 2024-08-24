@@ -31,10 +31,12 @@ async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degree
         rotate = Rotate(origin=widget.center)
         ig.add(translate)
         ig.add(rotate)
-        async for dt, et, p in anim_with_dt_et_ratio(duration=duration):
-            p = p * 2. - 1.  # convert range[0 to +1] into range[-1 to +1]
+        async for dt, et, p in anim_with_dt_et_ratio(base=duration / 2.):
+            p -= 1.
             translate.y = (-(p * p) + 1.) * height
             rotate.angle = et * rotation_speed
+            if p >= 1.:
+                break
 
 
 KV_CODE = r'''

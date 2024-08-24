@@ -81,15 +81,19 @@ class SampleApp(App):
                 color_inst3 = Color(1.0, 1.0, 1.0, 1.0)
                 point_inst = Point(pointsize=1.0)
             flattened = array.array('f')
-            async for p in ak.anim_with_ratio(duration=n_segments * 2.0 / speed):
-                if p >= 1.0:
+            quit = False
+            async for p in ak.anim_with_ratio(base=2.0 / speed):
+                if p >= n_segments:
+                    quit = True
                     f = interpolating_functions[-1]
                     t = 1.0
                 else:
-                    idx, t = divmod(p * n_segments, 1.0)
+                    idx, t = divmod(p, 1.0)
                     f = interpolating_functions[int(idx)]
                 flattened.extend(f[0](t))
                 point_inst.points = flattened
+                if quit:
+                    break
 
             # Fade-out the group1, and make the above points darker
             await slp()
@@ -114,17 +118,21 @@ class SampleApp(App):
                     texture=texture,
                 )
                 PopMatrix()
-            async for p in ak.anim_with_ratio(duration=n_segments * 2.0 / speed):
-                if p >= 1.0:
+            quit = False
+            async for p in ak.anim_with_ratio(base=2.0 / speed):
+                if p >= n_segments:
+                    quit = True
                     f = interpolating_functions[-1]
                     t = 1.0
                 else:
-                    idx, t = divmod(p * n_segments, 1.0)
+                    idx, t = divmod(p, 1.0)
                     f = interpolating_functions[int(idx)]
                 x, y = f[0](t)
                 translate.x = x
                 translate.y = y
                 rotate.angle = f[1](t)
+                if quit:
+                    break
             await ak.sleep(1)
         finally:
             draw_target.canvas.remove(root_group)
