@@ -51,9 +51,10 @@ Asyncジェネレータが抱える問題
 を行うせいなのか、asynckivy用のasyncジェネレータがうまく機能しない事があります。
 なので ``asyncio`` 或いは ``trio`` を使っている場合は以下のAPI達を使わなのがお薦めです。
 
-* `rest_of_touch_events()` (代わりに `watch_touch` を用いる)
-* `anim_with_xxx` (代わりに `repeat_sleeping` を用いる)
-* `interpolate` (代わりに `repeat_sleeping` を用いる)
+* `rest_of_touch_events()`
+* `anim_with_xxx`
+* `interpolate`
+* `interpolate_seq`
 * `fade_transition()`
 
 これにどう対処すればいいのかは現状分かっていません。
@@ -68,6 +69,7 @@ async操作が禁じられている場所
 
 * :func:`asynckivy.rest_of_touch_events`
 * :func:`asynckivy.interpolate`
+* :func:`asynckivy.interpolate_seq`
 * ``asynckivy.anim_with_xxx``
 
 .. code-block::
