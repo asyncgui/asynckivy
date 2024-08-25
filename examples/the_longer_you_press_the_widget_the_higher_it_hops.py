@@ -52,12 +52,11 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
 
 
 KV_CODE = r'''
-#:import ak asynckivy
 #:import bounce_widget __main__.bounce_widget
 
 <Puyo@ButtonBehavior+Widget>:
     always_release: True
-    on_press: ak.start(bounce_widget(self))
+    on_press: root_nursery.start(bounce_widget(self))
     canvas:
         PushMatrix:
         Translate:
@@ -96,7 +95,17 @@ BoxLayout:
 
 class SampleApp(App):
     def build(self):
+        self._main_task = ak.start(self.main())
         return Builder.load_string(KV_CODE)
+
+    def on_stop(self):
+        self._main_task.cancel()
+
+    async def main(self):
+        from kivy.lang import global_idmap
+        async with ak.open_nursery() as nursery:
+            global_idmap['root_nursery'] = nursery
+            await ak.sleep_forever()
 
 
 if __name__ == '__main__':

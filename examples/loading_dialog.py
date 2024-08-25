@@ -34,7 +34,7 @@ FloatLayout:
         font_size: '20sp'
         size_hint: .3, .1
         pos_hint: {'center_x': .5, 'center_y': .5}
-        on_release: app.root_nursery.start(app.demonstrate_dialog())
+        on_release: root_nursery.start(app.demonstrate_dialog())
 '''
 
 
@@ -59,17 +59,16 @@ async def open_dialog(*, _cache=[]):
 
 class SampleApp(App):
     def build(self):
-        return Builder.load_string(KV_CODE)
-
-    def on_start(self):
         self._main_task = ak.start(self.main())
+        return Builder.load_string(KV_CODE)
 
     def on_stop(self):
         self._main_task.cancel()
 
     async def main(self):
+        from kivy.lang import global_idmap
         async with ak.open_nursery() as nursery:
-            self.root_nursery = nursery
+            global_idmap['root_nursery'] = nursery
             await ak.sleep_forever()
 
     async def demonstrate_dialog(self):
