@@ -38,11 +38,11 @@ class TestApp(App):
     async def main(self):
         await ak.n_frames(4)
         root = self.root
-        ak.start(progress_spinner(
+        await progress_spinner(
             draw_target=root.canvas,
             center=root.center,
             radius=min(root.size) * 0.4,
-        ))
+        )
 
 
 if __name__ == '__main__':
