@@ -96,6 +96,7 @@ Here is a list of them:
 
 - :func:`asynckivy.rest_of_touch_events`
 - :func:`asynckivy.interpolate`
+- :func:`asynckivy.interpolate_seq`
 - :func:`asynckivy.fade_transition`
 - ``asynckivy.anim_with_xxx``
 
@@ -109,6 +110,7 @@ Here is a list of them:
 
 - :func:`asynckivy.rest_of_touch_events`
 - :func:`asynckivy.interpolate`
+- :func:`asynckivy.interpolate_seq`
 - ``asynckivy.anim_with_xxx``
 
 .. code-block::
