@@ -27,7 +27,7 @@ async def run_in_thread(func, *, daemon=None) -> T.Awaitable:
 
     See :ref:`io-in-asynckivy` for details.
     '''
-    ev = asyncgui.AsyncEvent()
+    ev = asyncgui.ExclusiveEvent()
     Thread(
         name='asynckivy.run_in_thread',
         target=_wrapper, daemon=daemon, args=(func, ev, ),
@@ -51,7 +51,7 @@ async def run_in_executor(executor: ThreadPoolExecutor, func) -> T.Awaitable:
 
     See :ref:`io-in-asynckivy` for details.
     '''
-    ev = asyncgui.AsyncEvent()
+    ev = asyncgui.ExclusiveEvent()
     future = executor.submit(_wrapper, func, ev)
     try:
         ret, exc = (await ev.wait())[0]
