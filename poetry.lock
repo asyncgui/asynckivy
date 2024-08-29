@@ -13,13 +13,13 @@ files = [
 
 [[package]]
 name = "asyncgui"
-version = "0.6.3"
+version = "0.7.0"
 description = "A thin layer that helps to wrap a callback-style API in an async/await-style API"
 optional = false
-python-versions = "<4.0.0,>=3.8.1"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "asyncgui-0.6.3-py3-none-any.whl", hash = "sha256:46723e65d8bf023e28d141f6a9d38634ef5b97a5236fafdaf80b47e13275a5eb"},
-    {file = "asyncgui-0.6.3.tar.gz", hash = "sha256:05de49c2221128d3530f010df98491f3553183ec8909d205a0c0250bee5d6e0c"},
+    {file = "asyncgui-0.7.0-py3-none-any.whl", hash = "sha256:c1e53b5c0c4df8817b28aa58bda3bc13752ea65519b14c2d7fa1c1721c9bb362"},
+    {file = "asyncgui-0.7.0.tar.gz", hash = "sha256:6a5cfdfee34f6478e857a55ff88981995479930c3ddc577c5ff9d85a79f12a4a"},
 ]
 
 [package.dependencies]
@@ -953,4 +953,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f214076010b741233833a64c78817b1db4fed83c1110870a5dd3481a2f0eb5f4"
+content-hash = "3257ee8d2cfa341009ee73e53360aa68ade222e9c96e3647f13a759595e49102"
