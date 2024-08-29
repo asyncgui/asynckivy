@@ -55,8 +55,8 @@ ak.start(what_you_want_to_do(...))
 Pin the minor version.
 
 ```text
-poetry add asynckivy@~0.6
-pip install "asynckivy>=0.6,<0.7"
+poetry add asynckivy@~0.7
+pip install "asynckivy>=0.7,<0.8"
 ```
 
 ## Usage
