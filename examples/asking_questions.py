@@ -1,133 +1,83 @@
 import typing as T
 import enum
-from dataclasses import dataclass
 
 from kivy.clock import Clock
-from kivy.properties import ObjectProperty
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.factory import Factory as F
-from kivy.uix.modalview import ModalView
 import asynckivy as ak
 
 KV_CODE = '''
-<MessageBox>:
-    size_hint: root.theme.size_hint
-    auto_dismiss: root.theme.auto_dismiss
+<MessageBox@ModalView>:
+    size_hint: 0.8, 0.4
     BoxLayout:
         padding: '10dp'
         spacing: '10dp'
         orientation: 'vertical'
         Label:
             id: label
-            font_size: root.theme.font_size
-            font_name: root.theme.font_name
         Button:
             id: ok_button
-            font_size: root.theme.font_size
-            font_name: root.theme.font_name
-            text: root.theme.text_ok
+            text: 'OK'
 
-<YesNoDialog>:
-    size_hint: root.theme.size_hint
-    auto_dismiss: root.theme.auto_dismiss
+<YesNoDialog@ModalView>:
+    size_hint: 0.8, 0.4
     BoxLayout:
         padding: '10dp'
         spacing: '10dp'
         orientation: 'vertical'
         Label:
             id: label
-            font_size: root.theme.font_size
-            font_name: root.theme.font_name
         BoxLayout:
             spacing: '10dp'
             Button:
                 id: no_button
-                font_size: root.theme.font_size
-                font_name: root.theme.font_name
-                text: root.theme.text_no
+                text: 'No'
             Button:
                 id: yes_button
-                font_size: root.theme.font_size
-                font_name: root.theme.font_name
-                text: root.theme.text_yes
+                text: 'Yes'
 
-<InputDialog>:
-    size_hint: root.theme.size_hint
-    auto_dismiss: root.theme.auto_dismiss
+<InputDialog@ModalView>:
+    size_hint: 0.8, 0.4
     BoxLayout:
         padding: '10dp'
         spacing: '10dp'
         orientation: 'vertical'
         Label:
             id: label
-            font_size: root.theme.font_size
-            font_name: root.theme.font_name
         TextInput:
             id: textinput
             multiline: False
-            font_size: root.theme.font_size
         BoxLayout:
             spacing: '10dp'
             Button:
                 id: cancel_button
-                font_size: root.theme.font_size
-                font_name: root.theme.font_name
-                text: root.theme.text_cancel
+                text: 'Cancel'
             Button:
                 id: ok_button
-                font_size: root.theme.font_size
-                font_name: root.theme.font_name
-                text: root.theme.text_ok
+                text: 'OK'
 
 Widget:
 '''
 
 
-@dataclass
-class DialogTheme:
-    size_hint: tuple = (0.8, 0.4, )
-    auto_dismiss: bool = ModalView.auto_dismiss.defaultvalue
-    font_size: int = F.Label.font_size.defaultvalue
-    font_name: int = F.Label.font_name.defaultvalue
-    text_yes: str = 'Yes'
-    text_no: str = 'No'
-    text_ok: str = 'OK'
-    text_cancel: str = 'Cancel'
-
-
-default_theme = DialogTheme()
-
-
 class CauseOfDismissal(enum.Enum):
-    AUTO_DISMISS = enum.auto()
+    AUTO = enum.auto()  # ModalView.auto_dismiss
     YES = enum.auto()
     NO = enum.auto()
     OK = enum.auto()
     CANCEL = enum.auto()
+    UNKNOWN = enum.auto()  # potentially a bug
 
 
 C = CauseOfDismissal
 
 
-class MessageBox(ModalView):
-    theme = ObjectProperty(default_theme, rebind=True)
-
-
-class YesNoDialog(ModalView):
-    theme = ObjectProperty(default_theme, rebind=True)
-
-
-class InputDialog(ModalView):
-    theme = ObjectProperty(default_theme, rebind=True)
-
-
-async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitable[C]:
-    dialog = _cache.pop() if _cache else MessageBox()
+async def show_message_box(msg, *, _cache=[]) -> T.Awaitable[C]:
+    dialog = _cache.pop() if _cache else F.MessageBox()
     label = dialog.ids.label
     ok_button = dialog.ids.ok_button
 
-    dialog.theme = theme
     label.text = msg
     try:
         dialog.open()
@@ -135,10 +85,10 @@ async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitabl
             ak.event(dialog, 'on_pre_dismiss'),
             ak.event(ok_button, 'on_press'),
         )
-        for task, cause in zip(tasks, (C.AUTO_DISMISS, C.OK, )):
+        for task, cause in zip(tasks, (C.AUTO, C.OK, )):
             if task.finished:
-                break
-        return cause
+                return cause
+        return C.UNKNOWN
     finally:
         dialog.dismiss()
         Clock.schedule_once(
@@ -147,13 +97,12 @@ async def show_message_box(msg, *, theme=default_theme, _cache=[]) -> T.Awaitabl
         )
 
 
-async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.Awaitable[C]:
-    dialog = _cache.pop() if _cache else YesNoDialog()
+async def ask_yes_no_question(question, *, _cache=[]) -> T.Awaitable[C]:
+    dialog = _cache.pop() if _cache else F.YesNoDialog()
     label = dialog.ids.label
     no_button = dialog.ids.no_button
     yes_button = dialog.ids.yes_button
 
-    dialog.theme = theme
     label.text = question
     try:
         dialog.open()
@@ -162,10 +111,10 @@ async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.
             ak.event(no_button, 'on_press'),
             ak.event(yes_button, 'on_press'),
         )
-        for task, cause in zip(tasks, (C.AUTO_DISMISS, C.NO, C.YES, )):
+        for task, cause in zip(tasks, (C.AUTO, C.NO, C.YES, )):
             if task.finished:
-                break
-        return cause
+                return cause
+        return C.UNKNOWN
     finally:
         dialog.dismiss()
         Clock.schedule_once(
@@ -174,14 +123,13 @@ async def ask_yes_no_question(question, *, theme=default_theme, _cache=[]) -> T.
         )
 
 
-async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cache=[]) -> T.Awaitable[T.Tuple[C, str]]:
-    dialog = _cache.pop() if _cache else InputDialog()
+async def ask_input(msg, *, input_filter, input_type, _cache=[]) -> T.Awaitable[T.Tuple[C, str]]:
+    dialog = _cache.pop() if _cache else F.InputDialog()
     label = dialog.ids.label
     textinput = dialog.ids.textinput
     cancel_button = dialog.ids.cancel_button
     ok_button = dialog.ids.ok_button
 
-    dialog.theme = theme
     label.text = msg
     textinput.input_filter = input_filter
     textinput.input_type = input_type
@@ -194,10 +142,10 @@ async def ask_input(msg, *, input_filter, input_type, theme=default_theme, _cach
             ak.event(ok_button, 'on_press'),
             ak.event(textinput, 'on_text_validate'),
         )
-        for task, cause in zip(tasks, (C.AUTO_DISMISS, C.CANCEL, C.OK, C.OK, )):
+        for task, cause in zip(tasks, (C.AUTO, C.CANCEL, C.OK, C.OK, )):
             if task.finished:
-                break
-        return cause, textinput.text
+                return cause, textinput.text
+        return C.UNKNOWN, textinput.text
     finally:
         dialog.dismiss()
         Clock.schedule_once(
@@ -219,15 +167,13 @@ class SampleApp(App):
     async def main(self):
         await ak.n_frames(2)
 
-        theme = DialogTheme(font_size='20sp')
-
         msg = "Do you like Kivy?"
-        cause = await ask_yes_no_question(msg, theme=theme)
+        cause = await ask_yes_no_question(msg)
         print(f"{msg!r} --> {cause.name}")
 
         msg = "How long have you been using Kivy (in years) ?"
         while True:
-            cause, years = await ask_input(msg, input_filter='int', input_type='number', theme=theme)
+            cause, years = await ask_input(msg, input_filter='int', input_type='number')
             if cause is C.OK:
                 if years:
                     print(f"{msg!r} --> {years} years")
@@ -240,7 +186,7 @@ class SampleApp(App):
                 break
 
         msg = "The armor I used to seal my all too powerful strength is now broken."
-        cause = await show_message_box(msg, theme=theme)
+        cause = await show_message_box(msg)
         print(f"{msg!r} --> {cause.name}")
 
 
