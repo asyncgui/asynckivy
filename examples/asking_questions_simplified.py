@@ -41,10 +41,10 @@ async def ask_yes_no_question(question, *, _cache=[]) -> T.Awaitable[str]:
             ak.event(no_button, 'on_press'),
             ak.event(yes_button, 'on_press'),
         )
-        for task, r in zip(tasks, ('AUTO_DISMISS', 'NO', 'YES', )):
+        for task, r in zip(tasks, ("AUTO", "NO", "YES", )):
             if task.finished:
-                break
-        return r
+                return r
+        return "UNKNOWN"
     finally:
         dialog.dismiss()
         Clock.schedule_once(
