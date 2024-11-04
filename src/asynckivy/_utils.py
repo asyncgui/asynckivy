@@ -193,10 +193,13 @@ class sync_attr:
         from kivy.graphics import Rotate
 
         async def rotate_widget(widget, *, angle=360.):
-            with transform(widget) as ig:
-                ig.add(rotate := Rotate(origin=widget.center))
-                with sync_attr(from_=(widget, 'center'), to_=(rotate, 'origin')):
-                    await anim_attrs(rotate, angle=angle)
+            rotate = Rotate(origin=widget.center)
+            with (
+                transform(widget) as ig,
+                sync_attr(from_=(widget, 'center'), to_=(rotate, 'origin')),
+            ):
+                ig.add(rotate)
+                await anim_attrs(rotate, angle=angle)
 
     .. versionadded:: 0.6.1
     '''
@@ -234,6 +237,26 @@ class sync_attrs:
 
         with sync_attrs((widget, 'x'), (obj1, 'x'), (obj2, 'xx')):
             ...
+
+    This can be particularly useful when combined with :func:`transform`.
+
+    .. code-block::
+
+        from kivy.graphics import Rotate, Scale
+
+        async def scale_and_rotate_widget(widget, *, scale=2.0, angle=360.):
+            rotate = Rotate(origin=widget.center)
+            scale = Scale(origin=widget.center)
+            with (
+                transform(widget) as ig,
+                sync_attrs((widget, 'center'), (rotate, 'origin'), (scale, 'origin')),
+            ):
+                ig.add(rotate)
+                ig.add(scale)
+                await wait_all(
+                    anim_attrs(rotate, angle=angle),
+                    anim_attrs(scale, x=scale, y=scale),
+                )
 
     .. versionadded:: 0.6.1
     '''

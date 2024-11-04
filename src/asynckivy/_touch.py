@@ -126,7 +126,8 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
     '''
     *(experimental state)*
 
-    Returns an awaitable that can be used to wait for the ``on_touch_up`` event of the given ``touch`` to occur.
+    Returns an awaitable that waits for an ``on_touch_up`` event to occur for the specified ``touch`` on the given
+    ``widget``.
 
     .. code-block::
 
@@ -134,29 +135,31 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
         ...
         await touch_up_event(widget, touch)
 
-    You might wonder what the differences are compared to the code below.
+    This API "grabs" the touch, making it behave differently from the following example, which does not grab.
 
     .. code-block::
-        :emphasize-lines: 3
 
         __, touch = await event(widget, 'on_touch_down')
         ...
         await event(widget, 'on_touch_up', filter=lambda w, t: t is touch)
 
-    The latter has two problems:
-    If the ``on_touch_up`` event of the ``touch`` occurred before the highlighted line,
-    the execution will halt indefinitely at that point.
-    Even if the event didn't occur before that line, the execution still might halt because
-    `Kivy does not guarantee`_ that all touch events are delivered to all widgets.
+    Typically, this API is used with :any:`asyncgui.move_on_when`.
 
-    This API takes care of both problems in the same way as :func:`watch_touch`.
-    If the ``on_touch_up`` event has already occurred, it raises a :exc:`MotionEventAlreadyEndedError` exception.
-    And it grabs/ungrabs the ``touch`` so that it won't miss any touch events.
+    .. code-block::
 
-    Needless to say, if you want to wait for both ``on_touch_move`` and ``on_touch_up`` events at the same time,
-    use :func:`watch_touch` or :func:`rest_of_touch_events` instead.
+        __, touch = await event(widget, 'on_touch_down', stop_dispatching=True)
+        touch_move_event = partial(
+            event, widget, 'on_touch_move', stop_dispatching=True,
+            filter=lambda w, t: t is touch and t.grab_current is w)
 
-    .. _Kivy does not guarantee: https://kivy.org/doc/stable/guide/inputs.html#grabbing-touch-events
+        async with move_on_when(touch_up_event(widget, touch)):
+            # This code block will be cancelled when the touch ends.
+            while True:
+                await touch_move_event()
+                ...
+
+    An advantage of the code above, compared to :any:`rest_of_touch_events`, is that it allows you to
+    perform other async operations inside the with-block.
     '''
     touch.grab(widget)
     try:
