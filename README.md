@@ -119,10 +119,11 @@ For more details, read the [documentation](https://asyncgui.github.io/asynckivy/
 
 ## Tested on
 
-- CPython 3.9 + Kivy 2.3.0
-- CPython 3.10 + Kivy 2.3.0
-- CPython 3.11 + Kivy 2.3.0
-- CPython 3.12 + Kivy 2.3.0 (3.12.0 is not supported due to [this issue](https://github.com/python/cpython/issues/111058))
+- CPython 3.9 + Kivy 2.3
+- CPython 3.10 + Kivy 2.3
+- CPython 3.11 + Kivy 2.3
+- CPython 3.12 + Kivy 2.3
+- CPython 3.13 + Kivy 2.3
 
 ## Why this even exists
 
