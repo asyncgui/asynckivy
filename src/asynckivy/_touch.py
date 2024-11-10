@@ -126,8 +126,7 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
     '''
     *(experimental state)*
 
-    Returns an awaitable that waits for an ``on_touch_up`` event to occur for the specified ``touch`` on the given
-    ``widget``.
+    Returns an awaitable that waits for an ``on_touch_up`` event to occur.
 
     .. code-block::
 
@@ -179,8 +178,8 @@ async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -
 
 async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.AsyncIterator[None]:
     '''
-    Returns an async iterator that iterates the number of times ``on_touch_move`` occurs,
-    and ends the iteration when ``on_touch_up`` occurs.
+    Returns an async iterator that yields each occurrence of `on_touch_move`,
+    and stops when `on_touch_up` occurs.
 
     .. code-block::
 
@@ -188,8 +187,8 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout
             print('on_touch_move')
         print('on_touch_up')
 
-    This is a wrapper for :class:`watch_touch`. Although this one, I believe, is more intuitive than
-    :class:`watch_touch`, it has a couple of disadvantages - see :ref:`the-problem-with-async-generators`.
+    This is a wrapper around :class:`watch_touch`. While it may be more intuitive than :class:`watch_touch`,
+    it has a few drawbacks—see :ref:`the-problem-with-async-generators`.
     '''
     async with watch_touch(widget, touch, stop_dispatching=stop_dispatching, timeout=timeout) as in_progress:
         while await in_progress():
