@@ -62,7 +62,7 @@ Widget:
 
 
 class CauseOfDismissal(enum.Enum):
-    AUTO = enum.auto()  # ModalView.auto_dismiss
+    AUTO = enum.auto()  # ModalView.auto_dismiss or ModalView.dismiss()
     YES = enum.auto()
     NO = enum.auto()
     OK = enum.auto()
