@@ -22,7 +22,7 @@ async def swipe_to_delete(layout, *, swipe_distance=400.):
     with se("on_touch_down"), se("on_touch_move"), se("on_touch_up"):
         while True:
             __, touch = await ak.event(layout, "on_touch_down")
-            # 'layout.to_local()' here is not necessary for this particular example to work because the 'layout' is an
+            # 'layout.to_local()' here is not necessary for this example to work because the 'layout' is an
             # instance of BoxLayout and the BoxLayout is not a relative type widget.
             ox, oy = layout.to_local(*touch.opos)
             for c in layout.children:
