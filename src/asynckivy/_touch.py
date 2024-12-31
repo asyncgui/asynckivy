@@ -1,4 +1,4 @@
-__all__ = ('watch_touch', 'rest_of_touch_events', 'touch_up_event', )
+__all__ = ('watch_touch', 'rest_of_touch_events', )
 
 import typing as T
 import types
@@ -120,60 +120,6 @@ class watch_touch:
         self._touch.ungrab(w)
         w.unbind_uid('on_touch_up', self._uid_up)
         w.unbind_uid('on_touch_move', self._uid_move)
-
-
-async def touch_up_event(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.Awaitable:
-    '''
-    *(experimental state)*
-
-    Returns an awaitable that waits for an ``on_touch_up`` event to occur.
-
-    .. code-block::
-
-        __, touch = await event(widget, 'on_touch_down')
-        ...
-        await touch_up_event(widget, touch)
-
-    This API "grabs" the touch, making it behave differently from the following example, which does not grab.
-
-    .. code-block::
-
-        __, touch = await event(widget, 'on_touch_down')
-        ...
-        await event(widget, 'on_touch_up', filter=lambda w, t: t is touch)
-
-    Typically, this API is used with :any:`asyncgui.move_on_when`.
-
-    .. code-block::
-
-        __, touch = await event(widget, 'on_touch_down', stop_dispatching=True)
-        touch_move_event = partial(
-            event, widget, 'on_touch_move', stop_dispatching=True,
-            filter=lambda w, t: t is touch and t.grab_current is w)
-
-        async with move_on_when(touch_up_event(widget, touch)):
-            # This code block will be cancelled when the touch ends.
-            while True:
-                await touch_move_event()
-                ...
-
-    An advantage of the code above, compared to :any:`rest_of_touch_events`, is that it allows you to
-    perform other async operations inside the with-block.
-    '''
-    touch.grab(widget)
-    try:
-        awaitable = event(
-            widget, 'on_touch_up', stop_dispatching=stop_dispatching,
-            filter=lambda w, t: t.grab_current is w and t is touch,
-        )
-        if touch.time_end == -1:
-            await awaitable
-        else:
-            tasks = await wait_any(sleep(timeout), awaitable)
-            if tasks[0].finished:
-                raise MotionEventAlreadyEndedError(f"MotionEvent(uid={touch.uid}) has already ended")
-    finally:
-        touch.ungrab(widget)
 
 
 async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.AsyncIterator[None]:

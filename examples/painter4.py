@@ -12,6 +12,7 @@ from kivy.app import App
 import asynckivy as ak
 from kivy.graphics import Line, Color
 from kivy.utils import get_random_color
+from kivy.core.window import Window
 
 
 class Painter(RelativeLayout):
@@ -42,10 +43,10 @@ class Painter(RelativeLayout):
             Color(*get_random_color())
             line = Line(width=2)
 
-        async with ak.move_on_when(ak.touch_up_event(self, touch, stop_dispatching=True)):
+        async with ak.move_on_when(ak.event(Window, 'on_touch_up', filter=lambda w, t: t is touch)):
             touch_move_event = partial(
                 ak.event, self, 'on_touch_move', stop_dispatching=True,
-                filter=lambda w, t: t is touch and t.grab_current is w)
+                filter=lambda w, t: t is touch)
             while True:
                 __, touch = await touch_move_event()
                 x, y = self_to_local(*touch.pos)
