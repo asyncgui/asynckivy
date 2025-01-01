@@ -71,6 +71,7 @@ async操作が禁じられている場所
 * :func:`asynckivy.interpolate`
 * :func:`asynckivy.interpolate_seq`
 * ``asynckivy.anim_with_xxx``
+* :any:`asynckivy.event_freq`
 
 .. code-block::
 
