@@ -3,7 +3,7 @@ Painter
 =======
 
 * can handle mutiple touches simultaneously
-* uses 'touch_up_event' instead of 'rest_of_touch_events'
+* uses 'event_freq' and 'move_on_when' instead of 'rest_of_touch_events'
 '''
 
 from functools import cached_property, partial
@@ -43,12 +43,15 @@ class Painter(RelativeLayout):
             Color(*get_random_color())
             line = Line(width=2)
 
-        async with ak.move_on_when(ak.event(Window, 'on_touch_up', filter=lambda w, t: t is touch)):
-            touch_move_event = partial(
-                ak.event, self, 'on_touch_move', stop_dispatching=True,
-                filter=lambda w, t: t is touch)
+        def touch_filter(w, t, touch=touch):
+            return t is touch
+
+        async with (
+            ak.move_on_when(ak.event(Window, 'on_touch_up', filter=touch_filter)),
+            ak.event_freq(self, 'on_touch_move', filter=touch_filter, stop_dispatching=True) as on_touch_move,
+        ):
             while True:
-                __, touch = await touch_move_event()
+                await on_touch_move()
                 x, y = self_to_local(*touch.pos)
                 min_x, max_x = (x, ox) if x < ox else (ox, x)
                 min_y, max_y = (y, oy) if y < oy else (oy, y)
