@@ -131,7 +131,7 @@ How to structure your program
 Ultimately, your program should have only one "root" task, with all other tasks as its children or descendants.
 This is something that Trio forces you to do but asynckivy does not.
 
-You can achieve this by calling :func:`asynckivy.start` only once in your program,
+You can achieve that by calling :func:`asynckivy.start` only once in your program,
 and spawning all other tasks through the :external+asyncgui:doc:`structured-concurrency` APIs.
 
 .. code-block::

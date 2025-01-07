@@ -58,7 +58,7 @@ def _callback(filter, task_step, stop_dispatching, *args, **kwargs):
 
 class event_freq:
     '''
-    When handling a frequently occurring event, such as ``on_touch_move``, the following code might cause performance
+    When handling a frequently occurring event, such as ``on_touch_move``, code like the following might lead performance
     issues:
 
     .. code-block::
