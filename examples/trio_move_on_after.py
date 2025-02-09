@@ -9,7 +9,7 @@ class TestApp(App):
         return Label(font_size="200sp")
 
     def on_start(self):
-        ak.start(self.main())
+        ak.managed_start(self.main())
 
     async def main(self):
         label = self.root

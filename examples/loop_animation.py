@@ -18,7 +18,7 @@ class TestApp(App):
                      )
 
     def on_start(self):
-        ak.start(self.main())
+        ak.managed_start(self.main())
 
     async def main(self):
         # LOAD_FAST

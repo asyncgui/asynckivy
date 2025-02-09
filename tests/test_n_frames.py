@@ -34,19 +34,18 @@ def test_negative_number_of_frames():
 
 
 def test_scoped_cancel(kivy_clock):
-    import asyncgui as ag
     import asynckivy as ak
-    TS = ag.TaskState
+    TS = ak.TaskState
 
     async def async_fn(ctx):
-        async with ag.open_cancel_scope() as scope:
+        async with ak.open_cancel_scope() as scope:
             ctx['scope'] = scope
             await ak.n_frames(1)
             pytest.fail()
-        await ag.sleep_forever()
+        await ak.sleep_forever()
 
     ctx = {}
-    task = ag.start(async_fn(ctx))
+    task = ak.start(async_fn(ctx))
     assert task.state is TS.STARTED
     ctx['scope'].cancel()
     assert task.state is TS.STARTED

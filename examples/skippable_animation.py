@@ -26,7 +26,7 @@ class TestApp(App):
         return Builder.load_string(KV_CODE)
 
     def on_start(self):
-        ak.start(self.main())
+        ak.managed_start(self.main())
 
     async def main(self):
         from asynckivy import wait_any, event, anim_attrs

@@ -81,28 +81,3 @@ async操作が禁じられている場所
             ...
         async for __ in async_iterator:  # 駄目
             ...
-
-
--------------------
-プログラムの構造
--------------------
-
-理想を言えばプログラムは一つだけ"root"タスクを持ち、他のタスクはその子や子孫であるべきです。
-そうする事でタスクの集合が一本の木で表され、プログラムの構造が明確になるからです。
-
-asynckivyでそれを実現するには :func:`asynckivy.start` の呼び出しを一度だけにし、他のタスクは全て
-:external+asyncgui:doc:`structured-concurrency-ja` を通して作ります。
-
-.. code-block::
-
-    import asynckivy as ak
-
-    class YourApp(App):
-        def on_start(self):
-            self._root_task = ak.start(self.main())
-
-        def on_stop(self):
-            self._root_task.cancel()
-
-        async def main(self):
-            ...

@@ -47,7 +47,7 @@ async def what_you_want_to_do(button):
     await ak.event(button, 'on_press')
     print('C')
 
-ak.start(what_you_want_to_do(...))
+ak.managed_start(what_you_want_to_do(...))
 ```
 
 ## Installation
@@ -112,7 +112,7 @@ async def some_task(button):
     child_tasks = tasks[1].result
     print("5 seconds elapsed" if child_tasks[0].finished else "other_async_func has completed")
 
-ak.start(some_task(some_button))
+ak.managed_start(some_task(some_button))
 ```
 
 For more details, read the [documentation](https://asyncgui.github.io/asynckivy/).

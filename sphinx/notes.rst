@@ -122,28 +122,3 @@ Here is a list of them:
             ...
         async for __ in async_iterator:  # NOT ALLOWED
             ...
-
-
--------------------------------
-How to structure your program
--------------------------------
-
-Ultimately, your program should have only one "root" task, with all other tasks as its children or descendants.
-This is something that Trio forces you to do but asynckivy does not.
-
-You can achieve this by calling :func:`asynckivy.start` only once in your program,
-and spawning all other tasks through the :external+asyncgui:doc:`structured-concurrency` APIs.
-
-.. code-block::
-
-    import asynckivy as ak
-
-    class YourApp(App):
-        def on_start(self):
-            self._root_task = ak.start(self.main())
-
-        def on_stop(self):
-            self._root_task.cancel()
-
-        async def main(self):
-            ...

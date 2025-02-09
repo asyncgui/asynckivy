@@ -56,7 +56,7 @@ class CustomButton(Label):
 
     def _restart(self, dt):
         self._main_task.cancel()
-        self._main_task = ak.start(self._main())
+        self._main_task = ak.managed_start(self._main())
 
     @staticmethod
     def _touch_filter(w, t) -> bool:

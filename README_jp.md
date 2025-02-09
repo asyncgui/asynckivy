@@ -44,7 +44,7 @@ async def what_you_want_to_do(button):
     await ak.event(button, 'on_press')
     print('C')
 
-ak.start(what_you_want_to_do(...))
+ak.managed_start(what_you_want_to_do(...))
 ```
 
 と分かりやすく書けます。
@@ -109,7 +109,7 @@ async def async_func(button):
     child_tasks = tasks[1].result
     print("5秒経ちました" if child_tasks[0].finished else "other_async_funcが完了しました")
 
-ak.start(async_func(a_button))
+ak.managed_start(async_func(a_button))
 ```
 
 より詳しい使い方は[こちら](https://asyncgui.github.io/asynckivy/)をご覧ください。
