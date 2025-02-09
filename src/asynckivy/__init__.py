@@ -13,6 +13,7 @@ __all__ = (
     'fade_transition',
     'interpolate',
     'interpolate_seq',
+    'managed_start',
     'move_on_after',
     'n_frames',
     'repeat_sleeping',
@@ -39,3 +40,4 @@ from ._touch import watch_touch, rest_of_touch_events
 from ._threading import run_in_executor, run_in_thread
 from ._n_frames import n_frames
 from ._utils import transform, suppress_event, create_texture_from_text, sync_attr, sync_attrs
+from ._managed_start import managed_start

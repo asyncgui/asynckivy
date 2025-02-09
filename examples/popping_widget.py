@@ -48,7 +48,7 @@ KV_CODE = r'''
     height: '100dp'
     font_size: '100sp'
     on_press:
-        ak.start(pop_widget(self, ignore_touch=True))
+        ak.managed_start(pop_widget(self, ignore_touch=True))
 
 BoxLayout:
     spacing: '20dp'

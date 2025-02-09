@@ -13,7 +13,7 @@ class TestApp(App):
         return Label(font_size=40)
 
     def on_start(self):
-        ak.start(self.main())
+        ak.managed_start(self.main())
 
     async def main(self):
         await ak.n_frames(4)

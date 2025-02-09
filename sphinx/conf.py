@@ -86,8 +86,25 @@ def modify_signature(app, what: str, name: str, obj, options, signature, return_
     if name in group1:
         print(f"Emit the signature of {name!r}")
         return ('(...)', return_annotation)
+    elif name == "managed_start":
+        return ("(aw: ~typing.Awaitable | ~asyncgui.Task, /)", return_annotation, )
+
     return (signature, return_annotation, )
 
 
+def modify_docstring(app, what: str, name: str, obj, options, lines, prefix="asynckivy.",
+                     len_prefix=len("asynckivy."),
+                     ):
+    if not name.startswith(prefix):
+        return
+    name = name[len_prefix:]
+    if name == "managed_start":
+        from asynckivy._managed_start import __managed_start_doc__
+        lines.clear()
+        lines.extend(__managed_start_doc__.split("\n"))
+        return
+
 def setup(app):
     app.connect('autodoc-process-signature', modify_signature)
+    app.connect('autodoc-process-docstring', modify_docstring)
+

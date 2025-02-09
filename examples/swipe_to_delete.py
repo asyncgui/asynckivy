@@ -75,10 +75,7 @@ class SampleApp(App):
         return root
 
     def on_start(self):
-        self._main_task = ak.start(self.main())
-
-    def on_stop(self):
-        self._main_task.cancel()
+        ak.managed_start(self.main())
 
     async def main(self):
         ids = self.root.ids

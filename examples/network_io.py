@@ -13,7 +13,7 @@ class TestApp(App):
         return Button(font_size='20sp')
 
     def on_start(self):
-        ak.start(self.main())
+        ak.managed_start(self.main())
 
     async def main(self):
         button = self.root

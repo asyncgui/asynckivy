@@ -63,7 +63,7 @@ class SampleApp(App):
         return Painter()
 
     def on_start(self):
-        ak.start(self.root.main())
+        ak.managed_start(self.root.main())
 
 
 if __name__ == "__main__":

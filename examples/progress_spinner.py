@@ -33,7 +33,7 @@ async def progress_spinner(
 
 class TestApp(App):
     def on_start(self):
-        ak.start(self.main())
+        ak.managed_start(self.main())
 
     async def main(self):
         await ak.n_frames(4)
