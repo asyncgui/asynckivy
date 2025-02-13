@@ -2,7 +2,7 @@
 Painter
 =======
 
-* can handle mutiple touches simultaneously
+* can handle multiple touches simultaneously
 * uses 'event_freq' and 'move_on_when' instead of 'rest_of_touch_events'
 '''
 
@@ -25,12 +25,10 @@ class Painter(RelativeLayout):
         return self.collide_point(*touch.opos) and (not touch.is_mouse_scrolling) and (self._ud_key not in touch.ud)
 
     async def main(self):
+        on_touch_down = partial(ak.event, self, 'on_touch_down', filter=self.accepts_touch, stop_dispatching=True)
         async with ak.open_nursery() as nursery:
-            touch_down_event = partial(
-                ak.event, self, 'on_touch_down', filter=self.accepts_touch, stop_dispatching=True)
-
             while True:
-                __, touch = await touch_down_event()
+                __, touch = await on_touch_down()
                 touch.ud[self._ud_key] = True
                 nursery.start(self.draw_rect(touch))
 
@@ -43,12 +41,11 @@ class Painter(RelativeLayout):
             Color(*get_random_color())
             line = Line(width=2)
 
-        def touch_filter(w, t, touch=touch):
+        def filter(w, t, touch=touch):
             return t is touch
-
         async with (
-            ak.move_on_when(ak.event(Window, 'on_touch_up', filter=touch_filter)),
-            ak.event_freq(self, 'on_touch_move', filter=touch_filter, stop_dispatching=True) as on_touch_move,
+            ak.move_on_when(ak.event(Window, 'on_touch_up', filter=filter)),
+            ak.event_freq(self, 'on_touch_move', filter=filter, stop_dispatching=True) as on_touch_move,
         ):
             while True:
                 await on_touch_move()
