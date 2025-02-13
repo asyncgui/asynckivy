@@ -1,6 +1,7 @@
 import itertools
 from kivy.app import App
 from kivy.graphics import Line, Color, InstructionGroup
+from kivy.uix.widget import Widget
 import asynckivy as ak
 
 
@@ -32,6 +33,9 @@ async def progress_spinner(
 
 
 class TestApp(App):
+    def build(self):
+        return Widget()
+
     def on_start(self):
         ak.managed_start(self.main())
 

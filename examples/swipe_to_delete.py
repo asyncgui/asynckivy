@@ -10,20 +10,25 @@ from kivy.uix.button import Button
 import asynckivy as ak
 
 
-async def swipe_to_delete(layout, *, swipe_distance=400.):
+def remove_child(layout, child):
+    layout.remove_widget(child)
+
+
+async def enable_swipe_to_delete(target_layout, *, swipe_distance=400., delete_action=remove_child):
     '''
-    指定されたlayoutの子widget達をスワイプ操作で取り除けるようにする。
-    この効力があるのはこの関数の実行中のみであり、それが終わり次第layoutは元の状態に戻る。
-    また実行中はlayoutへ伝わるはずのtouchイベントを全て遮る。
+    Enables swipe-to-delete functionality for a layout. While enabled, the API blocks all touch
+    events that intersect with the layout, meaning that if there is a button inside the layout,
+    the user cannot press it.
+
+    :param delete_action: You can replace the default deletion action by passing a custom function.
     '''
-    layout = layout.__self__
-    is_recycle_type = hasattr(layout, 'recycleview')
+    layout = target_layout.__self__
     se = partial(ak.suppress_event, layout, filter=lambda w, t: w.collide_point(*t.pos))
     with se("on_touch_down"), se("on_touch_move"), se("on_touch_up"):
         while True:
             __, touch = await ak.event(layout, "on_touch_down")
             # 'layout.to_local()' here is not necessary for this example to work because the 'layout' is an
-            # instance of BoxLayout and the BoxLayout is not a relative type widget.
+            # instance of BoxLayout, and the BoxLayout is not a relative-type widget.
             ox, oy = layout.to_local(*touch.opos)
             for c in layout.children:
                 if c.collide_point(ox, oy):
@@ -38,10 +43,7 @@ async def swipe_to_delete(layout, *, swipe_distance=400.):
                         translate.x = dx = touch.x - ox
                         c.opacity = 1.0 - abs(dx) / swipe_distance
                     if c.opacity < 0.3:
-                        if is_recycle_type:
-                            layout.recycleview.data.pop(layout.get_view_index_at(c.center))
-                        else:
-                            layout.remove_widget(c)
+                        delete_action(layout, c)
             finally:
                 c.opacity = 1.0
 
@@ -84,7 +86,7 @@ class SampleApp(App):
         while True:
             await ak.event(switch, 'active', filter=lambda _, active: active)
             async with ak.run_as_main(ak.event(switch, 'active')):
-                await swipe_to_delete(container)
+                await enable_swipe_to_delete(container)
 
 
 if __name__ == '__main__':

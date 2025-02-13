@@ -7,18 +7,21 @@ from kivy.graphics import Translate, Scale
 import asynckivy as ak
 
 
-GRAVITY = -9.80665 * cm(100)
+GRAVITY = -9.80665 * cm(100)  # gravitational acceleration in pixels/second**2
 ignore_touch_down = partial(
     ak.suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
 
 
-async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
+async def bounce_widget(widget, *, scale_x_max=3.0, gravity=0.2):
+    '''
+    :param gravity: A gravity coefficient. A higher value makes the widget fall faster.
+    '''
     import asynckivy as ak
 
     if scale_x_max <= 1.0:
         raise ValueError(f"'scale_x_max' must be greater than 1.0. (was {scale_x_max})")
-    if gravity_factor <= 0:
-        raise ValueError(f"'gravity_factor' must be greater than 0. (was {gravity_factor})")
+    if gravity <= 0:
+        raise ValueError(f"'gravity' must be greater than 0. (was {gravity})")
     widget = widget.__self__
     with ignore_touch_down(widget), ak.transform(widget) as ig:
         # phase 1: Widget becomes wider and shorter while it being pressed.
@@ -36,7 +39,7 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity_factor=0.2):
         # phase 3: Widget bounces and returns to its original size.
         ig.insert(0, translate := Translate())
         initial_velocity = scale_x ** 2 * 1000.0
-        gravity = GRAVITY * gravity_factor
+        gravity = GRAVITY * gravity
         async with ak.wait_all_cm(ak.anim_attrs(scale, x=1.0, y=1.0, duration=0.1)):
             async for et in ak.anim_with_et():
                 translate.y = y = et * (initial_velocity + gravity * et)
