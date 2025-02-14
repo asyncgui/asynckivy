@@ -157,8 +157,7 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout
     try:
         touch.grab(widget)
         if stop_dispatching:
-            se = partial(suppress_event, widget,
-                         filter=lambda w, t, touch=touch: t is touch and t.grab_current is None)
+            se = partial(suppress_event, widget, filter=lambda w, t, touch=touch: t is touch)
         with (
             se("on_touch_up") if stop_dispatching else nullcontext(),
             se("on_touch_move") if stop_dispatching else nullcontext(),
