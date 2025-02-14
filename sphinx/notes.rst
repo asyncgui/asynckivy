@@ -105,7 +105,7 @@ Here is a list of them:
 Places where async operations are disallowed
 --------------------------------------------
 
-Most of the asynckivy APIs that return an async iterator don't allow to perform async operations during the iteration.
+Most asynckivy APIs that return an async iterator don't allow async operations during iteration.
 Here is a list of them:
 
 - :func:`asynckivy.rest_of_touch_events`
