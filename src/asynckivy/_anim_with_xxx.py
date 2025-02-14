@@ -36,7 +36,7 @@ async def anim_with_dt(*, step=0):
 
 async def anim_with_et(*, step=0):
     '''
-    Generates the elapsed time of the loop.
+    Returns an async iterator that yields the elapsed time since the start of the iteration.
 
     .. code-block::
 
@@ -82,6 +82,8 @@ async def anim_with_dt_et(*, step=0):
 
 async def anim_with_ratio(*, base, step=0):
     '''
+    Returns an async iterator that yields the elapsed time since the start of the iteration, divided by ``base``.
+
     .. code-block::
 
         async for p in anim_with_ratio(base=3):
@@ -92,7 +94,7 @@ async def anim_with_ratio(*, base, step=0):
     .. code-block::
 
         base = 3
-        async for et in anim_with_et(...):
+        async for et in anim_with_et():
             p = et / base
             print(p)
 
