@@ -84,6 +84,10 @@ class repeat_sleeping:
                 ...
             async for __ in async_iterator:  # NOT ALLOWED
                 ...
+
+    .. versionchanged:: 0.8.0
+
+        This API is now private.
     '''
 
     __slots__ = ('_step', '_trigger', )
