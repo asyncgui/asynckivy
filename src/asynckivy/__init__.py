@@ -7,7 +7,6 @@ __all__ = (
     'anim_with_dt_et_ratio',
     'anim_with_et',
     'anim_with_ratio',
-    'create_texture_from_text',
     'event',
     'event_freq',
     'fade_transition',
@@ -38,5 +37,5 @@ from ._interpolate import interpolate, interpolate_seq, fade_transition
 from ._touch import rest_of_touch_events
 from ._threading import run_in_executor, run_in_thread
 from ._n_frames import n_frames
-from ._utils import transform, suppress_event, create_texture_from_text, sync_attr, sync_attrs
+from ._utils import transform, suppress_event, sync_attr, sync_attrs
 from ._managed_start import managed_start
