@@ -153,10 +153,11 @@ class sync_attr:
 
         import types
 
-        widget = Widget()
+        widget = Widget(x=0)
         obj = types.SimpleNamespace()
 
         with sync_attr(from_=(widget, 'x'), to_=(obj, 'xx')):
+            assert obj.xx == 0  # synchronized
             widget.x = 10
             assert obj.xx == 10  # synchronized
             obj.xx = 20
@@ -169,7 +170,7 @@ class sync_attr:
         from kivy.graphics import Rotate
 
         async def rotate_widget(widget, *, angle=360.):
-            rotate = Rotate(origin=widget.center)
+            rotate = Rotate()
             with (
                 transform(widget) as ig,
                 sync_attr(from_=(widget, 'center'), to_=(rotate, 'origin')),
@@ -178,23 +179,45 @@ class sync_attr:
                 await anim_attrs(rotate, angle=angle)
 
     .. versionadded:: 0.6.1
+
+    .. versionchanged:: 0.8.0
+        The context manager now takes effect upon creation, rather than when its ``__enter__()`` method is called,
+        and ``__enter__()`` no longer performs any action.
+        This change is intended to offer the following option:
+
+        * If you want its effect to be temporary, you should use it with a with-statement as usual.
+        * If you want its effect to be permanent, you should use it like a regular function.
+
+        .. code-block::
+
+            with sync_attr(...):  # the effect is temporary
+                ...
+            sync_attr(...) # the effect is permanent
+
+        Additionally, the context manager now assigns the ``from_`` value to the ``to_`` upon creation:
+
+        .. code-block::
+
+            with sync_attr((widget, 'x'), (obj, 'xx')):
+                assert widget.x is obj.xx
     '''
-    __slots__ = ('_from', '_to', '_bind_uid', )
+    __slots__ = ("__exit__", )
 
-    def __init__(self, from_: T.Tuple[EventDispatcher, str], to_: T.Tuple[T.Any, str]):
-        self._from = from_
-        self._to = to_
+    def __init__(self, from_: tuple[EventDispatcher, str], to_: tuple[T.Any, str]):
+        setattr(*to_, getattr(*from_))
+        bind_uid = from_[0].fbind(from_[1], partial(self._sync, setattr, *to_))
+        self.__exit__ = partial(self._unbind, *from_, bind_uid)
 
+    @staticmethod
     def _sync(setattr, obj, attr_name, event_dispatcher, new_value):
         setattr(obj, attr_name, new_value)
 
-    def __enter__(self, partial=partial, sync=partial(_sync, setattr)):
-        self._bind_uid = self._from[0].fbind(self._from[1], partial(sync, *self._to))
+    @staticmethod
+    def _unbind(event_dispatcher, event_name, bind_uid, *__):
+        event_dispatcher.unbind_uid(event_name, bind_uid)
 
-    def __exit__(self, *args):
-        self._from[0].unbind_uid(self._from[1], self._bind_uid)
-
-    del _sync
+    def __enter__(self):
+        pass
 
 
 class sync_attrs:
@@ -221,8 +244,8 @@ class sync_attrs:
         from kivy.graphics import Rotate, Scale
 
         async def scale_and_rotate_widget(widget, *, scale=2.0, angle=360.):
-            rotate = Rotate(origin=widget.center)
-            scale = Scale(origin=widget.center)
+            rotate = Rotate()
+            scale = Scale()
             with (
                 transform(widget) as ig,
                 sync_attrs((widget, 'center'), (rotate, 'origin'), (scale, 'origin')),
@@ -235,21 +258,42 @@ class sync_attrs:
                 )
 
     .. versionadded:: 0.6.1
+
+    .. versionchanged:: 0.8.0
+        The context manager now takes effect upon creation, rather than when its ``__enter__()`` method is called,
+        and ``__enter__()`` no longer performs any action.
+        This change is intended to offer the following option:
+
+        * If you want its effect to be temporary, you should use it with a with-statement as usual.
+        * If you want its effect to be permanent, you should use it like a regular function.
+
+        .. code-block::
+
+            with sync_attrs(...):  # the effect is temporary
+                ...
+            sync_attrs(...) # the effect is permanent
+
+        Additionally, the context manager now assigns the ``from_`` value to the ``to_`` upon creation:
+
+        .. code-block::
+
+            with sync_attrs((widget, 'x'), (obj, 'xx')):
+                assert widget.x is obj.xx
     '''
-    __slots__ = ('_from', '_to', '_bind_uid', )
+    __slots__ = ("__exit__", )
 
-    def __init__(self, from_: T.Tuple[EventDispatcher, str], *to_):
-        self._from = from_
-        self._to = to_
+    def __init__(self, from_: tuple[EventDispatcher, str], *to_):
+        sync = partial(self._sync, setattr, to_)
+        sync(None, getattr(*from_))
+        bind_uid = from_[0].fbind(from_[1], sync)
+        self.__exit__ = partial(self._unbind, *from_, bind_uid)
 
+    @staticmethod
     def _sync(setattr, to_, event_dispatcher, new_value):
         for obj, attr_name in to_:
             setattr(obj, attr_name, new_value)
 
-    def __enter__(self, partial=partial, sync=partial(_sync, setattr)):
-        self._bind_uid = self._from[0].fbind(self._from[1], partial(sync, self._to))
+    _unbind = staticmethod(sync_attr._unbind)
 
-    def __exit__(self, *args):
-        self._from[0].unbind_uid(self._from[1], self._bind_uid)
-
-    del _sync
+    def __enter__(self):
+        pass

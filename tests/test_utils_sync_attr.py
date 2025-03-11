@@ -7,7 +7,7 @@ def human_cls():
     from kivy.properties import NumericProperty
 
     class Human(EventDispatcher):
-        age = NumericProperty()
+        age = NumericProperty(10)
 
     return Human
 
@@ -23,6 +23,7 @@ def test_sync_attr(human):
 
     obj = types.SimpleNamespace()
     with ak.sync_attr(from_=(human, 'age'), to_=(obj, 'AGE')):
+        assert obj.AGE == 10
         human.age = 2
         assert obj.AGE == 2
         human.age = 0
@@ -37,6 +38,8 @@ def test_sync_attrs(human):
 
     obj = types.SimpleNamespace()
     with ak.sync_attrs((human, 'age'), (obj, 'AGE'), (obj, 'age')):
+        assert obj.AGE == 10
+        assert obj.age == 10
         human.age = 2
         assert obj.AGE == 2
         assert obj.age == 2
