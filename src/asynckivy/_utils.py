@@ -181,8 +181,8 @@ class sync_attr:
     .. versionadded:: 0.6.1
 
     .. versionchanged:: 0.8.0
-        The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is called,
-        and ``__enter__()`` no longer performs any action.
+        The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is
+        called, and ``__enter__()`` no longer performs any action.
         This change is intended to provide the following options:
 
         * To make its effect temporary, use it with a with-statement.
@@ -263,8 +263,8 @@ class sync_attrs:
     .. versionadded:: 0.6.1
 
     .. versionchanged:: 0.8.0
-        The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is called,
-        and ``__enter__()`` no longer performs any action.
+        The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is
+        called, and ``__enter__()`` no longer performs any action.
         This change is intended to provide the following options:
 
         * To make its effect temporary, use it with a with-statement.
