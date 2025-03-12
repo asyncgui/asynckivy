@@ -181,18 +181,21 @@ class sync_attr:
     .. versionadded:: 0.6.1
 
     .. versionchanged:: 0.8.0
-        The context manager now takes effect upon creation, rather than when its ``__enter__()`` method is called,
+        The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is called,
         and ``__enter__()`` no longer performs any action.
-        This change is intended to offer the following option:
+        This change is intended to provide the following options:
 
-        * If you want its effect to be temporary, you should use it with a with-statement as usual.
-        * If you want its effect to be permanent, you should use it like a regular function.
+        * To make its effect temporary, use it with a with-statement.
+        * To make its effect permanent, use it without a with-statement.
 
         .. code-block::
 
-            with sync_attr(...):  # the effect is temporary
+            # The effect lasts only within the with-block.
+            with sync_attr(...):
                 ...
-            sync_attr(...) # the effect is permanent
+
+            # The effect is permanent.
+            sync_attr(...)
 
         Additionally, the context manager now assigns the ``from_`` value to the ``to_`` upon creation:
 
@@ -260,18 +263,21 @@ class sync_attrs:
     .. versionadded:: 0.6.1
 
     .. versionchanged:: 0.8.0
-        The context manager now takes effect upon creation, rather than when its ``__enter__()`` method is called,
+        The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is called,
         and ``__enter__()`` no longer performs any action.
-        This change is intended to offer the following option:
+        This change is intended to provide the following options:
 
-        * If you want its effect to be temporary, you should use it with a with-statement as usual.
-        * If you want its effect to be permanent, you should use it like a regular function.
+        * To make its effect temporary, use it with a with-statement.
+        * To make its effect permanent, use it without a with-statement.
 
         .. code-block::
 
-            with sync_attrs(...):  # the effect is temporary
+            # The effect lasts only within the with-block.
+            with sync_attrs(...):
                 ...
-            sync_attrs(...) # the effect is permanent
+
+            # The effect is permanent.
+            sync_attrs(...)
 
         Additionally, the context manager now assigns the ``from_`` value to the ``to_`` upon creation:
 
