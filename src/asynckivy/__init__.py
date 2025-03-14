@@ -21,6 +21,7 @@ __all__ = (
     'run_in_thread',
     'sleep',
     'sleep_free',
+    'smooth_attr',
     'suppress_event',
     'sync_attr',
     'sync_attrs',
@@ -39,3 +40,4 @@ from ._threading import run_in_executor, run_in_thread
 from ._n_frames import n_frames
 from ._utils import transform, suppress_event, sync_attr, sync_attrs
 from ._managed_start import managed_start
+from ._smooth_attr import smooth_attr
