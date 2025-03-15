@@ -147,21 +147,29 @@ class suppress_event:
 
 class sync_attr:
     '''
-    Returns a context manager that creates one-directional binding between attributes.
+    Creates one-directional binding between attributes.
 
     .. code-block::
 
         import types
 
-        widget = Widget(x=0)
+        widget = Widget(x=100)
         obj = types.SimpleNamespace()
 
-        with sync_attr(from_=(widget, 'x'), to_=(obj, 'xx')):
-            assert obj.xx == 0  # synchronized
-            widget.x = 10
-            assert obj.xx == 10  # synchronized
-            obj.xx = 20
-            assert widget.x == 10  # but not the other way around
+        sync_attr(from_=(widget, 'x'), to_=(obj, 'xx')):
+        assert obj.xx == 100  # synchronized
+        widget.x = 10
+        assert obj.xx == 10  # synchronized
+        obj.xx = 20
+        assert widget.x == 10  # but not the other way around
+
+    To make its effect temporary, use it with a with-statement:
+
+    .. code-block::
+
+        # The effect lasts only within the with-block.
+        with sync_attr(...):
+            ...
 
     This can be particularly useful when combined with :func:`transform`.
 
@@ -183,19 +191,6 @@ class sync_attr:
     .. versionchanged:: 0.8.0
         The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is
         called, and ``__enter__()`` no longer performs any action.
-        This change is intended to provide the following options:
-
-        * To make its effect temporary, use it with a with-statement.
-        * To make its effect permanent, use it without a with-statement.
-
-        .. code-block::
-
-            # The effect lasts only within the with-block.
-            with sync_attr(...):
-                ...
-
-            # The effect is permanent.
-            sync_attr(...)
 
         Additionally, the context manager now assigns the ``from_`` value to the ``to_`` upon creation:
 
@@ -265,19 +260,6 @@ class sync_attrs:
     .. versionchanged:: 0.8.0
         The context manager now applies its effect upon creation, rather than when its ``__enter__()`` method is
         called, and ``__enter__()`` no longer performs any action.
-        This change is intended to provide the following options:
-
-        * To make its effect temporary, use it with a with-statement.
-        * To make its effect permanent, use it without a with-statement.
-
-        .. code-block::
-
-            # The effect lasts only within the with-block.
-            with sync_attrs(...):
-                ...
-
-            # The effect is permanent.
-            sync_attrs(...)
 
         Additionally, the context manager now assigns the ``from_`` value to the ``to_`` upon creation:
 
