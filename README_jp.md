@@ -54,8 +54,8 @@ ak.managed_start(what_you_want_to_do(...))
 マイナーバージョンが変わった時は何らかの重要な互換性の無い変更が加えられた事を意味するので使う際はマイナーバージョンまでを固定してください。
 
 ```text
-poetry add asynckivy@~0.7
-pip install "asynckivy>=0.7,<0.8"
+poetry add asynckivy@~0.8
+pip install "asynckivy>=0.8,<0.9"
 ```
 
 ## 使い方
