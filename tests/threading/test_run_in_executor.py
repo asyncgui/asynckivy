@@ -55,20 +55,20 @@ def test_cancel_before_getting_excuted(kivy_clock):
     import time
     import asynckivy as ak
 
-    box = ak.Box()
+    e = ak.StatefulEvent()
 
     async def job(executor):
-        await ak.run_in_executor(executor, box.put)
+        await ak.run_in_executor(executor, e.fire)
 
     with ThreadPoolExecutor(max_workers=1) as executor:
         executor.submit(time.sleep, .1)
         task = ak.start(job(executor))
         time.sleep(.02)
         assert not task.finished
-        assert box.is_empty
+        assert not e.is_fired
         kivy_clock.tick()
         task.cancel()
         assert task.cancelled
-        assert box.is_empty
+        assert not e.is_fired
         time.sleep(.2)
-        assert box.is_empty
+        assert not e.is_fired
