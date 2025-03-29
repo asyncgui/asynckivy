@@ -14,14 +14,14 @@ files = [
 
 [[package]]
 name = "asyncgui"
-version = "0.7.2"
+version = "0.8.0"
 description = "A minimalistic async library that focuses on fast responsiveness"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "asyncgui-0.7.2-py3-none-any.whl", hash = "sha256:d3de7d96c94c7721809710ecdec6ac216ff8cf8b64c9ca8128a48c3564b50530"},
-    {file = "asyncgui-0.7.2.tar.gz", hash = "sha256:b9561434f2b73540706517dfe74bfde9d7f5ac537aad36f7fb8ebbbf92506800"},
+    {file = "asyncgui-0.8.0-py3-none-any.whl", hash = "sha256:69b5d9aae17283c2bbb948c8f93cd03c2bbca5c060bbbce11ceeecb0292e5c03"},
+    {file = "asyncgui-0.8.0.tar.gz", hash = "sha256:daca14460f42c04586a4f824ccb7b43c24ea6cbda5ee3852aef43db5b69fe83c"},
 ]
 
 [package.dependencies]
@@ -337,7 +337,7 @@ version = "3.1.6"
 description = "A very fast and expressive template engine."
 optional = false
 python-versions = ">=3.7"
-groups = ["dev", "doc"]
+groups = ["doc"]
 files = [
     {file = "jinja2-3.1.6-py3-none-any.whl", hash = "sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67"},
     {file = "jinja2-3.1.6.tar.gz", hash = "sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d"},
@@ -425,7 +425,6 @@ files = [
     {file = "kivy_deps.angle-0.4.0-cp311-cp311-win_amd64.whl", hash = "sha256:574381d4e66f3198bc48aa10f238e7a3816ad56b80ec939f5d56fb33a378d0b1"},
     {file = "kivy_deps.angle-0.4.0-cp312-cp312-win32.whl", hash = "sha256:4fa7a6366899fba13f7624baf4645787165f45731db08d14557da29c12ee48f0"},
     {file = "kivy_deps.angle-0.4.0-cp312-cp312-win_amd64.whl", hash = "sha256:668e670d4afd2551af0af2c627ceb0feac884bd799fb6a3dff78fdbfa2ea0451"},
-    {file = "kivy_deps.angle-0.4.0-cp313-cp313-win_amd64.whl", hash = "sha256:9afbf702f8bb9a993c48f39c018ca3b4d2ec381a5d3f82fe65bdaa6af0bba29b"},
     {file = "kivy_deps.angle-0.4.0-cp37-cp37m-win32.whl", hash = "sha256:24cfc0076d558080a00c443c7117311b4a977c1916fe297232eff1fd6f62651e"},
     {file = "kivy_deps.angle-0.4.0-cp37-cp37m-win_amd64.whl", hash = "sha256:48592ac6f7c183c5cd10d9ebe43d4148d0b2b9e400a2b0bcb5d21014cc929ce2"},
     {file = "kivy_deps.angle-0.4.0-cp38-cp38-win32.whl", hash = "sha256:1bbacf20bf6bd6ee965388f95d937c8fba2c54916fb44faa166c2ba58276753c"},
@@ -447,9 +446,6 @@ files = [
     {file = "kivy_deps.glew-0.3.1-cp310-cp310-win_amd64.whl", hash = "sha256:aef2d2a93f129d8425c75234e7f6cc0a34b59a4aee67f6d2cd7a5fdfa9915b53"},
     {file = "kivy_deps.glew-0.3.1-cp311-cp311-win32.whl", hash = "sha256:ee2f80ef7ac70f4b61c50da8101b024308a8c59a57f7f25a6e09762b6c48f942"},
     {file = "kivy_deps.glew-0.3.1-cp311-cp311-win_amd64.whl", hash = "sha256:22e155ec59ce717387f5d8804811206d200a023ba3d0bc9bbf1393ee28d0053e"},
-    {file = "kivy_deps.glew-0.3.1-cp312-cp312-win32.whl", hash = "sha256:b64ee4e445a04bc7c848c0261a6045fc2f0944cc05d7f953e3860b49f2703424"},
-    {file = "kivy_deps.glew-0.3.1-cp312-cp312-win_amd64.whl", hash = "sha256:3acbbd30da05fc10c185b5d4bb75fbbc882a6ef2192963050c1c94d60a6e795a"},
-    {file = "kivy_deps.glew-0.3.1-cp313-cp313-win_amd64.whl", hash = "sha256:f4aa8322078359862ccd9e16e5cea61976d75fb43125d87922e20c916fa31a11"},
     {file = "kivy_deps.glew-0.3.1-cp37-cp37m-win32.whl", hash = "sha256:5bf6a63fe9cc4fe7bbf280ec267ec8c47914020a1175fb22152525ff1837b436"},
     {file = "kivy_deps.glew-0.3.1-cp37-cp37m-win_amd64.whl", hash = "sha256:d64a8625799fab7a7efeb3661ef8779a7f9c6d80da53eed87a956320f55530fa"},
     {file = "kivy_deps.glew-0.3.1-cp38-cp38-win32.whl", hash = "sha256:00f4ae0a4682d951266458ddb639451edb24baa54a35215dce889209daf19a06"},
@@ -517,7 +513,7 @@ version = "3.0.2"
 description = "Safely add untrusted strings to HTML/XML markup."
 optional = false
 python-versions = ">=3.9"
-groups = ["dev", "doc"]
+groups = ["doc"]
 files = [
     {file = "MarkupSafe-3.0.2-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:7e94c425039cde14257288fd61dcfb01963e658efbc0ff54f5306b06054700f8"},
     {file = "MarkupSafe-3.0.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:9e2d922824181480953426608b81967de705c3cef4d1af983af849d7bd619158"},
