@@ -9,7 +9,7 @@ from asyncgui import _current_task, _sleep_forever
 @types.coroutine
 def n_frames(n: int) -> T.Awaitable:
     '''
-    Waits for a specified number of frames.
+    Waits for a specified number of frames to elapse.
 
     .. code-block::
 
