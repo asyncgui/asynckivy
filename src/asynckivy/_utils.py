@@ -156,7 +156,7 @@ class sync_attr:
         widget = Widget(x=100)
         obj = types.SimpleNamespace()
 
-        sync_attr(from_=(widget, 'x'), to_=(obj, 'xx')):
+        sync_attr(from_=(widget, 'x'), to_=(obj, 'xx'))
         assert obj.xx == 100  # synchronized
         widget.x = 10
         assert obj.xx == 10  # synchronized
