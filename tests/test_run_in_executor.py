@@ -51,7 +51,7 @@ def test_no_exception(kivy_clock):
         assert task.finished
 
 
-def test_cancel_before_getting_excuted(kivy_clock):
+def test_cancel_before_start_executing(kivy_clock):
     import time
     import asynckivy as ak
 
