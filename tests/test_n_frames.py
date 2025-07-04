@@ -37,19 +37,18 @@ def test_scoped_cancel(kivy_clock):
     import asynckivy as ak
     TS = ak.TaskState
 
-    async def async_fn(ctx):
-        async with ak.open_cancel_scope() as scope:
-            ctx['scope'] = scope
+    async def async_fn():
+        async with ak.move_on_when(e.wait()):
             await ak.n_frames(1)
             pytest.fail()
-        await ak.sleep_forever()
+        await e.wait()
 
-    ctx = {}
-    task = ak.start(async_fn(ctx))
+    e = ak.Event()
+    task = ak.start(async_fn())
     assert task.state is TS.STARTED
-    ctx['scope'].cancel()
+    e.fire()
     assert task.state is TS.STARTED
     kivy_clock.tick()
     assert task.state is TS.STARTED
-    task._step()
+    e.fire()
     assert task.state is TS.FINISHED
