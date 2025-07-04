@@ -3,12 +3,9 @@ __all__ = ("event", "event_freq", "suppress_event", "rest_of_touch_events", )
 import typing as T
 import types
 from functools import partial
-from contextlib import nullcontext
+from contextlib import ExitStack
 
-from asyncgui import _current_task, _sleep_forever, move_on_when, wait_any
-
-from ._exceptions import MotionEventAlreadyEndedError
-from ._sleep import sleep
+from asyncgui import _current_task, _sleep_forever, move_on_when
 
 
 @types.coroutine
@@ -167,7 +164,7 @@ class suppress_event:
         self._dispatcher.unbind_uid(self._name, self._bind_uid)
 
 
-async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout=1.) -> T.AsyncIterator[None]:
+async def rest_of_touch_events(widget, touch, *, stop_dispatching=False) -> T.AsyncIterator[None]:
     '''
     Returns an async iterator that yields None on each ``on_touch_move`` event
     and stops when an ``on_touch_up`` event occurs.
@@ -178,33 +175,23 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, timeout
             print('on_touch_move')
         print('on_touch_up')
 
-    **Caution**
+    :param stop_dispatching: If the ``widget`` is a type that grabs touches on its own, such as
+                             :class:`kivy.uix.button.Button`, you'll likely want to set this to True
+                             in most cases to avoid grab conflicts.
 
-    * If the ``widget`` is the type of widget that grabs touches by itself, such as :class:`kivy.uix.button.Button`,
-      you probably want to set the ``stop_dispatching`` parameter to True in most cases.
-    * There are widgets/behaviors that might simulate touch events (e.g. :class:`kivy.uix.scrollview.ScrollView`,
-      :class:`kivy.uix.behaviors.DragBehavior` and ``kivy_garden.draggable.KXDraggableBehavior``).
-      If many such widgets are in the parent stack of the ``widget``, this API might mistakenly raise a
-      :exc:`asynckivy.MotionEventAlreadyEndedError`. If that happens, increase the ``timeout`` parameter.
+    .. versionchanged:: 0.9.0
+        The ``timeout`` parameter was removed.
+        You are now responsible for handling cases where the ``on_touch_up`` event for the touch does not occur.
+        If you fail to handle this, the iterator will wait indefinitely for an event that never comes.
     '''
-    if touch.time_end != -1:
-        # An `on_touch_up`` event might have already been fired, so we need to determine
-        # whether it actually was or not.
-        tasks = await wait_any(
-            sleep(timeout),
-            event(widget, 'on_touch_up', filter=lambda w, t: t is touch),
-        )
-        if tasks[0].finished:
-            raise MotionEventAlreadyEndedError(f"MotionEvent(uid={touch.uid}) has already ended")
-        return
+    touch.grab(widget)
     try:
-        touch.grab(widget)
-        if stop_dispatching:
-            se = partial(suppress_event, widget, filter=lambda w, t, touch=touch: t is touch)
-        with (
-            se("on_touch_up") if stop_dispatching else nullcontext(),
-            se("on_touch_move") if stop_dispatching else nullcontext(),
-        ):
+        with ExitStack() as stack:
+            if stop_dispatching:
+                se = partial(suppress_event, widget, filter=lambda w, t, touch=touch: t is touch)
+                stack.enter_context(se("on_touch_up"))
+                stack.enter_context(se("on_touch_move"))
+
             def filter(w, t, touch=touch):
                 return t is touch and t.grab_current is w
             async with (
