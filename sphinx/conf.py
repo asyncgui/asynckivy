@@ -76,18 +76,14 @@ sphinx_tabs_disable_tab_closing = True
 def modify_signature(app, what: str, name: str, obj, options, signature, return_annotation: str,
                      prefix="asynckivy.",
                      len_prefix=len("asynckivy."),
-                     group1={'rest_of_touch_events', },
                      ):
     if not name.startswith(prefix):
         return (signature, return_annotation, )
     name = name[len_prefix:]
     if signature is not None:
         signature = signature.replace("kivy.animation.AnimationTransition.linear", "'linear'")
-    if name in group1:
-        print(f"Emit the signature of {name!r}")
-        return ('(...)', return_annotation)
     elif name == "managed_start":
-        return ("(aw: ~typing.Awaitable | ~asyncgui.Task, /)", return_annotation, )
+        return ("(aw: ~collections.abc.Awaitable | ~asyncgui.Task, /)", return_annotation, )
 
     return (signature, return_annotation, )
 

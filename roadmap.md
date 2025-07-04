@@ -1,10 +1,10 @@
 # 0.9.0
 
+- 適切な名前のファイルへコードを移す。例: `suppress_event` を `_event.py` へ。
 - Removes `MotionEventAlreadyEndedError`, and leaves the users to handle the `touch.time_end != -1` situation on their own.
 
 # Eventually
 
-- 適切な名前のファイルへコードを移す。例: `suppress_event` を `_event.py` へ。
 
 # Undetermind
 

@@ -101,24 +101,23 @@ def test_low_fps(approx, sleep_then_tick):
 def test_scoped_cancel(sleep_then_tick):
     from types import SimpleNamespace
     import asynckivy as ak
+    TS = ak.TaskState
 
-    async def async_func(ctx):
+    async def async_func():
         obj = SimpleNamespace(num=0)
-        async with ak.open_cancel_scope() as scope:
-            ctx['scope'] = scope
-            ctx['state'] = 'A'
-            await ak.anim_attrs(obj, num=100, duration=.1,)
+        async with ak.move_on_when(e.wait()):
+            await ak.anim_attrs(obj, num=100, duration=1)
             pytest.fail()
-        ctx['state'] = 'B'
-        await ak.sleep_forever()
-        ctx['state'] = 'C'
+        await e.wait()
 
-    ctx = {}
-    task = ak.start(async_func(ctx))
-    assert ctx['state'] == 'A'
-    ctx['scope'].cancel()
-    assert ctx['state'] == 'B'
-    sleep_then_tick(.2)
-    assert ctx['state'] == 'B'
-    task._step()
-    assert ctx['state'] == 'C'
+    e = ak.Event()
+    task = ak.start(async_func())
+    assert task.state is TS.STARTED
+    sleep_then_tick(.5)
+    assert task.state is TS.STARTED
+    e.fire()
+    assert task.state is TS.STARTED
+    sleep_then_tick(1)
+    assert task.state is TS.STARTED
+    e.fire()
+    assert task.state is TS.FINISHED

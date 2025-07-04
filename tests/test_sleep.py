@@ -42,53 +42,48 @@ def test_repeat_sleeping(sleep_then_tick):
 
 
 @p_free
-def test_sleep_cancel(kivy_clock, free):
+def test_cancel_sleep(kivy_clock, free):
     import asynckivy as ak
+    TS = ak.TaskState
 
     if free and not hasattr(kivy_clock, 'create_trigger_free'):
         pytest.skip("free-type Clock is not available")
 
-    async def async_fn(ctx):
-        async with ak.open_cancel_scope() as scope:
-            ctx['scope'] = scope
-            ctx['state'] = 'A'
+    async def async_fn():
+        async with ak.move_on_when(e.wait()):
             await (ak.sleep_free(0) if free else ak.sleep(0))
             pytest.fail()
-        ctx['state'] = 'B'
-        await ak.sleep_forever()
-        ctx['state'] = 'C'
+        await e.wait()
 
-    ctx = {}
-    task = ak.start(async_fn(ctx))
-    assert ctx['state'] == 'A'
-    ctx['scope'].cancel()
-    assert ctx['state'] == 'B'
+    e = ak.Event()
+    task = ak.start(async_fn())
+    assert task.state is TS.STARTED
+    e.fire()
+    assert task.state is TS.STARTED
     kivy_clock.tick()
-    assert ctx['state'] == 'B'
-    task._step()
-    assert ctx['state'] == 'C'
+    assert task.state is TS.STARTED
+    e.fire()
+    assert task.state is TS.FINISHED
 
 
 def test_cancel_repeat_sleeping(kivy_clock):
     import asynckivy as ak
+    TS = ak.TaskState
 
-    async def async_fn(ctx):
-        async with ak.open_cancel_scope() as scope:
-            ctx['scope'] = scope
-            ctx['state'] = 'A'
+    async def async_fn():
+        async with ak.move_on_when(e.wait()):
             async with ak.repeat_sleeping(step=0) as sleep:
                 await sleep()
+                pytest.fail()
             pytest.fail()
-        ctx['state'] = 'B'
-        await ak.sleep_forever()
-        ctx['state'] = 'C'
+        await e.wait()
 
-    ctx = {}
-    task = ak.start(async_fn(ctx))
-    assert ctx['state'] == 'A'
-    ctx['scope'].cancel()
-    assert ctx['state'] == 'B'
+    e = ak.Event()
+    task = ak.start(async_fn())
+    assert task.state is TS.STARTED
+    e.fire()
+    assert task.state is TS.STARTED
     kivy_clock.tick()
-    assert ctx['state'] == 'B'
-    task._step()
-    assert ctx['state'] == 'C'
+    assert task.state is TS.STARTED
+    e.fire()
+    assert task.state is TS.FINISHED
