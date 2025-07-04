@@ -1,6 +1,6 @@
 __all__ = ("sleep", "sleep_free", "repeat_sleeping", "move_on_after", "n_frames", )
 
-import typing as T
+from contextlib import AbstractAsyncContextManager
 import types
 
 from kivy.clock import Clock
@@ -8,7 +8,7 @@ from asyncgui import _current_task, _sleep_forever, move_on_when, Task, Cancelle
 
 
 @types.coroutine
-def sleep(duration) -> T.Awaitable[float]:
+def sleep(duration):
     '''
     An async form of :meth:`kivy.clock.Clock.schedule_once`.
 
@@ -28,7 +28,7 @@ def sleep(duration) -> T.Awaitable[float]:
 
 
 @types.coroutine
-def sleep_free(duration) -> T.Awaitable[float]:
+def sleep_free(duration):
     '''
     An async form of :meth:`kivy.clock.Clock.schedule_once_free`.
 
@@ -100,7 +100,7 @@ class repeat_sleeping:
         self._step = step
 
     @types.coroutine
-    def __aenter__(self, _sleep=_sleep) -> T.Awaitable[T.Callable[[], T.Awaitable[float]]]:
+    def __aenter__(self, _sleep=_sleep):
         task = (yield _current_task)[0][0]
         self._trigger = Clock.create_trigger(task._step, self._step, True, False)
         self._trigger()
@@ -110,7 +110,7 @@ class repeat_sleeping:
         self._trigger.cancel()
 
 
-def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
+def move_on_after(seconds: float) -> AbstractAsyncContextManager[Task]:
     '''
     Returns an async context manager that applies a time limit to its code block,
     like :func:`trio.move_on_after` does.
@@ -130,7 +130,7 @@ def move_on_after(seconds: float) -> T.AsyncContextManager[Task]:
 
 
 @types.coroutine
-def n_frames(n: int) -> T.Awaitable:
+def n_frames(n: int):
     '''
     Waits for a specified number of frames to elapse.
 

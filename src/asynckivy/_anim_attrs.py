@@ -1,5 +1,4 @@
 __all__ = ('anim_attrs', 'anim_attrs_abbr', )
-import typing as T
 import types
 from functools import partial
 import kivy.clock
@@ -69,7 +68,7 @@ def _anim_attrs(
 
 
 def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear, output_seq_type=tuple,
-               **animated_properties) -> T.Awaitable:
+               **animated_properties):
     '''
     Animates attibutes of any object.
 
@@ -105,7 +104,7 @@ def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.line
 
 
 def anim_attrs_abbr(obj, *, d=1.0, s=0, t=AnimationTransition.linear, output_seq_type=tuple,
-                    **animated_properties) -> T.Awaitable:
+                    **animated_properties):
     '''
     :func:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
 

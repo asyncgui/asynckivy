@@ -1,5 +1,6 @@
 __all__ = ("transform", "sync_attr", "sync_attrs", )
 import typing as T
+from collections.abc import Iterator
 from contextlib import contextmanager
 from functools import partial
 
@@ -8,7 +9,7 @@ from kivy.graphics import PushMatrix, PopMatrix, InstructionGroup
 
 
 @contextmanager
-def transform(widget, *, use_outer_canvas=False) -> T.ContextManager[InstructionGroup]:
+def transform(widget, *, use_outer_canvas=False) -> Iterator[InstructionGroup]:
     '''
     Returns a context manager that sandwiches the ``widget``'s existing canvas instructions between
     a :class:`kivy.graphics.PushMatrix` and a :class:`kivy.graphics.PopMatrix`, and inserts an

@@ -1,5 +1,5 @@
 __all__ = ('interpolate', 'interpolate_seq', 'fade_transition', )
-import typing as T
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
@@ -10,7 +10,7 @@ from ._anim_with_xxx import anim_with_ratio
 linear = AnimationTransition.linear
 
 
-async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) -> T.AsyncIterator:
+async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) -> AsyncIterator:
     '''
     Interpolates between the values ``start`` and ``end`` in an async-manner.
     Inspired by wasabi2d's interpolate_.
@@ -47,7 +47,7 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     yield transition(1.) * slope + start
 
 
-async def interpolate_seq(start, end, *, duration, step=0, transition=linear, output_type=tuple) -> T.AsyncIterator:
+async def interpolate_seq(start, end, *, duration, step=0, transition=linear, output_type=tuple) -> AsyncIterator:
     '''
     Same as :func:`interpolate` except this one is for sequence types.
 
@@ -90,7 +90,7 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear, ou
 
 
 @asynccontextmanager
-async def fade_transition(*widgets, duration=1.0, step=0) -> T.AsyncContextManager:
+async def fade_transition(*widgets, duration=1.0, step=0):
     '''
     Returns an async context manager that:
 
