@@ -1,6 +1,6 @@
 __all__ = ("event", "event_freq", "suppress_event", "rest_of_touch_events", )
 
-import typing as T
+from collections.abc import AsyncIterator
 import types
 from functools import partial
 from contextlib import ExitStack
@@ -9,7 +9,7 @@ from asyncgui import _current_task, _sleep_forever, move_on_when
 
 
 @types.coroutine
-def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False) -> T.Awaitable[tuple]:
+def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
     '''
     Returns an awaitable that can be used to wait for:
 
@@ -164,7 +164,7 @@ class suppress_event:
         self._dispatcher.unbind_uid(self._name, self._bind_uid)
 
 
-async def rest_of_touch_events(widget, touch, *, stop_dispatching=False) -> T.AsyncIterator[None]:
+async def rest_of_touch_events(widget, touch, *, stop_dispatching=False) -> AsyncIterator[None]:
     '''
     Returns an async iterator that yields None on each ``on_touch_move`` event
     and stops when an ``on_touch_up`` event occurs.

@@ -1,5 +1,4 @@
 __all__ = ('run_in_thread', 'run_in_executor', )
-import typing as T
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor
 from kivy.clock import Clock
@@ -17,7 +16,7 @@ def _wrapper(func, ev):
         Clock.schedule_once(lambda __: ev.fire(ret, exc))
 
 
-async def run_in_thread(func, *, daemon=None) -> T.Awaitable:
+async def run_in_thread(func, *, daemon=None):
     '''
     Creates a new thread, runs a function within it, then waits for the completion of that function.
 
@@ -42,7 +41,7 @@ async def run_in_thread(func, *, daemon=None) -> T.Awaitable:
     return ret
 
 
-async def run_in_executor(executor: ThreadPoolExecutor, func) -> T.Awaitable:
+async def run_in_executor(executor: ThreadPoolExecutor, func):
     '''
     Runs a function within a :class:`concurrent.futures.ThreadPoolExecutor`, and waits for the completion of the
     function.
