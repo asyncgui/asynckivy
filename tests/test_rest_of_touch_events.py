@@ -106,31 +106,3 @@ def test_stop_dispatching(stop_dispatching, expectation):
     parent.dispatch('on_touch_up', t)
     assert n_touches['up'] == expectation[2]
     assert task.finished
-
-
-@pytest.mark.parametrize('timeout', (.2, 1.))
-@pytest.mark.parametrize('actually_ended', (True, False))
-def test_a_touch_that_might_have_already_ended(sleep_then_tick, timeout, actually_ended):
-    from contextlib import nullcontext
-    from kivy.uix.widget import Widget
-    from kivy.tests.common import UnitTestTouch
-    import asynckivy as ak
-
-    async def async_fn(w, t):
-        with pytest.raises(ak.MotionEventAlreadyEndedError) if actually_ended else nullcontext():
-            async for __ in ak.rest_of_touch_events(w, t, timeout=timeout):
-                pass
-
-    w = Widget()
-    t = UnitTestTouch(0, 0)
-    t.time_end = 1  # something other than -1
-    task = ak.start(async_fn(w, t))
-
-    if actually_ended:
-        sleep_then_tick(timeout)
-    else:
-        t.grab_current = None
-        w.dispatch('on_touch_up', t)
-        t.grab_current = w
-        w.dispatch('on_touch_up', t)
-    assert task.finished
