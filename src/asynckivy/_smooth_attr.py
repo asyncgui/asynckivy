@@ -92,21 +92,21 @@ class smooth_attr:
 
     _update_follower = partial(_update_follower, getattr, setattr, math.exp)
 
-    def _update_follower_ver_seq(getattr, setattr, math_exp, seq_cls, zip, target_obj, target_attr,
+    def _update_follower_ver_seq(getattr, setattr, math_exp, zip, target_obj, target_attr,
                                  follower_obj, follower_attr, negative_speed, min, max, dt):
         t_value = getattr(target_obj, target_attr)
         f_value = getattr(follower_obj, follower_attr)
         p = math_exp(negative_speed * dt)
         still_going = False
-        new_value = seq_cls(
+        new_value = [
             (t_elem + p * diff) if (
                 diff := f_elem - t_elem,
                 _still_going := (diff <= min or max <= diff),
                 still_going := (still_going or _still_going),
             ) and _still_going else t_elem
             for t_elem, f_elem in zip(t_value, f_value)
-        )
+        ]
         setattr(follower_obj, follower_attr, new_value)
         return still_going
 
-    _update_follower_ver_seq = partial(_update_follower_ver_seq, getattr, setattr, math.exp, tuple, zip)
+    _update_follower_ver_seq = partial(_update_follower_ver_seq, getattr, setattr, math.exp, zip)

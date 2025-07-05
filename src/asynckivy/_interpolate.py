@@ -47,7 +47,7 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     yield transition(1.) * slope + start
 
 
-async def interpolate_seq(start, end, *, duration, step=0, transition=linear, output_type=tuple) -> AsyncIterator:
+async def interpolate_seq(start, end, *, duration, step=0, transition=linear) -> AsyncIterator:
     '''
     Same as :func:`interpolate` except this one is for sequence types.
 
@@ -59,34 +59,33 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear, ou
     ============ ==========
     elapsed time output
     ============ ==========
-    0            (0, 50)
-    0.3          (30, 65)
-    0.6          (60, 80)
-    0.9          (90, 95)
-    **1.2 sec**  (100, 100)
+    0            [0, 50]
+    0.3          [30, 65]
+    0.6          [60, 80]
+    0.9          [90, 95]
+    **1.2 sec**  [100, 100]
     ============ ==========
 
     .. versionadded:: 0.7.0
+    .. versionchanged:: 0.9.0
+        The ``output_type`` parameter was removed. The iterator now always yields a list.
     '''
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
     zip_ = zip
     slope = tuple(end_elem - start_elem for end_elem, start_elem in zip_(end, start))
 
-    p = transition(0.)
-    yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+    yield [transition(0) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
     if duration:
         async for p in anim_with_ratio(step=step, base=duration):
             if p >= 1.0:
                 break
-            p = transition(p)
-            yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+            yield [transition(p) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
     else:
         await sleep(0)
 
-    p = transition(1.)
-    yield output_type(p * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start))
+    yield [transition(1) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
 
 @asynccontextmanager
@@ -106,7 +105,7 @@ async def fade_transition(*widgets, duration=1.0, step=0):
     Anything that has an attribute named ``opacity`` would work.
     '''
     half_duration = duration / 2.
-    org_opas = tuple(w.opacity for w in widgets)
+    org_opas = [w.opacity for w in widgets]
     try:
         async for p in anim_with_ratio(base=half_duration, step=step):
             p = 1.0 - p

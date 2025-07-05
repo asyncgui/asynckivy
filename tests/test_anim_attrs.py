@@ -47,19 +47,6 @@ def test_list(approx, sleep_then_tick):
     assert task.finished
 
 
-@pytest.mark.parametrize('output_seq_type', [list, tuple])
-def test_output_seq_type_parameter(sleep_then_tick, output_seq_type):
-    from types import SimpleNamespace
-    import asynckivy as ak
-
-    obj = SimpleNamespace(size=(0, 0), pos=[0, 0])
-    task = ak.start(ak.anim_attrs(obj, size=[10, 10], pos=(10, 10), output_seq_type=output_seq_type))
-    sleep_then_tick(.1)
-    assert type(obj.size) is output_seq_type
-    assert type(obj.pos) is output_seq_type
-    task.cancel()
-
-
 def test_cancel(approx, sleep_then_tick):
     from types import SimpleNamespace
     import asynckivy as ak
