@@ -66,7 +66,7 @@ def _anim_attrs(
         clock_event.cancel()
 
 
-def anim_attrs(obj, *, duration=1, step=0, transition=AnimationTransition.linear, **animated_properties):
+def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.linear, **animated_properties):
     '''
     Animates attibutes of any object.
 
@@ -95,7 +95,7 @@ def anim_attrs(obj, *, duration=1, step=0, transition=AnimationTransition.linear
     return _anim_attrs(obj, duration, step, transition, animated_properties)
 
 
-def anim_attrs_abbr(obj, *, d=1, s=0, t=AnimationTransition.linear, **animated_properties):
+def anim_attrs_abbr(obj, *, d=1.0, s=0, t=AnimationTransition.linear, **animated_properties):
     '''
     :func:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
 
