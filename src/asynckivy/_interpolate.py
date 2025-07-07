@@ -75,7 +75,7 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear) ->
     zip_ = zip
     slope = tuple(end_elem - start_elem for end_elem, start_elem in zip_(end, start))
 
-    yield [transition(0) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
+    yield [transition(0.) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
     if duration:
         async for p in anim_with_ratio(step=step, base=duration):
@@ -85,7 +85,7 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear) ->
     else:
         await sleep(0)
 
-    yield [transition(1) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
+    yield [transition(1.) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
 
 @asynccontextmanager
