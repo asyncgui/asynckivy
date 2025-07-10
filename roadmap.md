@@ -5,6 +5,7 @@
 
 # Eventually
 
+- `asynckivy.fade_transition` を `asynckivy.transition.fade_transition` に統合
 
 # Undetermind
 
