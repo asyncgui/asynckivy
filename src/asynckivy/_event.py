@@ -5,7 +5,7 @@ import types
 from functools import partial
 from contextlib import ExitStack
 
-from asyncgui import _current_task, _sleep_forever, move_on_when
+from asyncgui import _current_task, _sleep_forever, move_on_when, ExclusiveEvent
 
 
 @types.coroutine
@@ -75,21 +75,17 @@ class event_freq:
     .. code-block::
 
         __, touch = await event(widget, 'on_touch_down')
-        async with event_freq(widget, 'on_touch_move', filter=lambda w, t: t is touch) as on_touch_move:
+        with event_freq(widget, 'on_touch_move', filter=lambda w, t: t is touch) as on_touch_move:
             while True:
                 await on_touch_move()
                 ...
 
-    The trade-off is that within the context manager, you can't perform any async operations except the
-    ``await on_touch_move()``.
-
-    .. code-block::
-
-        async with event_freq(...) as xxx:
-            await xxx()  # OK
-            await something_else()  # Don't
-
     .. versionadded:: 0.7.1
+
+    .. versionchanged:: 0.9.0
+
+        The return value is now both an async and a regular context manager.
+        You can use whichever best suits your use case.
     '''
     __slots__ = ('_disp', '_name', '_filter', '_stop', '_bind_id', )
 
@@ -99,19 +95,19 @@ class event_freq:
         self._filter = filter
         self._stop = stop_dispatching
 
-    @types.coroutine
-    def __aenter__(self):
-        task = (yield _current_task)[0][0]
-        self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, task._step, self._stop))
-        return self._wait_one
+    def __enter__(self):
+        e = ExclusiveEvent()
+        self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, e.fire, self._stop))
+        return e.wait_args
 
-    async def __aexit__(self, *args):
+    def __exit__(self, *args):
         self._disp.unbind_uid(self._name, self._bind_id)
 
-    @staticmethod
-    @types.coroutine
-    def _wait_one():
-        return (yield _sleep_forever)[0]
+    async def __aenter__(self):
+        return self.__enter__()
+
+    async def __aexit__(self, *args):
+        return self.__exit__(*args)
 
 
 class suppress_event:
@@ -187,10 +183,11 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False) -> Asyn
     touch.grab(widget)
     try:
         with ExitStack() as stack:
+            enter = stack.enter_context
             if stop_dispatching:
                 se = partial(suppress_event, widget, filter=lambda w, t, touch=touch: t is touch)
-                stack.enter_context(se("on_touch_up"))
-                stack.enter_context(se("on_touch_move"))
+                enter(se("on_touch_up"))
+                enter(se("on_touch_move"))
 
             def filter(w, t, touch=touch):
                 return t is touch and t.grab_current is w

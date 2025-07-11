@@ -101,9 +101,9 @@ Here is a list of them:
 - ``asynckivy.anim_with_xxx``
 
 
---------------------------------------------
-Places where async operations are disallowed
---------------------------------------------
+--------------------------------------------------------
+Places where async operations were previously disallowed
+--------------------------------------------------------
 
 Most asynckivy APIs that return an async iterator don't allow async operations during iteration.
 Here is a list of them:

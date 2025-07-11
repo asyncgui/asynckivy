@@ -4,7 +4,7 @@ from contextlib import AbstractAsyncContextManager
 import types
 
 from kivy.clock import Clock
-from asyncgui import _current_task, _sleep_forever, move_on_when, Task, Cancelled
+from asyncgui import _current_task, _sleep_forever, move_on_when, Task, Cancelled, ExclusiveEvent
 
 
 @types.coroutine
@@ -49,7 +49,8 @@ def sleep_free(duration):
 
 class repeat_sleeping:
     '''
-    Returns an async context manager that provides an efficient way to repeat sleeping.
+    (internal)
+    Returns a context manager that provides an efficient way to repeat sleeping.
 
     When there is a piece of code like this:
 
@@ -63,50 +64,41 @@ class repeat_sleeping:
 
     .. code-block::
 
-        async with repeat_sleeping(step=0) as sleep:
+        with repeat_sleeping(step=0) as sleep:
             while True:
                 await sleep()
                 ...
 
     The latter is more suitable for situations requiring frequent sleeps, such as moving an object in every frame.
 
-    **Restriction**
-
-    You are not allowed to perform any kind of async operations inside the with-block except you can
-    ``await`` the return value of the function that is bound to the identifier of the as-clause.
-
-    .. code-block::
-
-        async with repeat_sleeping(step=0) as sleep:
-            await sleep()  # OK
-            await something_else  # NOT ALLOWED
-            async with async_context_manager:  # NOT ALLOWED
-                ...
-            async for __ in async_iterator:  # NOT ALLOWED
-                ...
-
     .. versionchanged:: 0.8.0
 
         This API is now private.
+
+    .. versionchanged:: 0.9.0
+
+        The API now returns a regular (non-async) context manager.
+        Async operations are allowed within the context block.
+
+        .. code-block::
+
+            with repeat_sleeping() as sleep:
+                await sleep()  # OK
+                await something_else  # OK
     '''
 
     __slots__ = ('_step', '_trigger', )
 
-    @types.coroutine
-    def _sleep(_f=_sleep_forever):
-        return (yield _f)[0][0]
-
     def __init__(self, *, step=0):
         self._step = step
 
-    @types.coroutine
-    def __aenter__(self, _sleep=_sleep):
-        task = (yield _current_task)[0][0]
-        self._trigger = Clock.create_trigger(task._step, self._step, True, False)
-        self._trigger()
-        return _sleep
+    def __enter__(self):
+        e = ExclusiveEvent()
+        self._trigger = t = Clock.create_trigger(e.fire, self._step, True, False)
+        t()
+        return e.wait_first_arg
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self._trigger.cancel()
 
 

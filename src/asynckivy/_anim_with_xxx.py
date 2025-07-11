@@ -29,7 +29,7 @@ async def anim_with_dt(*, step=0):
 
     .. versionadded:: 0.6.1
     '''
-    async with repeat_sleeping(step=step) as sleep:
+    with repeat_sleeping(step=step) as sleep:
         while True:
             yield await sleep()
 
@@ -55,7 +55,7 @@ async def anim_with_et(*, step=0):
     .. versionadded:: 0.6.1
     '''
     et = 0.
-    async with repeat_sleeping(step=step) as sleep:
+    with repeat_sleeping(step=step) as sleep:
         while True:
             et += await sleep()
             yield et
@@ -73,7 +73,7 @@ async def anim_with_dt_et(*, step=0):
     .. versionadded:: 0.6.1
     '''
     et = 0.
-    async with repeat_sleeping(step=step) as sleep:
+    with repeat_sleeping(step=step) as sleep:
         while True:
             dt = await sleep()
             et += dt
@@ -117,7 +117,7 @@ async def anim_with_ratio(*, base, step=0):
         The ``duration`` parameter was replaced with ``base``.
         The loop no longer ends on its own.
     '''
-    async with repeat_sleeping(step=step) as sleep:
+    with repeat_sleeping(step=step) as sleep:
         et = 0.
         while True:
             et += await sleep()
@@ -139,7 +139,7 @@ async def anim_with_dt_et_ratio(*, base, step=0):
         The ``duration`` parameter was replaced with ``base``.
         The loop no longer ends on its own.
     '''
-    async with repeat_sleeping(step=step) as sleep:
+    with repeat_sleeping(step=step) as sleep:
         et = 0.
         while True:
             dt = await sleep()

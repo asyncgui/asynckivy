@@ -45,6 +45,9 @@ class Painter(RelativeLayout):
             min_x, max_x = (x, ox) if x < ox else (ox, x)
             min_y, max_y = (y, oy) if y < oy else (oy, y)
             line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
+            if x > 300:
+                await ak.sleep(1)
+        print("exit")
 
 
 class SampleApp(App):

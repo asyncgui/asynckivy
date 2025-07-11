@@ -60,12 +60,11 @@ Asyncジェネレータが抱える問題
 これにどう対処すればいいのかは現状分かっていません。
 もしかすると :pep:`533` が解決してくれるかも。
 
------------------------------
-async操作が禁じられている場所
------------------------------
+--------------------------------
+かつてasync操作が禁じられていた場所
+--------------------------------
 
-``asynckivy`` のAPIでasyncイテレータを返す物のほとんどはその繰り返し中にasync操作を行うことを認めていません。
-以下が該当する者たちです。
+asyncイテレータを返す以下のAPI達はその繰り返し中にasync操作を行うことを認めていませんでした。
 
 * :func:`asynckivy.rest_of_touch_events`
 * :func:`asynckivy.interpolate`
@@ -76,8 +75,22 @@ async操作が禁じられている場所
 .. code-block::
 
     async for __ in rest_of_touch_events(...):
-        await awaitable  # 駄目
-        async with async_context_manager:  # 駄目
+        await awaitable  # 駄目だった
+        async with async_context_manager:  # 駄目だった
             ...
-        async for __ in async_iterator:  # 駄目
+        async for __ in async_iterator:  # 駄目だった
             ...
+
+しかし ``asynckivy`` 0.9.0でこの制約は無くなりました。
+但しそうするとその間の出来事を見過ごすので注意して下さい。
+例えば以下のコード:
+
+.. code-block::
+
+    async for __ in rest_of_touch_events(...):
+        if some_condition:
+            await sleep(...)
+        ...
+
+このsleep中に起きる ``on_touch_move`` イベントを捌く機械は失われます。
+``on_touch_up`` に関しては心配する事はなく、sleep中にそれが起きるとsleepは中断され ``for-in`` ブロックから抜け出します。
