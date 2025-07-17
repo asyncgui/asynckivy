@@ -27,9 +27,14 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity=0.2):
         # phase 1: Widget becomes wider and shorter while it being pressed.
         scale = Scale(origin=(widget.center_x, widget.y))
         ig.add(scale)
-        async with ak.run_as_secondary(
-                ak.anim_attrs(scale, x=scale_x_max, y=1.0 / scale_x_max, duration=0.25 * scale_x_max)):
-            await ak.event(widget, 'on_release')
+        anim = ak.anim_attrs(
+            scale,
+            x=scale_x_max,
+            y=1.0 / scale_x_max,
+            duration=0.25 * scale_x_max,
+        )
+        release = ak.event(widget, 'on_release')
+        await ak.wait_any(anim, release)
 
         # phase 2: Widget becomes thiner and taller after it got released.
         scale_x = scale.x
