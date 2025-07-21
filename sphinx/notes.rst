@@ -91,34 +91,59 @@ The Problem with Async Generators
 which likely hinders asynckivy-flavored async generators.
 You can see its details `here <https://peps.python.org/pep-0525/#finalization>`__.
 
-Because of that, the APIs that create async generators might not work perfectly if ``asyncio`` or ``trio`` is running.
-Here is a list of them:
+Because of this, APIs that create async generators might not work perfectly if ``asyncio`` or ``trio`` is running.
+Here are the affected ones:
 
-- :func:`asynckivy.rest_of_touch_events`
-- :func:`asynckivy.interpolate`
-- :func:`asynckivy.interpolate_seq`
-- :func:`asynckivy.fade_transition`
-- ``asynckivy.anim_with_xxx``
+- :func:`~asynckivy.rest_of_touch_events`
+- :func:`~asynckivy.interpolate`
+- :func:`~asynckivy.interpolate_seq`
+- ``anim_with_xxx``
 
+In addition, when considering things like :pep:`533` and `this issue <https://github.com/asyncgui/asyncgui/issues/130>`__,
+it's fair to say that async generators are still maturing--there may be many undiscovered bugs in the language itself.
 
---------------------------------------------
-Places where async operations are disallowed
---------------------------------------------
+So how do you deal with this?
+Well, if you're not experiencing any issues, you can continue using async generators.
+But if you run into a mysterious bug around async generators, it may be worth trying the following workaround.
 
-Most asynckivy APIs that return an async iterator don't allow async operations during iteration.
-Here is a list of them:
-
-- :func:`asynckivy.rest_of_touch_events`
-- :func:`asynckivy.interpolate`
-- :func:`asynckivy.interpolate_seq`
-- ``asynckivy.anim_with_xxx``
-- :any:`asynckivy.event_freq`
+For example, suppose you're using ``anim_with_et``, and the code around it doesn't behave as expected:
 
 .. code-block::
 
-    async for __ in rest_of_touch_events(...):
+    async for et in anim_with_et(...):
+        ...
+
+You can look at its source code and replace the above with its internal logic, and see if it works:
+
+.. code-block::
+
+    with sleep_freq(...) as sleep:
+        et = 0.
+        while True:
+            dt = await sleep()
+            et += dt
+            ...
+
+While this version is more verbose, it eliminates the issues specific to async generators.
+
+----------------------------------------------
+Places where async operations were disallowed
+----------------------------------------------
+
+Until version 0.8.x, many APIs that return async generators did not allow async operations during iteration.
+
+- :func:`~asynckivy.interpolate`
+- :func:`~asynckivy.interpolate_seq`
+- ``anim_with_xxx``
+
+.. code-block::
+
+    async for v in interpolate(...):
         await awaitable  # NOT ALLOWED
         async with async_context_manager:  # NOT ALLOWED
             ...
-        async for __ in async_iterator:  # NOT ALLOWED
+        async for v in async_iterator:  # NOT ALLOWED
             ...
+
+As of version 0.9.0, these restrictions have been lifted.  
+Only :func:`~asynckivy.rest_of_touch_events` still disallows async operations during iteration.

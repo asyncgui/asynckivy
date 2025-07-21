@@ -21,7 +21,7 @@ def test_repeat_sleeping(sleep_then_tick):
 
     async def async_fn():
         nonlocal task_state
-        async with ak.repeat_sleeping(step=.5) as sleep:
+        with ak.sleep_freq(step=.5) as sleep:
             task_state = 'A'
             await sleep()
             task_state = 'B'
@@ -72,7 +72,7 @@ def test_cancel_repeat_sleeping(kivy_clock):
 
     async def async_fn():
         async with ak.move_on_when(e.wait()):
-            async with ak.repeat_sleeping(step=0) as sleep:
+            with ak.sleep_freq(step=0) as sleep:
                 await sleep()
                 pytest.fail()
             pytest.fail()
