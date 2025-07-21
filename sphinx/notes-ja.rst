@@ -48,36 +48,54 @@ Asyncジェネレータが抱える問題
 ----------------------------------
 
 ``asyncio`` や ``trio`` がasyncジェネレータに対して `付け焼き刃的な処置 <https://peps.python.org/pep-0525/#finalization>`__
-を行うせいなのか、asynckivy用のasyncジェネレータがうまく機能しない事があります。
-なので ``asyncio`` 或いは ``trio`` を使っている場合は以下のAPI達を使わなのがお薦めです。
+を行うせいなのか、これらのライブライリを使っているとasynckivy用のasyncジェネレータの後始末が遅れる事があります。なので使い終わったら明示的に閉じて下さい。
+以下がasyncジェネレータを返す者達です。
 
-* `rest_of_touch_events()`
-* `anim_with_xxx`
-* `interpolate`
-* `interpolate_seq`
-* `fade_transition()`
+- :func:`~asynckivy.rest_of_touch_events`
+- :func:`~asynckivy.interpolate`
+- :func:`~asynckivy.interpolate_seq`
+- ``~anim_with_xxx``
 
-これにどう対処すればいいのかは現状分かっていません。
-もしかすると :pep:`533` が解決してくれるかも。
-
------------------------------
-async操作が禁じられている場所
------------------------------
-
-``asynckivy`` のAPIでasyncイテレータを返す物のほとんどはその繰り返し中にasync操作を行うことを認めていません。
-以下が該当する者たちです。
-
-* :func:`asynckivy.rest_of_touch_events`
-* :func:`asynckivy.interpolate`
-* :func:`asynckivy.interpolate_seq`
-* ``asynckivy.anim_with_xxx``
-* :any:`asynckivy.event_freq`
+また代替案として、これらの関数の内部ロジックをコピペしてasyncジェネレータを使わないようにする手もあります。
+例えば ``anim_with_et`` 周りで何かが思い通りに動かなかったとします。
 
 .. code-block::
 
-    async for __ in rest_of_touch_events(...):
-        await awaitable  # 駄目
-        async with async_context_manager:  # 駄目
+    async for et in anim_with_et(...):
+        ...
+
+ここで ``anim_with_et`` の実装を覗いて上のコードをそれに置き換えてしまえばasyncジェネレータに依らないコードになります。
+
+.. code-block::
+
+    with sleep_freq(...) as sleep:
+        et = 0.
+        while True:
+            dt = await sleep()
+            et += dt
             ...
-        async for __ in async_iterator:  # 駄目
+
+ほとんどの人がこれを愚かな策だと思うでしょうが、それでも時折やってみる価値はあります。
+asyncジェネレータという物がそれだけ不安定だからです。
+
+------------------------------------------
+かつてasync操作が禁じられていた場所
+------------------------------------------
+
+asyncイテレータを返す以下のAPI達はその繰り返し中にasync操作を行うことを認めていませんでした。
+
+* :func:`~asynckivy.interpolate`
+* :func:`~asynckivy.interpolate_seq`
+* ``anim_with_xxx``
+
+.. code-block::
+
+    async for v in interpolate(...):
+        await awaitable  # 駄目だった
+        async with async_context_manager:  # 駄目だった
             ...
+        async for v in async_iterator:  # 駄目だった
+            ...
+
+しかし ``asynckivy`` 0.9.0でこの制約は無くなりました。
+残るは :func:`~asynckivy.rest_of_touch_events` のみがasync操作を禁じています。
