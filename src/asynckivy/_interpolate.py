@@ -93,8 +93,8 @@ async def fade_transition(*widgets, duration=1.0, step=0):
     '''
     Returns an async context manager that:
 
-    * fades-out the given widgets on ``__aenter__``.
-    * fades-in the given widgets on ``__aexit__``.
+    * fades out the given widgets on ``__aenter__``
+    * fades them back  in on ``__aexit__``
 
     .. code-block::
 
@@ -102,7 +102,10 @@ async def fade_transition(*widgets, duration=1.0, step=0):
             ...
 
     The ``widgets`` don't have to be actual Kivy widgets.
-    Anything that has an attribute named ``opacity`` would work.
+    Anything with an attribute named ``opacity``--such as ``kivy.core.window.Window``--would work.
+
+    .. deprecated:: 0.9.0
+        This will be removed in version 0.11.0. Use :func:`asynckivy.transition.fade_transition` instead.
     '''
     half_duration = duration / 2.
     org_opas = [w.opacity for w in widgets]
