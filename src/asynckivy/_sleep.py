@@ -4,7 +4,7 @@ from contextlib import AbstractAsyncContextManager
 import types
 
 from kivy.clock import Clock
-from asyncgui import _current_task, _sleep_forever, move_on_when, Task, Cancelled, ExclusiveEvent
+from asyncgui import _current_task, _sleep_forever, move_on_when, Task, Cancelled, ExclusiveEvent, _wait_args_0
 
 
 @types.coroutine
@@ -64,48 +64,50 @@ class sleep_freq:
 
     .. code-block::
 
-        with sleep_freq(0.1) as sleep:
+        async with sleep_freq(0.1) as sleep:
             while True:
                 dt = await sleep()
                 print(dt)
                 if some_condition:
                     break
 
-    While this one is more verbose than :func:`~asynckivy.anim_with_dt`, it eliminates the issues
-    specific to async generators. (See :ref:`the-problem-with-async-generators` for more details.)
-
     .. versionchanged:: 0.8.0
-
         The API was made private.
 
     .. versionchanged:: 0.9.0
-
         * The API was made public again.
         * The API was renamed from ``repeat_sleeping`` to ``sleep_freq``; the old name remains available as an alias.
-        * The returned context manager is now a regular one.
-          It can still be used as an async context manager for backward compatibility.
-        * Any async operation is now allowed within the with-block.
+        * The ``free_to_await`` parameter was added.
+
+    The ``free_to_await`` parameter
+    --------------------------------
+
+    If set to False (the default), the only permitted async operation within the with-block is ``await xxx()``,
+    where ``xxx`` is the identifier specified in the as-clause. To lift this restriction, set ``free_to_await`` to
+    True—at the cost of slightly reduced performance.
     '''
 
-    __slots__ = ('_step', '_trigger', )
+    __slots__ = ('_step', '_trigger', '_free_to_await')
 
-    def __init__(self, step=0):
+    def __init__(self, step=0, free_to_await=False):
         self._step = step
+        self._free_to_await = free_to_await
 
-    def __enter__(self):
-        e = ExclusiveEvent()
-        self._trigger = t = Clock.create_trigger(e.fire, self._step, True, False)
-        t()
-        return e.wait_args_0
-
-    def __exit__(self, *args):
-        self._trigger.cancel()
-
-    async def __aenter__(self):
-        return self.__enter__()
+    @types.coroutine
+    def __aenter__(self):
+        if self._free_to_await:
+            e = ExclusiveEvent()
+            self._trigger = t = Clock.create_trigger(e.fire, self._step, True, False)
+            t()
+            return e.wait_args_0
+        else:
+            task = (yield _current_task)[0][0]
+            self._trigger = t = Clock.create_trigger(task._step, self._step, True, False)
+            t()
+            return _wait_args_0
 
     async def __aexit__(self, *args):
-        return self.__exit__(*args)
+        self._trigger.cancel()
 
 
 repeat_sleeping = sleep_freq

@@ -88,10 +88,10 @@ The Problem with Async Generators
 ---------------------------------
 
 :mod:`asyncio` and :mod:`trio` do some hacky stuff, :func:`sys.set_asyncgen_hooks` and :func:`sys.get_asyncgen_hooks`,
-which likely hinders asynckivy-flavored async generators.
+which likely delays the cleanup of async generators.
 You can see its details `here <https://peps.python.org/pep-0525/#finalization>`__.
 
-Because of this, you have to explicitly close asynckivy-flavored async generators when you're done with them.
+Because of this, you have to explicitly close async generators when you're done with them.
 Here are the affected ones:
 
 - :func:`~asynckivy.rest_of_touch_events`
@@ -100,7 +100,7 @@ Here are the affected ones:
 - ``anim_with_xxx``
 
 An alternative is to avoid using an async generator by copying and pasting the internal logic of these functions.
-For example, suppose you're using ``anim_with_et``, and the code around it doesn't behave as expected:
+For example, suppose you're using ``anim_with_et``, and the code around it doesn't behave as expected for some reason:
 
 .. code-block::
 
@@ -111,7 +111,7 @@ You can refer to its source code and replace the above with its internal logic:
 
 .. code-block::
 
-    with sleep_freq(...) as sleep:
+    async with sleep_freq(...) as sleep:
         et = 0.
         while True:
             dt = await sleep()
@@ -120,25 +120,3 @@ You can refer to its source code and replace the above with its internal logic:
 
 Many of you may think this is a stupid idea, but this is sometimes worth it.
 Async generators are fragile enough to justify such workarounds.
-
-----------------------------------------------
-Places where async operations were disallowed
-----------------------------------------------
-
-Until version 0.8.x, many APIs that return async generators did not allow async operations during iteration.
-
-- :func:`~asynckivy.interpolate`
-- :func:`~asynckivy.interpolate_seq`
-- ``anim_with_xxx``
-
-.. code-block::
-
-    async for v in interpolate(...):
-        await awaitable  # NOT ALLOWED
-        async with async_context_manager:  # NOT ALLOWED
-            ...
-        async for v in async_iterator:  # NOT ALLOWED
-            ...
-
-As of version 0.9.0, these restrictions have been lifted.  
-Only :func:`~asynckivy.rest_of_touch_events` still disallows async operations during iteration.

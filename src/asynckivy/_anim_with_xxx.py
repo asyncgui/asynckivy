@@ -5,7 +5,7 @@ __all__ = (
 from ._sleep import sleep_freq
 
 
-async def anim_with_dt(*, step=0):
+async def anim_with_dt(*, step=0, free_to_await=False):
     '''
     An async form of :meth:`kivy.clock.Clock.schedule_interval`. The following callback-style code:
 
@@ -28,13 +28,16 @@ async def anim_with_dt(*, step=0):
                 break
 
     .. versionadded:: 0.6.1
+
+    .. versionchanged:: 0.9.0
+        The ``free_to_await`` parameter was added.
     '''
-    with sleep_freq(step) as sleep:
+    async with sleep_freq(step, free_to_await) as sleep:
         while True:
             yield await sleep()
 
 
-async def anim_with_et(*, step=0):
+async def anim_with_et(*, step=0, free_to_await=False):
     '''
     Returns an async iterator that yields the elapsed time since the start of the iteration.
 
@@ -53,15 +56,18 @@ async def anim_with_et(*, step=0):
             print(et)
 
     .. versionadded:: 0.6.1
+
+    .. versionchanged:: 0.9.0
+        The ``free_to_await`` parameter was added.
     '''
     et = 0.
-    with sleep_freq(step) as sleep:
+    async with sleep_freq(step, free_to_await) as sleep:
         while True:
             et += await sleep()
             yield et
 
 
-async def anim_with_dt_et(*, step=0):
+async def anim_with_dt_et(*, step=0, free_to_await=False):
     '''
     :func:`anim_with_dt` and :func:`anim_with_et` combined.
 
@@ -71,16 +77,19 @@ async def anim_with_dt_et(*, step=0):
             ...
 
     .. versionadded:: 0.6.1
+
+    .. versionchanged:: 0.9.0
+        The ``free_to_await`` parameter was added.
     '''
     et = 0.
-    with sleep_freq(step) as sleep:
+    async with sleep_freq(step, free_to_await) as sleep:
         while True:
             dt = await sleep()
             et += dt
             yield dt, et
 
 
-async def anim_with_ratio(*, base, step=0):
+async def anim_with_ratio(*, base, step=0, free_to_await=False):
     '''
     Returns an async iterator that yields the elapsed time since the start of the iteration, divided by ``base``.
 
@@ -116,15 +125,18 @@ async def anim_with_ratio(*, base, step=0):
 
         The ``duration`` parameter was replaced with ``base``.
         The loop no longer ends on its own.
+
+    .. versionchanged:: 0.9.0
+        The ``free_to_await`` parameter was added.
     '''
-    with sleep_freq(step) as sleep:
+    async with sleep_freq(step, free_to_await) as sleep:
         et = 0.
         while True:
             et += await sleep()
             yield et / base
 
 
-async def anim_with_dt_et_ratio(*, base, step=0):
+async def anim_with_dt_et_ratio(*, base, step=0, free_to_await=False):
     '''
     :func:`anim_with_dt`, :func:`anim_with_et` and :func:`anim_with_ratio` combined.
 
@@ -138,8 +150,11 @@ async def anim_with_dt_et_ratio(*, base, step=0):
     .. versionchanged:: 0.7.0
         The ``duration`` parameter was replaced with ``base``.
         The loop no longer ends on its own.
+
+    .. versionchanged:: 0.9.0
+        The ``free_to_await`` parameter was added.
     '''
-    with sleep_freq(step) as sleep:
+    async with sleep_freq(step, free_to_await) as sleep:
         et = 0.
         while True:
             dt = await sleep()

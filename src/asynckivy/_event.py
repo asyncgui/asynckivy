@@ -5,7 +5,7 @@ import types
 from functools import partial
 from contextlib import ExitStack
 
-from asyncgui import _current_task, _sleep_forever, move_on_when, ExclusiveEvent
+from asyncgui import _current_task, _sleep_forever, move_on_when, ExclusiveEvent, _wait_args
 
 
 @types.coroutine
@@ -85,32 +85,37 @@ class event_freq:
     .. versionadded:: 0.7.1
 
     .. versionchanged:: 0.9.0
+        The ``free_to_await`` parameter was added.
 
-        * The returned context manager is now a regular one.
-          It can still be used as an async context manager for backward compatibility.
-        * Any async operation is now allowed within the with-block.
+    The ``free_to_await`` parameter
+    --------------------------------
+
+    If set to False (the default), the only permitted async operation within the with-block is ``await xxx()``,
+    where ``xxx`` is the identifier specified in the as-clause. To lift this restriction, set ``free_to_await`` to
+    True—at the cost of slightly reduced performance.
     '''
-    __slots__ = ('_disp', '_name', '_filter', '_stop', '_bind_id', )
+    __slots__ = ('_disp', '_name', '_filter', '_stop', '_bind_id', '_free_to_await')
 
-    def __init__(self, event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
+    def __init__(self, event_dispatcher, event_name, *, filter=None, stop_dispatching=False, free_to_await=False):
         self._disp = event_dispatcher
         self._name = event_name
         self._filter = filter
         self._stop = stop_dispatching
+        self._free_to_await = free_to_await
 
-    def __enter__(self):
-        e = ExclusiveEvent()
-        self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, e.fire, self._stop))
-        return e.wait_args
-
-    def __exit__(self, *args):
-        self._disp.unbind_uid(self._name, self._bind_id)
-
-    async def __aenter__(self):
-        return self.__enter__()
+    @types.coroutine
+    def __aenter__(self):
+        if self._free_to_await:
+            e = ExclusiveEvent()
+            self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, e.fire, self._stop))
+            return e.wait_args
+        else:
+            task = (yield _current_task)[0][0]
+            self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, task._step, self._stop))
+            return _wait_args
 
     async def __aexit__(self, *args):
-        return self.__exit__(*args)
+        self._disp.unbind_uid(self._name, self._bind_id)
 
 
 class suppress_event:
@@ -182,20 +187,35 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False) -> Asyn
         The ``timeout`` parameter was removed.
         You are now responsible for handling cases where the ``on_touch_up`` event for the touch does not occur.
         If you fail to handle this, the iterator will wait indefinitely for an event that never comes.
+
+    .. warning::
+
+        Do not perform any async operations during the iteration:
+
+        .. code-block::
+
+            async for __ in rest_of_touch_events(...):
+                await ...  # NOT ALLOWED
+                async with ...:  # NOT ALLOWED
+                    ...
+                async for v in ...:  # NOT ALLOWED
+                    ...
     '''
     touch.grab(widget)
     try:
         with ExitStack() as stack:
-            ec = stack.enter_context
             if stop_dispatching:
+                ec = stack.enter_context
                 se = partial(suppress_event, widget, filter=lambda w, t, touch=touch: t is touch)
                 ec(se('on_touch_up'))
                 ec(se('on_touch_move'))
 
             def filter(w, t, touch=touch):
                 return t is touch and t.grab_current is w
-            on_touch_move = ec(event_freq(widget, 'on_touch_move', filter=filter, stop_dispatching=True))
-            async with move_on_when(event(widget, 'on_touch_up', filter=filter, stop_dispatching=True)):
+            async with (
+                move_on_when(event(widget, 'on_touch_up', filter=filter, stop_dispatching=True)),
+                event_freq(widget, 'on_touch_move', filter=filter, stop_dispatching=True) as on_touch_move,
+            ):
                 while True:
                     await on_touch_move()
                     yield

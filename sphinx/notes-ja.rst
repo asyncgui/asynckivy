@@ -57,7 +57,7 @@ Asyncジェネレータが抱える問題
 - ``~anim_with_xxx``
 
 また代替案として、これらの関数の内部ロジックをコピペしてasyncジェネレータを使わないようにする手もあります。
-例えば ``anim_with_et`` 周りで何かが思い通りに動かなかったとします。
+例えば ``anim_with_et`` が何故か思い通りに動かなかったとします。
 
 .. code-block::
 
@@ -68,7 +68,7 @@ Asyncジェネレータが抱える問題
 
 .. code-block::
 
-    with sleep_freq(...) as sleep:
+    async with sleep_freq(...) as sleep:
         et = 0.
         while True:
             dt = await sleep()
@@ -77,25 +77,3 @@ Asyncジェネレータが抱える問題
 
 ほとんどの人がこれを愚かな策だと思うでしょうが、それでも時折やってみる価値はあります。
 asyncジェネレータという物がそれだけ不安定だからです。
-
-------------------------------------------
-かつてasync操作が禁じられていた場所
-------------------------------------------
-
-asyncイテレータを返す以下のAPI達はその繰り返し中にasync操作を行うことを認めていませんでした。
-
-* :func:`~asynckivy.interpolate`
-* :func:`~asynckivy.interpolate_seq`
-* ``anim_with_xxx``
-
-.. code-block::
-
-    async for v in interpolate(...):
-        await awaitable  # 駄目だった
-        async with async_context_manager:  # 駄目だった
-            ...
-        async for v in async_iterator:  # 駄目だった
-            ...
-
-しかし ``asynckivy`` 0.9.0でこの制約は無くなりました。
-残るは :func:`~asynckivy.rest_of_touch_events` のみがasync操作を禁じています。

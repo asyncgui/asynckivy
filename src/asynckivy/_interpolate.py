@@ -3,14 +3,14 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
-from ._sleep import sleep
+from ._sleep import sleep, sleep_freq
 from ._anim_with_xxx import anim_with_ratio
 
 
 linear = AnimationTransition.linear
 
 
-async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) -> AsyncIterator:
+async def interpolate(start, end, *, duration=1.0, step=0, transition=linear, free_to_await=False) -> AsyncIterator:
     '''
     Interpolates between the values ``start`` and ``end`` in an async-manner.
     Inspired by wasabi2d's interpolate_.
@@ -30,6 +30,9 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     **1.2 sec**  100
     ============ ======
 
+    .. versionchanged:: 0.9.0
+        The ``free_to_await`` parameter was added.
+
     .. _interpolate: https://wasabi2d.readthedocs.io/en/stable/coros.html#clock.coro.interpolate
     '''
     if isinstance(transition, str):
@@ -38,16 +41,19 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     slope = end - start
     yield transition(0.) * slope + start
     if duration:
-        async for p in anim_with_ratio(step=step, base=duration):
-            if p >= 1.0:
-                break
-            yield transition(p) * slope + start
+        async with sleep_freq(step, free_to_await) as slp:
+            et = 0.  # elapsed time
+            while True:
+                et += await slp()
+                if et >= duration:
+                    break
+                yield transition(et / duration) * slope + start
     else:
         await sleep(0)
     yield transition(1.) * slope + start
 
 
-async def interpolate_seq(start, end, *, duration, step=0, transition=linear) -> AsyncIterator:
+async def interpolate_seq(start, end, *, duration, step=0, transition=linear, free_to_await=False) -> AsyncIterator:
     '''
     Same as :func:`interpolate` except this one is for sequence types.
 
@@ -68,7 +74,8 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear) ->
 
     .. versionadded:: 0.7.0
     .. versionchanged:: 0.9.0
-        The ``output_type`` parameter was removed. The iterator now always yields a list.
+        * The ``output_type`` parameter was removed. The iterator now always yields a list.
+        * The ``free_to_await`` parameter was added.
     '''
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
@@ -78,10 +85,14 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear) ->
     yield [transition(0.) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
     if duration:
-        async for p in anim_with_ratio(step=step, base=duration):
-            if p >= 1.0:
-                break
-            yield [transition(p) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
+        async with sleep_freq(step, free_to_await) as slp:
+            et = 0.  # elapsed time
+            while True:
+                et += await slp()
+                if et >= duration:
+                    break
+                yield [transition(et / duration) * slope_elem + start_elem
+                       for slope_elem, start_elem in zip_(slope, start)]
     else:
         await sleep(0)
 
