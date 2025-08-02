@@ -111,7 +111,8 @@ class event_freq:
             return e.wait_args
         else:
             task = (yield _current_task)[0][0]
-            self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, task._step, self._stop))
+            self._bind_id = self._disp.fbind(
+                self._name, partial(_event_callback, self._filter, task._step, self._stop))
             return _wait_args
 
     async def __aexit__(self, *args):
