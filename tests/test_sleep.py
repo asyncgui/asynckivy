@@ -16,12 +16,13 @@ def test_sleep(kivy_clock, sleep_then_tick, free):
     assert task.finished
 
 
-def test_repeat_sleeping(sleep_then_tick):
+@pytest.mark.parametrize('free_to_await', [True, False])
+def test_sleep_freq(sleep_then_tick, free_to_await):
     import asynckivy as ak
 
     async def async_fn():
         nonlocal task_state
-        async with ak.repeat_sleeping(step=.5) as sleep:
+        async with ak.sleep_freq(step=.5, free_to_await=free_to_await) as sleep:
             task_state = 'A'
             await sleep()
             task_state = 'B'
@@ -39,6 +40,23 @@ def test_repeat_sleeping(sleep_then_tick):
     sleep_then_tick(.5)
     assert task_state == 'C'
     assert task.finished
+
+
+@pytest.mark.parametrize('free_to_await', [True, pytest.param(False, marks=pytest.mark.xfail)])
+def test_sleep_freq_await_something_else(sleep_then_tick, free_to_await):
+    import asynckivy as ak
+
+    async def async_fn():
+        async with ak.sleep_freq(step=.8, free_to_await=free_to_await) as sleep:
+            await sleep()
+            await ak.sleep_forever()  # something else
+
+    task = ak.start(async_fn())
+    sleep_then_tick(1.)
+    sleep_then_tick(1.)
+    assert not task.cancelled
+    task.cancel()
+    assert task.cancelled
 
 
 @p_free
@@ -66,13 +84,13 @@ def test_cancel_sleep(kivy_clock, free):
     assert task.state is TS.FINISHED
 
 
-def test_cancel_repeat_sleeping(kivy_clock):
+def test_cancel_sleep_freq(kivy_clock):
     import asynckivy as ak
     TS = ak.TaskState
 
     async def async_fn():
         async with ak.move_on_when(e.wait()):
-            async with ak.repeat_sleeping(step=0) as sleep:
+            async with ak.sleep_freq(step=0) as sleep:
                 await sleep()
                 pytest.fail()
             pytest.fail()

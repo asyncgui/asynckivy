@@ -20,6 +20,7 @@ __all__ = (
     'run_in_thread',
     'sleep',
     'sleep_free',
+    'sleep_freq',
     'smooth_attr',
     'suppress_event',
     'sync_attr',
@@ -28,7 +29,7 @@ __all__ = (
 )
 
 from asyncgui import *
-from ._sleep import sleep, sleep_free, repeat_sleeping, move_on_after, n_frames
+from ._sleep import sleep, sleep_free, repeat_sleeping, move_on_after, n_frames, sleep_freq
 from ._event import event, event_freq, suppress_event, rest_of_touch_events
 from ._anim_with_xxx import anim_with_dt, anim_with_et, anim_with_ratio, anim_with_dt_et, anim_with_dt_et_ratio
 from ._anim_attrs import anim_attrs, anim_attrs_abbr
