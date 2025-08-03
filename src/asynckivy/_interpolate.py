@@ -3,8 +3,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
-from ._sleep import sleep
-from ._anim_with_xxx import anim_with_ratio
+from ._sleep import sleep, sleep_freq
 
 
 linear = AnimationTransition.linear
@@ -38,10 +37,13 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     slope = end - start
     yield transition(0.) * slope + start
     if duration:
-        async for p in anim_with_ratio(step=step, base=duration):
-            if p >= 1.0:
-                break
-            yield transition(p) * slope + start
+        async with sleep_freq(step) as slp:
+            et = 0.  # elapsed time
+            while True:
+                et += await slp()
+                if et >= duration:
+                    break
+                yield transition(et / duration) * slope + start
     else:
         await sleep(0)
     yield transition(1.) * slope + start
@@ -78,10 +80,14 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear) ->
     yield [transition(0.) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
     if duration:
-        async for p in anim_with_ratio(step=step, base=duration):
-            if p >= 1.0:
-                break
-            yield [transition(p) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
+        async with sleep_freq(step) as slp:
+            et = 0.  # elapsed time
+            while True:
+                et += await slp()
+                if et >= duration:
+                    break
+                yield [transition(et / duration) * slope_elem + start_elem
+                       for slope_elem, start_elem in zip_(slope, start)]
     else:
         await sleep(0)
 
@@ -107,21 +113,29 @@ async def fade_transition(*widgets, duration=1.0, step=0):
     .. deprecated:: 0.9.0
         This will be removed in version 0.11.0. Use :func:`asynckivy.transition.fade_transition` instead.
     '''
+    zip_ = zip
     half_duration = duration / 2.
-    org_opas = [w.opacity for w in widgets]
+    orig_opacities = [w.opacity for w in widgets]
     try:
-        async for p in anim_with_ratio(base=half_duration, step=step):
-            p = 1.0 - p
-            for w, o in zip(widgets, org_opas):
-                w.opacity = p * o
-            if p <= 0.:
-                break
+        async with sleep_freq(step) as slp:
+            et = 0.
+            while True:
+                et += await slp()
+                p = 1.0 - (et / half_duration)
+                for w, o in zip_(widgets, orig_opacities):
+                    w.opacity = p * o
+                if et >= half_duration:
+                    break
         yield
-        async for p in anim_with_ratio(base=half_duration, step=step):
-            for w, o in zip(widgets, org_opas):
-                w.opacity = p * o
-            if p >= 1.:
-                break
+        async with sleep_freq(step) as slp:
+            et = 0.
+            while True:
+                et += await slp()
+                if et >= half_duration:
+                    break
+                p = et / half_duration
+                for w, o in zip_(widgets, orig_opacities):
+                    w.opacity = p * o
     finally:
-        for w, o in zip(widgets, org_opas):
+        for w, o in zip_(widgets, orig_opacities):
             w.opacity = o
