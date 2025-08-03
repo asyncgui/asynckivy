@@ -125,7 +125,7 @@ async def iris_transition(target: WindowBase=Window, *, duration=1, out_curve='i
     ig_add(overlay)
     ig_add(StencilUnUse())
     ig_add(overlay)
-    ig_add(ellipse)
+    ig_add(inner_ig)
     ig_add(StencilPop())
 
     canvas.add(ig)
