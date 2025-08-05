@@ -73,12 +73,12 @@ def transform(widget, *, use_outer_canvas=False) -> Iterator[InstructionGroup]:
         push_mat_idx = 0
         ig_idx = 1
     else:
-        c.before  # ensure 'canvas.before' exists
-
-        # Index starts from 1 because 'canvas.before' is sitting at index 0 and we usually want it to remain first.
-        # See https://github.com/kivy/kivy/issues/7945 for details.
-        push_mat_idx = 1
-        ig_idx = 2
+        if c.has_before:
+            push_mat_idx = 1
+            ig_idx = 2
+        else:
+            push_mat_idx = 0
+            ig_idx = 1
         before = after = c
 
     push_mat = PushMatrix()
