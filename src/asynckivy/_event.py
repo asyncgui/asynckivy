@@ -87,12 +87,11 @@ class event_freq:
     .. versionchanged:: 0.9.0
         The ``free_to_await`` parameter was added.
 
-    The ``free_to_await`` parameter
-    --------------------------------
+    The ``free_to_await`` parameter:
 
     If set to False (the default), the only permitted async operation within the with-block is ``await xxx()``,
     where ``xxx`` is the identifier specified in the as-clause. To lift this restriction, set ``free_to_await`` to
-    True—at the cost of slightly reduced performance.
+    True — at the cost of slightly reduced performance.
     '''
     __slots__ = ('_disp', '_name', '_filter', '_stop', '_bind_id', '_free_to_await')
 

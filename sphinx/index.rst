@@ -46,7 +46,7 @@ If you use ``asynckivy``, the code above will become:
       await ak.event(button, 'on_press')
       print('C')
 
-   ak.start(what_you_want_to_do(...))
+   ak.managed_start(what_you_want_to_do(...))
 
 You may also want to read the ``asyncgui``'s documentation as it is the foundation of this library.
 

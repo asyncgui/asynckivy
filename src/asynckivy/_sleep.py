@@ -75,16 +75,16 @@ class sleep_freq:
         The API was made private.
 
     .. versionchanged:: 0.9.0
+
         * The API was made public again.
         * The API was renamed from ``repeat_sleeping`` to ``sleep_freq``; the old name remains available as an alias.
         * The ``free_to_await`` parameter was added.
 
-    The ``free_to_await`` parameter
-    --------------------------------
+    The ``free_to_await`` parameter:
 
     If set to False (the default), the only permitted async operation within the with-block is ``await xxx()``,
     where ``xxx`` is the identifier specified in the as-clause. To lift this restriction, set ``free_to_await`` to
-    True—at the cost of slightly reduced performance.
+    True — at the cost of slightly reduced performance.
     '''
 
     __slots__ = ('_step', '_trigger', '_free_to_await')
