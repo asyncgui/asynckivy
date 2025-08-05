@@ -48,17 +48,44 @@ Asyncジェネレータが抱える問題
 ----------------------------------
 
 ``asyncio`` や ``trio`` がasyncジェネレータに対して `付け焼き刃的な処置 <https://peps.python.org/pep-0525/#finalization>`__
-を行うせいなのか、asynckivy用のasyncジェネレータがうまく機能しない事があります。
-なので ``asyncio`` 或いは ``trio`` を使っている場合は以下のAPI達を使わなのがお薦めです。
+を行うせいなのか、これらのライブライリを使っているとasyncジェネレータの後始末が遅れる事があります。なので使い終わったら明示的に閉じて下さい。
+以下がasyncジェネレータを返す者達です。
 
-* `rest_of_touch_events()`
-* `anim_with_xxx`
-* `interpolate`
-* `interpolate_seq`
-* `fade_transition()`
+- :func:`~asynckivy.rest_of_touch_events`
+- :func:`~asynckivy.interpolate`
+- :func:`~asynckivy.interpolate_seq`
+- ``anim_with_xxx``
 
-これにどう対処すればいいのかは現状分かっていません。
-もしかすると :pep:`533` が解決してくれるかも。
+.. code-block::
+
+    from contextlib import aclosing
+
+    async with aclosing(interpolate(...)) as agen:
+        async for v in agen:
+            ...
+
+加えてより問題なのはasyncジェネレータを使用する側で例外が起きた場合にその例外がジェネレータに運ばれないという事です。
+(一応これ自体は通常のジェネレータにも当てはまりますがそちらでは問題にならないと思います。)
+
+.. code-block::
+
+    async for v in agen:
+        # ここで例外が起きてもagenには運ばれない
+
+これが意味するのはasyncジェネレータを使用する側が中断された場合にその中断を表す例外がジェネレータに伝わらないという事です。
+
+.. code-block::
+
+    async for v in agen:
+        await something  # ここで中断されるとagenは実装次第でそれに正しく対応できない。
+
+長くなるので深入りはしませんがこの事が ``asyncgui`` の中断機構を壊し得ます。
+一応 `このPR <https://github.com/asyncgui/asyncgui/pull/136>`_ で解決しようとしてますがうまくいくかは分かりません。
+なので現状もしasyncジェネレータで何か問題が起きた場合は **使うのを止めてその実装コードをコピペしてしまう** のがお薦めです。 
+そうすればasyncジェネレータに依存しないコードになりasyncジェネレータに起因する全ての問題から解放されます。
+
+ほとんどの人がこれを馬鹿げてると感じるでしょうがそれでも時折やってみる価値はあります。
+asyncジェネレータという物がそれだけ未完成だからです。
 
 -----------------------------
 async操作が禁じられている場所
@@ -67,11 +94,10 @@ async操作が禁じられている場所
 ``asynckivy`` のAPIでasyncイテレータを返す物のほとんどはその繰り返し中にasync操作を行うことを認めていません。
 以下が該当する者たちです。
 
-* :func:`asynckivy.rest_of_touch_events`
-* :func:`asynckivy.interpolate`
-* :func:`asynckivy.interpolate_seq`
-* ``asynckivy.anim_with_xxx``
-* :any:`asynckivy.event_freq`
+- :func:`~asynckivy.rest_of_touch_events`
+- :func:`~asynckivy.interpolate`
+- :func:`~asynckivy.interpolate_seq`
+- ``anim_with_xxx``
 
 .. code-block::
 

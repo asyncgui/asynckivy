@@ -98,7 +98,7 @@ async def anim_with_ratio(*, base, step=0):
             p = et / base
             print(p)
 
-    If you want non-linear ratio values, you may find :class:`kivy.animation.AnimationTransition` helpful.
+    Use :class:`kivy.animation.AnimationTransition` for non-linear curves.
 
     .. code-block::
 

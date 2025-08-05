@@ -8,8 +8,9 @@ Notes
 I/O in AsyncKivy
 ----------------
 
-``asynckivy`` does not have any I/O primitives unlike ``trio`` and ``asyncio`` do,
-thus threads may be the best way to perform them without blocking the main-thread:
+Unlike ``trio`` and ``asyncio``, ``asynckivy`` does not provide any I/O primitives.  
+Therefore, if you don't want to implement your own, using threads may be the best way to perform
+I/O without blocking the main thread.
 
 .. code-block::
 
@@ -21,7 +22,7 @@ thus threads may be the best way to perform them without blocking the main-threa
 
     def thread_blocking_operation():
         '''
-        This function is called from outside the main-thread so you should not
+        This function is called from outside the main thread so you should not
         perform any graphics-related operations here.
         '''
 
@@ -33,8 +34,8 @@ thus threads may be the best way to perform them without blocking the main-threa
         r = await ak.run_in_executor(executor, thread_blocking_operation)
         print("return value:", r)
 
-Unhandled exceptions (not :exc:`BaseException`) are propagated to the caller so you can catch them like you do in
-synchronous code:
+Unhandled exceptions (excluding :exc:`BaseException` that is not :exc:`Exception`) are propagated
+to the caller so you can catch them like you do in synchronous code:
 
 .. code-block::
 
@@ -88,18 +89,48 @@ The Problem with Async Generators
 ---------------------------------
 
 :mod:`asyncio` and :mod:`trio` do some hacky stuff, :func:`sys.set_asyncgen_hooks` and :func:`sys.get_asyncgen_hooks`,
-which likely hinders asynckivy-flavored async generators.
-You can see its details `here <https://peps.python.org/pep-0525/#finalization>`__.
+which sometimes delays the cleanup of async generators when either library is running.
+You can read more about this in `PEP 525 <https://peps.python.org/pep-0525/#finalization>`__.
 
-Because of that, the APIs that create async generators might not work perfectly if ``asyncio`` or ``trio`` is running.
-Here is a list of them:
+Because of this, you have to explicitly close async generators when you're done with them.
+The following ones are affected:
 
-- :func:`asynckivy.rest_of_touch_events`
-- :func:`asynckivy.interpolate`
-- :func:`asynckivy.interpolate_seq`
-- :func:`asynckivy.fade_transition`
-- ``asynckivy.anim_with_xxx``
+- :func:`~asynckivy.rest_of_touch_events`
+- :func:`~asynckivy.interpolate`
+- :func:`~asynckivy.interpolate_seq`
+- ``anim_with_xxx``
 
+.. code-block::
+
+    from contextlib import aclosing
+
+    async with aclosing(interpolate(...)) as agen:
+        async for v in agen:
+            ...
+
+And there's another problem, and this one isn't tied to ``asyncio`` or ``trio``.
+If an exception occurs on the *consumer side* of an async generator, the exception is **not** propagated to the generator.
+(This also applies to regular generators, but it's generally less of a concern there.)
+
+.. code-block::
+
+    async for v in agen:
+        # If an exception occurs here, it won't be propagated to the agen.
+
+This means that if the consumer is cancelled, the exception representing that cancellation won't reach the generator.
+
+.. code-block::
+
+    async for v in agen:
+        await something  # If cancelled here, the agen won't be able to respond to it correctly depending on how it's implemented.
+
+I won't go into the details here — it's complicated — but in short, this behavior can break ``asyncgui``'s cancellation system.
+I'm currently working on a possible fix here: https://github.com/asyncgui/asyncgui/pull/136 — but I'm not sure whether it will work.
+
+**So here's my suggestion for now:**
+If something goes wrong with an async generator, just abandon it and copy-paste its internal logic instead.
+A prime example of this can be seen in ``painter3.py`` vs ``painter4.py`` in the examples directory.
+I know this may sound like a terrible idea, but async generators are problematic enough to justify such workarounds.
 
 --------------------------------------------
 Places where async operations are disallowed
@@ -108,11 +139,10 @@ Places where async operations are disallowed
 Most asynckivy APIs that return an async iterator don't allow async operations during iteration.
 Here is a list of them:
 
-- :func:`asynckivy.rest_of_touch_events`
-- :func:`asynckivy.interpolate`
-- :func:`asynckivy.interpolate_seq`
-- ``asynckivy.anim_with_xxx``
-- :any:`asynckivy.event_freq`
+- :func:`~asynckivy.rest_of_touch_events`
+- :func:`~asynckivy.interpolate`
+- :func:`~asynckivy.interpolate_seq`
+- ``anim_with_xxx``
 
 .. code-block::
 
