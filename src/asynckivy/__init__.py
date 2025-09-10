@@ -22,6 +22,8 @@ __all__ = (
     'sleep_free',
     'sleep_freq',
     'smooth_attr',
+    'stencil_mask',
+    'stencil_widget_mask',
     'suppress_event',
     'sync_attr',
     'sync_attrs',
@@ -35,6 +37,6 @@ from ._anim_with_xxx import anim_with_dt, anim_with_et, anim_with_ratio, anim_wi
 from ._anim_attrs import anim_attrs, anim_attrs_abbr
 from ._interpolate import interpolate, interpolate_seq, fade_transition
 from ._threading import run_in_executor, run_in_thread
-from ._etc import transform, sync_attr, sync_attrs
+from ._etc import transform, sync_attr, sync_attrs, stencil_mask, stencil_widget_mask
 from ._managed_start import managed_start
 from ._smooth_attr import smooth_attr

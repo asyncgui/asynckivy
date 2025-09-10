@@ -1,11 +1,13 @@
-__all__ = ("transform", "sync_attr", "sync_attrs", )
+__all__ = ("transform", "sync_attr", "sync_attrs", "stencil_mask", "stencil_widget_mask", )
 import typing as T
 from collections.abc import Iterator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from functools import partial
 
 from kivy.event import EventDispatcher
-from kivy.graphics import PushMatrix, PopMatrix, InstructionGroup
+from kivy.graphics import (
+    PushMatrix, PopMatrix, InstructionGroup, StencilPush, StencilUse, StencilUnUse, StencilPop, Rectangle,
+)
 
 
 @contextmanager
@@ -236,3 +238,91 @@ class sync_attrs:
 
     def __enter__(self):
         pass
+
+
+@contextmanager
+def stencil_mask(widget, *, use_outer_canvas=False) -> Iterator[InstructionGroup]:
+    '''
+    Returns a context manager that allows restricting the drawing area of a specified widget to an arbitrary shape.
+
+    .. code-block::
+
+        with stencil_mask(widget) as drawable_area:
+            ...
+
+    The most common use case would be to confine drawing to the widget's own area,
+    which can be achieved as follows:
+
+    .. code-block::
+
+        from kivy.graphics import Rectangle
+        import asynckivy as ak
+
+        rect = Rectangle()
+        with (
+            ak.sync_attr(from_=(widget, 'pos'), to_=(rect, 'pos')),  # A
+            ak.sync_attr(from_=(widget, 'size'), to_=(rect, 'size')),
+            ak.stencil_mask(widget) as drawable_area,
+        ):
+            drawable_area.add(rect)
+            ...
+
+    Note that if the ``widget`` is a relative-type widget and the ``use_outer_canvas`` parameter is
+    False (the default), line A above must be removed.
+
+    Since this use case is so common, :func:`stencil_widget_mask` is provided as a shorthand.
+
+    .. versionadded:: 0.9.1
+    '''
+    IG = InstructionGroup
+    shared_part = IG()
+    first_group = IG()
+    first_group.add(StencilPush())
+    first_group.add(shared_part)
+    first_group.add(StencilUse())
+    last_group = IG()
+    last_group.add(StencilUnUse())
+    last_group.add(shared_part)
+    last_group.add(StencilPop())
+
+    c = widget.canvas
+    first_group_idx = 0
+    if use_outer_canvas:
+        before = c.before
+        after = c.after
+    else:
+        before = after = c
+        if c.has_before:
+            first_group_idx = 1
+
+    before.insert(first_group_idx, first_group)
+    after.add(last_group)
+    try:
+        yield shared_part
+    finally:
+        before.remove(first_group)
+        after.remove(last_group)
+
+
+@contextmanager
+def stencil_widget_mask(widget, *, use_outer_canvas=False, relative=False) -> Iterator[InstructionGroup]:
+    '''
+    Returns a context manager that restricts the drawing area to the widget's own area.
+
+    .. code-block::
+
+        with stencil_widget_mask(widget):
+            ...
+
+    :param relative: Must be set to True if the ``widget`` is a relative-type widget.
+
+    .. versionadded:: 0.9.1
+    '''
+    rect = Rectangle()
+    with (
+        sync_attr((widget, 'pos'), (rect, 'pos')) if use_outer_canvas or (not relative) else nullcontext(),
+        sync_attr((widget, 'size'), (rect, 'size')),
+        stencil_mask(widget, use_outer_canvas=use_outer_canvas) as drawable_area,
+    ):
+        drawable_area.add(rect)
+        yield drawable_area
