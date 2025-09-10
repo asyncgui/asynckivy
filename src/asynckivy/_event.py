@@ -1,9 +1,9 @@
-__all__ = ("event", "event_freq", "suppress_event", "rest_of_touch_events", )
+__all__ = ("event", "event_freq", "suppress_event", "rest_of_touch_events", "rest_of_touch_events_cm", )
 
 from collections.abc import AsyncIterator
 import types
 from functools import partial
-from contextlib import ExitStack
+from contextlib import asynccontextmanager, nullcontext
 
 from asyncgui import _current_task, _sleep_forever, move_on_when, ExclusiveEvent, _wait_args
 
@@ -188,23 +188,44 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False) -> Asyn
         You are now responsible for handling cases where the ``on_touch_up`` event for the touch does not occur.
         If you fail to handle this, the iterator will wait indefinitely for an event that never comes.
     '''
+    async with rest_of_touch_events_cm(widget, touch, stop_dispatching=stop_dispatching) as on_touch_move:
+        while True:
+            await on_touch_move()
+            yield
+
+
+@asynccontextmanager
+async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, free_to_await=False):
+    '''
+    A variant of :func:`rest_of_touch_events`.
+    This version is more verbose, but remains safe even when Kivy is running in async mode.
+
+    .. code-block::
+
+        async with rest_of_touch_events_cm(widget, touch) as on_touch_move:
+            while True:
+                await on_touch_move()
+                print('on_touch_move')
+        print('on_touch_up')
+
+    .. versionadded:: 0.9.1
+    '''
     touch.grab(widget)
     try:
-        with ExitStack() as stack:
-            if stop_dispatching:
-                ec = stack.enter_context
-                se = partial(suppress_event, widget, filter=lambda w, t, touch=touch: t is touch)
-                ec(se('on_touch_up'))
-                ec(se('on_touch_move'))
-
+        if stop_dispatching:
+            se = partial(suppress_event, widget, filter=lambda w, t, touch=touch: t is touch)
+            se_up = se('on_touch_up')
+            se_move = se('on_touch_move')
+        else:
+            se_up = se_move = nullcontext()
+        with se_up, se_move:
             def filter(w, t, touch=touch):
                 return t is touch and t.grab_current is w
             async with (
                 move_on_when(event(widget, 'on_touch_up', filter=filter, stop_dispatching=True)),
-                event_freq(widget, 'on_touch_move', filter=filter, stop_dispatching=True) as on_touch_move,
+                event_freq(widget, 'on_touch_move', filter=filter, stop_dispatching=True,
+                           free_to_await=free_to_await) as on_touch_move,
             ):
-                while True:
-                    await on_touch_move()
-                    yield
+                yield on_touch_move
     finally:
         touch.ungrab(widget)
