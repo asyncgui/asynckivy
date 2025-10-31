@@ -102,10 +102,13 @@ async def anim_with_ratio(*, base, step=0):
 
     .. code-block::
 
-        base = 3
-        async for et in anim_with_et():
-            p = et / base
-            print(p)
+        async with sleep_freq() as sleep:
+            base = 3
+            total_elapsed_time = 0.
+            while True:
+                total_elapsed_time += await sleep()
+                p = total_elapsed_time / base
+                print(p)
 
     Use :class:`kivy.animation.AnimationTransition` for non-linear curves.
 
