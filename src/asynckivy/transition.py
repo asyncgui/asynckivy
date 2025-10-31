@@ -1,5 +1,5 @@
 __all__ = (
-    'fade_transition', 'slide_transition', 'scale_transition', 'iris_transition',
+    'fade', 'slide', 'scale', 'iris',
 )
 
 from typing import Literal, Union
@@ -24,7 +24,7 @@ Wow = Union[WindowBase, Widget]  # 'Wow' -> WindowBase or Widget
 
 
 @asynccontextmanager
-async def fade_transition(target: Wow=Window, *, duration=1, out_curve=linear, in_curve=linear):
+async def fade(target: Wow=Window, *, duration=1, out_curve=linear, in_curve=linear):
     '''
     .. versionadded:: 0.9.0
     '''
@@ -40,10 +40,10 @@ async def fade_transition(target: Wow=Window, *, duration=1, out_curve=linear, i
 
 
 @asynccontextmanager
-async def slide_transition(target: Wow=Window, *, duration=1, out_curve='in_cubic', in_curve='out_cubic',
-                           x_direction: Literal['left', 'right', None]='left',
-                           y_direction: Literal['down', 'up', None]=None,
-                           use_outer_canvas=False):
+async def slide(target: Wow=Window, *, duration=1., out_curve='in_cubic', in_curve='out_cubic',
+                x_direction: Literal['left', 'right', None]='left',
+                y_direction: Literal['down', 'up', None]=None,
+                use_outer_canvas=False):
     '''
     .. versionadded:: 0.9.0
     '''
@@ -68,8 +68,8 @@ async def slide_transition(target: Wow=Window, *, duration=1, out_curve='in_cubi
 
 
 @asynccontextmanager
-async def scale_transition(target: Wow=Window, *, duration=1, out_curve='out_quad', in_curve='in_quad',
-                           use_outer_canvas=False):
+async def scale(target: Wow=Window, *, duration=1, out_curve='out_quad', in_curve='in_quad',
+                use_outer_canvas=False):
     '''
     .. versionadded:: 0.9.0
     '''
@@ -96,9 +96,9 @@ def _calc_enclosing_circle_radius(circle_center, rectangle_size, max=max, hypot=
 
 
 @asynccontextmanager
-async def iris_transition(target: WindowBase=Window, *, duration=1, out_curve='in_cubic', in_curve='out_cubic',
-                          color: Sequence[float]=colormap['white'], circle_center: Sequence[float]=None,
-                          overlay: VertexInstruction=None):
+async def iris(target: WindowBase=Window, *, duration=1, out_curve='in_cubic', in_curve='out_cubic',
+               color: Sequence[float]=colormap['white'], circle_center: Sequence[float]=None,
+               overlay: VertexInstruction=None):
     '''
     .. versionadded:: 0.9.0
     '''
@@ -139,3 +139,10 @@ async def iris_transition(target: WindowBase=Window, *, duration=1, out_curve='i
         await anim_attrs(ellipse, d=half_d, t=in_curve, pos=ellipse_start_pos, size=ellipse_start_size)
     finally:
         canvas.remove(ig)
+
+
+# Aliases for backward compatibility
+fade_transition = fade
+slide_transition = slide
+scale_transition = scale
+iris_transition = iris
