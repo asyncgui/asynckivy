@@ -2,7 +2,7 @@ __all__ = (
     'fade', 'slide', 'scale', 'iris',
 )
 
-from typing import Literal, Union
+from typing import Literal, TypeAlias
 from collections.abc import Sequence
 from contextlib import asynccontextmanager
 import math
@@ -10,7 +10,7 @@ import math
 from kivy.utils import colormap
 from kivy.graphics import (
     Translate, Scale, InstructionGroup, StencilPop, StencilPush, StencilUnUse, StencilUse,
-    Rectangle, Ellipse, Color, VertexInstruction
+    Rectangle, Ellipse, Color, VertexInstruction, Canvas
 )
 from kivy.animation import AnimationTransition
 from kivy.core.window import Window, WindowBase
@@ -20,23 +20,39 @@ from asynckivy import transform, anim_attrs_abbr as anim_attrs
 
 
 linear = AnimationTransition.linear
-Wow = Union[WindowBase, Widget]  # 'Wow' -> WindowBase or Widget
+Wow: TypeAlias = WindowBase | Widget  # 'Wow' -> WindowBase or Widget
 
 
 @asynccontextmanager
-async def fade(target: Wow=Window, *, duration=1, out_curve=linear, in_curve=linear):
+async def fade(target: Wow | Canvas=Window.canvas, *, goal_opacity=0., duration=1., out_curve=linear, in_curve=linear):
     '''
+    .. code-block::
+
+        async with fade(widget):
+            ...
+
+    The above code fades out the widget, executes the code inside the with-block, and then fades it back in.
+    You can reverse this sequence as follows:
+
+    .. code-block::
+
+        original = widget.opacity
+        widget.opacity = 0.
+        async with fade(widget, goal_opacity=original):
+            ...
+
     .. versionadded:: 0.9.0
+    .. versionchanged:: 0.9.1
+        Now accepts Canvas as target.
     '''
     half_d = duration / 2
-    canvas = target.canvas
-    orig = canvas.opacity
+    original = target.opacity
     try:
-        await anim_attrs(canvas, d=half_d, t=out_curve, opacity=0)
+        await anim_attrs(target, d=half_d, t=out_curve, opacity=goal_opacity)
         yield
-        await anim_attrs(canvas, d=half_d, t=in_curve, opacity=orig)
+        await anim_attrs(target, d=half_d, t=in_curve, opacity=original)
     finally:
-        canvas.opacity = orig
+        target.opacity = original
 
 
 @asynccontextmanager
