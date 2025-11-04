@@ -77,6 +77,7 @@ class smooth_attr:
     def __enter__(self):
         pass
 
+    @staticmethod
     def _update_follower(getattr, setattr, math_exp, target_obj, target_attr, follower_obj, follower_attr,
                          negative_speed, min, max, dt):
         t_value = getattr(target_obj, target_attr)
@@ -92,6 +93,7 @@ class smooth_attr:
 
     _update_follower = partial(_update_follower, getattr, setattr, math.exp)
 
+    @staticmethod
     def _update_follower_ver_seq(getattr, setattr, math_exp, zip, target_obj, target_attr,
                                  follower_obj, follower_attr, negative_speed, min, max, dt):
         t_value = getattr(target_obj, target_attr)
