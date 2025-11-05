@@ -65,7 +65,7 @@ Asyncジェネレータが抱える問題
             ...
 
 加えてより問題なのはasyncジェネレータを使用する側で例外が起きた場合にその例外がジェネレータに運ばれないという事です。
-(一応これ自体は通常のジェネレータにも当てはまりますがそちらでは問題にならないと思います。)
+(一応これ自体は通常のジェネレータにも当てはまりますがそちらではあまり問題にならないと思います。)
 
 .. code-block::
 
@@ -80,24 +80,7 @@ Asyncジェネレータが抱える問題
         await something  # ここで中断されるとagenは実装次第でそれに正しく対応できない。
 
 長くなるので深入りはしませんがこの事が ``asyncgui`` の中断機構を壊し得ます。
-一応 `このPR <https://github.com/asyncgui/asyncgui/pull/136>`_ で解決しようとしてますがうまくいくかは分かりません。
-なので現状もしasyncジェネレータで何か問題が起きた場合は **使うのを止めてその実装コードをコピペしてしまう** のがお薦めです。 
-そうすればasyncジェネレータに依存しないコードになりasyncジェネレータに起因する全ての問題から解放されます。
-
-ほとんどの人がこれを馬鹿げてると感じるでしょうがそれでも時折やってみる価値はあります。
-asyncジェネレータという物がそれだけ未完成だからです。
-
------------------------------
-async操作が禁じられている場所
------------------------------
-
-``asynckivy`` のAPIでasyncイテレータを返す物のほとんどはその繰り返し中にasync操作を行うことを認めていません。
-以下が該当する者たちです。
-
-- :func:`~asynckivy.rest_of_touch_events`
-- :func:`~asynckivy.interpolate`
-- :func:`~asynckivy.interpolate_seq`
-- ``anim_with_xxx``
+なので上記のAPIが返したasyncジェネレータの消費中はいかなるasync処理も行わないで下さい。
 
 .. code-block::
 
@@ -107,3 +90,14 @@ async操作が禁じられている場所
             ...
         async for __ in async_iterator:  # 駄目
             ...
+
+もしどうしてもそのような事をしたければ代わりに :class:`~asynckivy.rest_of_touch_events_cm` や :class:`~asynckivy.sleep_freq` を使う事を検討して下さい。
+これらによってコードは少し長くなりますが、見返りとしてasyncジェネレータ特有の問題全てから解放されます。
+
+.. code-block::
+    
+    async with rest_of_touch_events_cm(..., free_to_await=True) as on_touch_move:
+        ...
+
+    async with sleep_freq(..., free_to_await=True) as sleep:
+        ...

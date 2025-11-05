@@ -50,38 +50,6 @@ to the caller so you can catch them like you do in synchronous code:
         else:
             label.text = "RECEIVED"
 
-.. _kivys-event-system:
-
--------------------
-Kivy's Event System
--------------------
-
-(under construction)
-
-
-.. The stop_dispatching can be used to prevent the execution of callbacks (and the default handler) bound to
-.. the event.
-.. (Though not the all callbacks, but the ones that are bound to the event **before** the call to :func:`event`.)
-
-.. .. code-block::
-
-..     button.bind(on_press=lambda __: print("callback 1"))
-..     button.bind(on_press=lambda __: print("callback 2"))
-
-..     # Wait for a button to be pressed. When that happend, the above callbacks won't be called because they were
-..     # bound before the execution of ``await event(...)``.
-..     await event(button, 'on_press', stop_dispatching=True)
-
-.. You may feel weired
-
-.. .. code-block::
-
-..     # Wait for an ``on_touch_down`` event to occur inside a widget. When that happend, the event 
-..     await event(
-..         widget, 'on_touch_down', stop_dispatching=True,
-..         filter=lambda w, t: w.collide_point(*t.opos),
-..     )
-
 .. _the-problem-with-async-generators:
 
 ---------------------------------
@@ -125,24 +93,7 @@ This means that if the consumer is cancelled, the exception representing that ca
         await something  # If cancelled here, the agen won't be able to respond to it correctly depending on how it's implemented.
 
 I won't go into the details here — it's complicated — but in short, this behavior can break ``asyncgui``'s cancellation system.
-I'm currently working on a possible fix here: https://github.com/asyncgui/asyncgui/pull/136 — but I'm not sure whether it will work.
-
-**So here's my suggestion for now:**
-If something goes wrong with an async generator, just abandon it and copy-paste its internal logic instead.
-A prime example of this can be seen in ``painter3.py`` vs ``painter4.py`` in the examples directory.
-I know this may sound like a terrible idea, but async generators are problematic enough to justify such workarounds.
-
---------------------------------------------
-Places where async operations are disallowed
---------------------------------------------
-
-Most asynckivy APIs that return an async iterator don't allow async operations during iteration.
-Here is a list of them:
-
-- :func:`~asynckivy.rest_of_touch_events`
-- :func:`~asynckivy.interpolate`
-- :func:`~asynckivy.interpolate_seq`
-- ``anim_with_xxx``
+Therefore, do **not** perform any async operations while consuming the async generators returned by the APIs listed above.
 
 .. code-block::
 
@@ -152,3 +103,15 @@ Here is a list of them:
             ...
         async for __ in async_iterator:  # NOT ALLOWED
             ...
+
+If you really need to perform async operations while consuming those async generators,
+consider using :class:`~asynckivy.rest_of_touch_events_cm` or :class:`~asynckivy.sleep_freq` instead.
+They make your code more verbose, but they free you from having to deal with the problems, since they don't rely on async generators at all.
+
+.. code-block::
+    
+    async with rest_of_touch_events_cm(..., free_to_await=True) as on_touch_move:
+        ...
+
+    async with sleep_freq(..., free_to_await=True) as sleep:
+        ...
