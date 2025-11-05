@@ -40,8 +40,7 @@ def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
 
     The ``stop_dispatching`` parameter:
 
-      It only works for events not for properties.
-      See :ref:`kivys-event-system` for details.
+      This only works for events not for properties.
     '''
     task = (yield _current_task)[0][0]
     bind_id = event_dispatcher.fbind(event_name, partial(_event_callback, filter, task._step, stop_dispatching))
@@ -148,11 +147,6 @@ class suppress_event:
         with suppress_event(btn, 'on_press'):
             btn.bind(on_press=lambda __: print("pressed"))
             btn.dispatch('on_press')
-
-    .. warning::
-
-        You need to be careful when you suppress an ``on_touch_xxx`` event.
-        See :ref:`kivys-event-system` for details.
     '''
     __slots__ = ('_dispatcher', '_name', '_bind_uid', '_filter', )
 
