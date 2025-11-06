@@ -1,6 +1,6 @@
 [project]
 name = "asynckivy"
-version = "0.9.1.dev0"
+version = "0.9.1"
 description = "Async library for Kivy"
 authors = [{ name = "Nattōsai Mitō", email = "flow4re2c@gmail.com" }]
 license = "MIT"
