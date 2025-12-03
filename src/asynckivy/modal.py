@@ -36,7 +36,7 @@ from functools import partial
 from collections.abc import Callable, AsyncIterator
 from contextlib import AsyncExitStack, contextmanager, asynccontextmanager, AbstractAsyncContextManager
 
-from kivy.graphics import Translate, Rectangle, Color
+from kivy.graphics import Translate, Rectangle, Color, CanvasBase
 from kivy.core.window import Window, WindowBase
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
@@ -63,7 +63,8 @@ class FadeTransition:
 
     @asynccontextmanager
     async def __call__(self, dialog: Widget, parent: FloatLayout, window: WindowBase):
-        bg_canvas = parent.canvas.before
+        parent_canvas = parent.canvas.before
+        parent_canvas.add(bg_canvas := CanvasBase())
         try:
             parent.opacity = 0
             await ak.sleep(0)
@@ -74,7 +75,7 @@ class FadeTransition:
             yield
             await anim_attrs(parent, d=self.out_duration, opacity=0.0)
         finally:
-            bg_canvas.clear()
+            parent_canvas.remove(bg_canvas)
 
 
 class SlideTransition:
@@ -92,9 +93,10 @@ class SlideTransition:
 
     @asynccontextmanager
     async def __call__(self, dialog: Widget, parent: FloatLayout, window: WindowBase):
-        bg_canvas = parent.canvas.before
         parent.opacity = 0.
         await ak.sleep(0)
+        parent_canvas = parent.canvas.before
+        parent_canvas.add(bg_canvas := CanvasBase())
         try:
             bg_alpha = self.background_color[3]
             with bg_canvas:
@@ -137,7 +139,7 @@ class SlideTransition:
                     anim_attrs(bg_color, d=self.out_duration, a=0.),
                 )
         finally:
-            bg_canvas.clear()
+            parent_canvas.remove(bg_canvas)
 
 
 def _dismiss_when_escape_key_or_back_button_is_pressed(dismiss, window, key, *args):
