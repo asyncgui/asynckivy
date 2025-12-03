@@ -30,7 +30,7 @@ async def anim_with_dt(*, step=0):
     .. versionadded:: 0.6.1
 
     .. deprecated:: 0.9.1
-        This will be removed in version 0.11.0. Use :func:`asynckivy.sleep_freq` instead.
+        This will be removed in version 0.10.0. Use :func:`asynckivy.sleep_freq` instead.
     '''
     async with repeat_sleeping(step=step) as sleep:
         while True:
@@ -58,7 +58,7 @@ async def anim_with_et(*, step=0):
     .. versionadded:: 0.6.1
 
     .. deprecated:: 0.9.1
-        This will be removed in version 0.11.0. Use :func:`asynckivy.sleep_freq` instead.
+        This will be removed in version 0.10.0. Use :func:`asynckivy.sleep_freq` instead.
     '''
     et = 0.
     async with repeat_sleeping(step=step) as sleep:
@@ -79,7 +79,7 @@ async def anim_with_dt_et(*, step=0):
     .. versionadded:: 0.6.1
 
     .. deprecated:: 0.9.1
-        This will be removed in version 0.11.0. Use :func:`asynckivy.sleep_freq` instead.
+        This will be removed in version 0.10.0. Use :func:`asynckivy.sleep_freq` instead.
     '''
     et = 0.
     async with repeat_sleeping(step=step) as sleep:
@@ -152,7 +152,7 @@ async def anim_with_dt_et_ratio(*, base, step=0):
         The loop no longer ends on its own.
 
     .. deprecated:: 0.9.1
-        This will be removed in version 0.11.0. Use :func:`asynckivy.sleep_freq` instead.
+        This will be removed in version 0.10.0. Use :func:`asynckivy.sleep_freq` instead.
     '''
     async with repeat_sleeping(step=step) as sleep:
         et = 0.
