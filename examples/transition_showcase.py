@@ -49,14 +49,6 @@ class TestApp(App):
                 label.halign = 'left'
                 label.text = dedent('''
                     slide_transition(
-                        out_curve='in_back',
-                        in_curve='out_back',
-                    )''')
-
-            await touch_down()
-            async with t.slide_transition(duration=0.6, out_curve='in_back', in_curve='out_back'):
-                label.text = dedent('''
-                    slide_transition(
                         x_direction='right',
                         y_direction='up',
                     )''')
