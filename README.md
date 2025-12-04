@@ -1,7 +1,7 @@
 # AsyncKivy
 
 [Youtube](https://www.youtube.com/playlist?list=PLNdhqAjzeEGjTpmvNck4Uykps8s9LmRTJ)  
-[日本語doc](README_jp.md)  
+[日本語doc](https://github.com/asyncgui/asynckivy/blob/main/README_jp.md)  
 
 `asynckivy` is an async library that saves you from ugly callback-style code,
 like most of async libraries do.
@@ -123,32 +123,3 @@ For more details, read the [documentation](https://asyncgui.github.io/asynckivy/
 - CPython 3.11 + Kivy 2.3
 - CPython 3.12 + Kivy 2.3
 - CPython 3.13 + Kivy 2.3
-
-## Why this even exists
-
-Starting from version 2.0.0, Kivy supports two legitimate async libraries: [asyncio][asyncio] and [Trio][trio].
-At first glance, developing another one might seem like [reinventing the wheel][reinventing].
-Actually, I originally started this project just to learn how the async/await syntax works--
-so at first, it really was 'reinventing the wheel'.
-
-But after experimenting with Trio in combination with Kivy for a while,
-I noticed that Trio isn't suitable for situations requiring fast reactions, such as handling touch events.
-The same applies to asyncio.
-You can confirm this by running `investigation/why_xxx_is_not_suitable_for_handling_touch_events.py` and rapidly clicking a mouse button.
-You'll notice that sometimes `'up'` isn't paired with a corresponding `'down'` in the console output.
-You'll also see that the touch coordinates aren't relative to a `RelativeLayout`,
-even though the widget receiving the touches belongs to it.
-
-The cause of these problems is that `trio.Event.set()` and `asyncio.Event.set()` don't *immediately* resume the tasks waiting for the `Event` to be set--
-they merely schedule them to resume.
-The same is true for `nursery.start_soon()` and `asyncio.create_task()`.
-
-Trio and asyncio are async **I/O** libraries after all.
-They probably don't need to resume or start tasks immediately, but I believe this is essential for touch handling in Kivy.
-If touch events aren't processed promptly, their state might change before tasks even have a chance to handle them.
-Their core design might not be ideal for GUI applications in the first place.
-That's why I continue to develop the asynckivy library to this day.
-
-[asyncio]:https://docs.python.org/3/library/asyncio.html
-[trio]:https://trio.readthedocs.io/en/stable/
-[reinventing]:https://en.wikipedia.org/wiki/Reinventing_the_wheel

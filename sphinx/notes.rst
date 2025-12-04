@@ -2,6 +2,35 @@
 Notes
 =====
 
+-----------------------------
+Why this library even exists
+-----------------------------
+
+Starting from version 2.0.0, Kivy supports two legitimate async libraries: :mod:`asyncio` and :mod:`trio`.
+At first glance, developing another one might seem like `reinventing the wheel`_.
+Actually, I originally started this project just to learn how the async/await syntax works —
+so at first, it really was 'reinventing the wheel'.
+
+But after experimenting with Trio in combination with Kivy for a while,
+I noticed that Trio isn't suitable for situations requiring fast reactions, such as handling touch events.
+The same applies to asyncio.
+You can confirm this by running ``investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`` and rapidly clicking a mouse button.
+You'll notice that sometimes ``'up'`` isn't paired with a corresponding ``'down'`` in the console output.
+You'll also see that the touch coordinates aren't relative to a ``RelativeLayout``,
+even though the widget receiving the touches belongs to it.
+
+The cause of these problems is that :meth:`trio.Event.set` and :meth:`asyncio.Event.set` don't *immediately* resume the tasks waiting for the ``Event`` to be set —
+they merely schedule them to resume.
+The same is true for :meth:`trio.Nursery.start_soon` and :func:`asyncio.create_task`.
+
+Trio and asyncio are async **I/O** libraries after all.
+They probably don't need to resume or start tasks immediately, but I believe this is essential for touch handling in Kivy.
+If touch events aren't processed promptly, their state might change before tasks even have a chance to handle them.
+Their core design might not be ideal for GUI applications in the first place.
+That's why I continue to develop the asynckivy library to this day.
+
+.. _reinventing the wheel: https://en.wikipedia.org/wiki/Reinventing_the_wheel
+
 .. _io-in-asynckivy:
 
 ----------------
