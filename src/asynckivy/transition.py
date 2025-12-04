@@ -56,12 +56,15 @@ async def fade(target: Wow | Canvas=Window.canvas, *, goal_opacity=0., duration=
 
 
 @asynccontextmanager
-async def slide(target: Wow=Window, *, duration=1., out_curve='in_cubic', in_curve='out_cubic',
+async def slide(target: Wow=Window, *, duration=1., out_curve='in_back', in_curve='out_back',
                 x_direction: Literal['left', 'right', None]='left',
                 y_direction: Literal['down', 'up', None]=None,
                 use_outer_canvas=False):
     '''
     .. versionadded:: 0.9.0
+    .. versionchanged:: 0.9.2
+        The default value of ``out_curve`` has changed from ``'in_cubic'`` to ``'in_back'``.
+        The default value of ``in_curve`` has changed from ``'out_cubic'`` to ``'out_back'``.
     '''
     x_dist, y_dist = target.size
     if x_direction is None:
