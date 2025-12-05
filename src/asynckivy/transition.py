@@ -102,7 +102,7 @@ async def scale(target: Wow=Window, *, duration=1, out_curve='out_quad', in_curv
 
 def _calc_enclosing_circle_radius(circle_center, rectangle_size, max=max, hypot=math.hypot, abs=abs):
     '''
-    Calculates the minimum radius required for a circle centered at the specified position to fully
+    Calculates the minimum radius required for a circle centered at the given position to fully
     enclose a rectangle of the given size, assuming its bottom-left corner is at (0, 0).
 
     .. code-block::
