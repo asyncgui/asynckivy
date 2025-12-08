@@ -30,7 +30,7 @@ class TestApp(App):
             await touch_down()
             async with t.iris_transition(duration=0.8, color=colormap['darkslategray']):
                 label.halign = 'center'
-                label.text = 'iris_transition\n\nwith a custom overlay'
+                label.text = 'iris with a custom overlay'
 
             await touch_down()
             rect = Rectangle(size=Window.size, source='data/logo/kivy-icon-128.png')
@@ -39,27 +39,27 @@ class TestApp(App):
             x_ratio = Window.width / texture.width
             y_ratio = Window.height / texture.height
             rect.tex_coords = (0, y_ratio, x_ratio, y_ratio, x_ratio, 0, 0, 0)
-            async with t.iris_transition(overlay=rect, out_curve='linear', in_curve='linear'):
+            async with t.iris(overlay=rect, out_curve='linear', in_curve='linear'):
                 await ak.sleep(.3)
-                label.text = 'slide_transition'
+                label.text = 'slide'
                 await ak.sleep(.3)
 
             await touch_down()
-            async with t.slide_transition(duration=0.6):
+            async with t.slide(duration=0.6):
                 label.halign = 'left'
                 label.text = dedent('''
-                    slide_transition(
+                    slide(
                         x_direction='right',
                         y_direction='up',
                     )''')
 
             await touch_down()
-            async with t.slide_transition(duration=0.6, x_direction='right', y_direction='up'):
-                label.text = 'scale_transition'
+            async with t.slide(duration=0.6, x_direction='right', y_direction='up'):
+                label.text = 'scale'
 
             await touch_down()
-            async with t.scale_transition(duration=0.4):
-                label.text = 'fade_transition'
+            async with t.scale(duration=0.4):
+                label.text = 'fade'
 
             await touch_down()
             async with t.fade_transition(duration=0.6):
