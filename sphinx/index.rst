@@ -56,6 +56,7 @@ You may also want to read the ``asyncgui``'s documentation as it is the foundati
    notes
    notes-ja
    reference
+   submod-transition
 
 * https://github.com/asyncgui/asyncgui
 * https://github.com/asyncgui/asynckivy

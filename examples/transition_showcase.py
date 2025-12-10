@@ -14,6 +14,19 @@ import asynckivy as ak
 from asynckivy import transition as t
 
 
+cross_warp = '''
+// https://gl-transitions.com/editor/crosswarp
+
+// Author: Eke Péter <peterekepeter@gmail.com>
+// License: MIT
+vec4 transition(vec2 p) {
+  float x = progress;
+  x=smoothstep(.0,1.0,(x*2.0+p.x-1.0));
+  return mix(getFromColor((p-.5)*(1.-x)+.5), getToColor((p-.5)*x+.5), x);
+}
+'''
+
+
 class TestApp(App):
     def build(self):
         return Label(font_size=64)
@@ -24,11 +37,16 @@ class TestApp(App):
     async def main(self):
         await ak.n_frames(4)
         label = self.root
-        label.text = 'iris_transition'
+        label.halign = 'center'
+        label.text = 'crosswarp\n(from gl-transitions.com)'
         touch_down = partial(ak.event, label, 'on_touch_down')
         while True:
             await touch_down()
-            async with t.iris_transition(duration=0.8, color=colormap['darkslategray']):
+            async with t.gl_transitions_dot_com(label, fs=cross_warp):
+                label.text = 'iris'
+
+            await touch_down()
+            async with t.iris(duration=0.8, color=colormap['darkslategray']):
                 label.halign = 'center'
                 label.text = 'iris with a custom overlay'
 
@@ -62,8 +80,9 @@ class TestApp(App):
                 label.text = 'fade'
 
             await touch_down()
-            async with t.fade_transition(duration=0.6):
-                label.text = 'iris_transition'
+            async with t.fade(duration=0.6):
+                label.halign = 'center'
+                label.text = 'crosswarp\n(from gl-transitions.com)'
 
 
 if __name__ == '__main__':
