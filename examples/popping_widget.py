@@ -1,32 +1,18 @@
 from contextlib import nullcontext
-from functools import partial
 
 from kivy.config import Config
 Config.set('modules', 'showborder', '')
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
-from asynckivy import anim_with_dt_et_ratio, transform, suppress_event
-
-
-ignore_touch_down = partial(suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
-'''
-.. code-block::
-
-    with ignore_touch_down(widget):
-        ...
-
-Returns a context manager that causes a specified ``widget`` to ignore ``on_touch_down`` events that intersect with it.
-This can be particularly useful when you need to disable touch interaction for a widget without altering its
-appearance. (Setting the ``disabled`` property to True might alter the appearance.)
-'''
+from asynckivy import anim_with_dt_et_ratio, transform, block_touch_events
 
 
 degrees_per_second = float
 
 
 async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degrees_per_second=360., ignore_touch=False):
-    with ignore_touch_down(widget) if ignore_touch else nullcontext(), transform(widget) as ig:  # <- InstructionGroup
+    with block_touch_events(widget) if ignore_touch else nullcontext(), transform(widget) as ig:  # <- InstructionGroup
         translate = Translate()
         rotate = Rotate(origin=widget.center)
         ig.add(translate)

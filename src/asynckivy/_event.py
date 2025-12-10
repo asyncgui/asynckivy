@@ -171,12 +171,17 @@ class block_touch_events:
         with block_touch_events(widget):
             ...
 
-    is equivalent to:
+    Returns a context manager that blocks all touch events that meet **both** of the following criteria:
+
+    * The touch is not currently grabbed by any widget. (i.e. ``touch.grab_current is None``)
+    * The touch is inside the widget's bounding box. (i.e. ``widget.collide_point(*touch.pos)``)
+
+    Basically equivalent to the following:
 
     .. code-block::
 
         def f(w, t):
-            return w.collide_point(*t.pos)
+            return t.grab_current is None and w.collide_point(*t.pos)
         with (
             suppress_event(widget, 'on_motion', filter=f),
             suppress_event(widget, 'on_touch_down', filter=f),
@@ -189,7 +194,7 @@ class block_touch_events:
     '''
     __slots__ = ('_dispatcher', '_filter', )
 
-    def __init__(self, event_dispatcher, *, filter=lambda w, t: w.collide_point(*t.pos)):
+    def __init__(self, event_dispatcher, *, filter=lambda w, t: t.grab_current is None and w.collide_point(*t.pos)):
         self._dispatcher = event_dispatcher
         self._filter = filter
 

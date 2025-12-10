@@ -12,7 +12,8 @@ transitions for Kivy widgets. All APIs in this module are designed to be used wi
     async with transition.slide(widget):
         ...
 
-You can imitate the :class:`~kivy.uix.screenmanager.ScreenManager` by adding or removing widgets from the widget inside the with-block:
+You can imitate the behavior of :class:`~kivy.uix.screenmanager.ScreenManager` by adding or removing widgets from
+a layout inside the with-block:
 
 .. code-block::
 
@@ -29,6 +30,34 @@ You can imitate the :class:`~kivy.uix.screenmanager.ScreenManager` by adding or 
     async with transition.slide(layout, use_outer_canvas=True):
         layout.remove_widget(screen1)
         layout.add_widget(screen2)
+
+Actually, ScreenManager does more than just transitions — it also blocks touch events during transitions.
+So let's imitate that as well:
+
+.. code-block::
+
+    import asynckivy as ak
+
+    with ak.block_touch_events(layout):
+        async with transition.slide(layout, use_outer_canvas=True):
+            layout.remove_widget(screen1)
+            layout.add_widget(screen2)
+
+And there is more — ScreenManager also clips its drawing area. Unfortunately, this is where ``asynckivy`` falls (for now).
+You might expect :func:`asynckivy.stencil_widget_mask` does the job:
+
+.. code-block::
+
+    import asynckivy as ak
+
+    with (
+        ak.block_touch_events(layout),
+        ak.stencil_widget_mask(layout, use_outer_canvas=True, relative=True),
+    ):
+        async with transition.slide(layout, use_outer_canvas=True):
+            layout.remove_widget(screen1)
+            layout.add_widget(screen2)
+
 
 API Reference
 -------------
