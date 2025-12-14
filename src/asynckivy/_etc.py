@@ -1,4 +1,3 @@
-__all__ = ("transform", "sync_attr", "sync_attrs", "stencil_mask", "stencil_widget_mask", )
 import typing as T
 from collections.abc import Iterator
 from contextlib import contextmanager, nullcontext
@@ -7,7 +6,90 @@ from functools import partial
 from kivy.event import EventDispatcher
 from kivy.graphics import (
     PushMatrix, PopMatrix, InstructionGroup, StencilPush, StencilUse, StencilUnUse, StencilPop, Rectangle,
+    Canvas, Instruction,
 )
+CanvasLayer: T.TypeAlias = T.Literal["inner", "outer", "inner_outer"]
+
+
+@contextmanager
+def sandwich_canvas(target: Canvas, top_bun: Instruction, bottom_bun: Instruction,
+                    *, insertion_layer: CanvasLayer="inner"):
+    '''
+    Returns a context manager that sandwiches the ``target``'s graphics instructions between the
+    ``top_bun`` and ``bottom_bun``.
+
+    .. code-block::
+
+        # The text of this label is drawn 20 pixels to the right of its original position.
+        with sandwich_canvas(label.canvas, Translate(20, 0), Translate(-20, 0)):
+            ...
+
+    The ``insertion_layer`` parameter controls where ``top_bun`` and ``bottom_bun`` are inserted within the target
+    canvas. If set to "inner" (the default), they are inserted into the **outer side** of the **inner** canvas:
+
+    .. code-block:: yaml
+
+        # ... represents existing instructions
+
+        Widget:
+            canvas.before:
+                ...
+            canvas:
+                top_bun
+                ...
+                bottom_bun
+            canvas.after:
+                ...
+
+    If set to "outer", they are inserted into the **outer side** of the **outer** canvas:
+
+    .. code-block:: yaml
+
+        Widget:
+            canvas.before:
+                top_bun
+                ...
+            canvas:
+                ...
+            canvas.after:
+                ...
+                bottom_bun
+
+    If set to "inner_outer", they are inserted into the **inner side** of the **outer** canvas:
+
+    .. code-block:: yaml
+
+        Widget:
+            canvas.before:
+                ...
+                top_bun
+            canvas:
+                ...
+            canvas.after:
+                bottom_bun
+                ...
+
+    .. versionadded:: 0.10.0
+    '''
+    c = target
+    if insertion_layer == "inner":
+        c.insert(1 if c.has_before else 0, top_bun)
+        c.add(bottom_bun)
+        before = after = c
+    else:
+        before = c.before
+        after = c.after
+        if insertion_layer == "outer":
+            before.insert(0, top_bun)
+            after.add(bottom_bun)
+        else:  # inner_outer
+            before.add(top_bun)
+            after.insert(0, bottom_bun)
+    try:
+        yield
+    finally:
+        after.remove(bottom_bun)
+        before.remove(top_bun)
 
 
 @contextmanager
