@@ -31,7 +31,7 @@ class SampleApp(App):
     async def main(self):
         await ak.n_frames(2)
         label = self.root.ids.label.__self__
-        with ak.stencil_widget_mask(label, use_outer_canvas=True):
+        with ak.stencil_widget_mask(label, working_layer="outer"):
             for text in itertools.cycle('ABC'):
                 async with slide_transition(label, out_curve='in_back', in_curve='out_back'):
                     label.text = text
