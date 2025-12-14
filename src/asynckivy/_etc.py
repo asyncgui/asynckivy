@@ -264,7 +264,7 @@ class sync_attrs:
 
 
 @contextmanager
-def stencil_mask(widget, *, use_outer_canvas=False) -> Iterator[InstructionGroup]:
+def stencil_mask(widget, *, working_layer: CanvasLayer="inner") -> Iterator[InstructionGroup]:
     '''
     Returns a context manager that allows restricting the drawing area of a specified widget to an arbitrary shape.
 
@@ -290,45 +290,33 @@ def stencil_mask(widget, *, use_outer_canvas=False) -> Iterator[InstructionGroup
             drawable_area.add(rect)
             ...
 
-    Note that if the ``widget`` is a relative-type widget and the ``use_outer_canvas`` parameter is
-    False (the default), line A above must be removed.
-
     Since this use case is so common, :func:`stencil_widget_mask` is provided as a shorthand.
+    Also, note that if the ``widget`` is a relative-type widget and the ``working_layer`` is not "outer",
+    line A above must be removed.
+
+    :param working_layer: Controls which part of the widget's canvas is affected by the restriction.
+        See :func:`sandwich_canvas` for details.
 
     .. versionadded:: 0.9.1
+    .. versionchanged:: 0.10.0
+        The ``use_outer_canvas`` parameter was replaced with the ``working_layer`` parameter.
     '''
     IG = InstructionGroup
     shared_part = IG()
-    first_group = IG()
-    first_group.add(StencilPush())
-    first_group.add(shared_part)
-    first_group.add(StencilUse())
-    last_group = IG()
-    last_group.add(StencilUnUse())
-    last_group.add(shared_part)
-    last_group.add(StencilPop())
-
-    c = widget.canvas
-    first_group_idx = 0
-    if use_outer_canvas:
-        before = c.before
-        after = c.after
-    else:
-        before = after = c
-        if c.has_before:
-            first_group_idx = 1
-
-    before.insert(first_group_idx, first_group)
-    after.add(last_group)
-    try:
+    top_bun = IG()
+    top_bun.add(StencilPush())
+    top_bun.add(shared_part)
+    top_bun.add(StencilUse())
+    bottom_bun = IG()
+    bottom_bun.add(StencilUnUse())
+    bottom_bun.add(shared_part)
+    bottom_bun.add(StencilPop())
+    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, insertion_layer=working_layer):
         yield shared_part
-    finally:
-        before.remove(first_group)
-        after.remove(last_group)
 
 
 @contextmanager
-def stencil_widget_mask(widget, *, use_outer_canvas=False, relative=False) -> Iterator[InstructionGroup]:
+def stencil_widget_mask(widget, *, working_layer="inner", relative=False) -> Iterator[InstructionGroup]:
     '''
     Returns a context manager that restricts the drawing area to the widget's own area.
 
@@ -338,14 +326,18 @@ def stencil_widget_mask(widget, *, use_outer_canvas=False, relative=False) -> It
             ...
 
     :param relative: Must be set to True if the ``widget`` is a relative-type widget.
+    :param working_layer: Controls which part of the widget's canvas is affected by the restriction.
+        See :func:`sandwich_canvas` for details.
 
     .. versionadded:: 0.9.1
+    .. versionchanged:: 0.10.0
+        The ``use_outer_canvas`` parameter was replaced with the ``working_layer`` parameter.
     '''
     rect = Rectangle()
     with (
-        sync_attr((widget, 'pos'), (rect, 'pos')) if use_outer_canvas or (not relative) else nullcontext(),
+        sync_attr((widget, 'pos'), (rect, 'pos')) if (not relative) or working_layer == "outer" else nullcontext(),
         sync_attr((widget, 'size'), (rect, 'size')),
-        stencil_mask(widget, use_outer_canvas=use_outer_canvas) as drawable_area,
+        stencil_mask(widget, working_layer=working_layer) as drawable_area,
     ):
         drawable_area.add(rect)
         yield drawable_area
