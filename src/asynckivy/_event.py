@@ -1,5 +1,3 @@
-__all__ = ("event", "event_freq", "suppress_event", "rest_of_touch_events", "rest_of_touch_events_cm", )
-
 from collections.abc import AsyncIterator
 import types
 from functools import partial
@@ -160,6 +158,49 @@ class suppress_event:
 
     def __exit__(self, *args):
         self._dispatcher.unbind_uid(self._name, self._bind_uid)
+
+
+class block_touch_events:
+    '''
+    .. code-block::
+
+        with block_touch_events(widget):
+            ...
+
+    Returns a context manager that blocks all touch events that meet **both** of the following criteria:
+
+    * The touch is not currently grabbed by any widget. (i.e. ``touch.grab_current is None``)
+    * The touch is inside the widget's bounding box. (i.e. ``widget.collide_point(*touch.pos)``)
+
+    Basically equivalent to the following:
+
+    .. code-block::
+
+        def f(w, t):
+            return t.grab_current is None and w.collide_point(*t.pos)
+        with (
+            suppress_event(widget, 'on_motion', filter=f),
+            suppress_event(widget, 'on_touch_down', filter=f),
+            suppress_event(widget, 'on_touch_move', filter=f),
+            suppress_event(widget, 'on_touch_up', filter=f),
+        ):
+            ...
+
+    .. versionadded:: 0.10.0
+    '''
+    __slots__ = ('_dispatcher', '_filter', )
+
+    def __init__(self, event_dispatcher, *, filter=lambda w, t: t.grab_current is None and w.collide_point(*t.pos)):
+        self._dispatcher = event_dispatcher
+        self._filter = filter
+
+    def __enter__(self):
+        f = self._filter
+        self._dispatcher.bind(on_motion=f, on_touch_down=f, on_touch_move=f, on_touch_up=f)
+
+    def __exit__(self, *__):
+        f = self._filter
+        self._dispatcher.unbind(on_motion=f, on_touch_down=f, on_touch_move=f, on_touch_up=f)
 
 
 async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=True) -> AsyncIterator[None]:
