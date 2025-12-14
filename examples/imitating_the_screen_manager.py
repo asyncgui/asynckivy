@@ -45,8 +45,8 @@ class SampleApp(App):
         ])
         transitions = [
             partial(transition.fade, duration=.5),
-            partial(transition.slide, duration=.5, use_outer_canvas=True),
-            partial(transition.scale, duration=.5, use_outer_canvas=True),
+            partial(transition.slide, duration=.5, working_layer="outer"),
+            partial(transition.scale, duration=.5, working_layer="outer"),
         ]
         current_screen = screens.popleft()
         sm.add_widget(current_screen)
