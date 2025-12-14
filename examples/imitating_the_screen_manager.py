@@ -1,17 +1,16 @@
-from collections import deque
-from functools import partial
+import itertools
 
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.factory import Factory as F
 import asynckivy as ak
 from asynckivy import transition
-from random import choice
 
 
 KV_CODE = r'''
 BoxLayout:
     orientation: 'vertical'
+    padding: (dp(100), 0)  # Set large padding to verify clipping
     RelativeLayout:
         id: screen_manager
         size_hint_y: 3
@@ -37,26 +36,22 @@ class SampleApp(App):
     async def main(self):
         sm = self.root.ids.screen_manager
         btn = self.root.ids.btn
-        screens = deque([
+        screens = itertools.cycle((
             F.Label(text='Screen 1', font_size=64),
             F.Button(text='Screen 2', font_size=64),
-            F.Label(text='Screen 3', font_size=64),
-            F.Button(text='Screen 4', font_size=64),
-        ])
-        transitions = [
-            partial(transition.fade, duration=.5),
-            partial(transition.slide, duration=.5, working_layer="outer"),
-            partial(transition.scale, duration=.5, working_layer="outer"),
-        ]
-        current_screen = screens.popleft()
+        ))
+        current_screen = next(screens)
         sm.add_widget(current_screen)
         while True:
             await ak.event(btn, 'on_release')
-            async with choice(transitions)(sm):
-                sm.remove_widget(current_screen)
-                screens.append(current_screen)
-                current_screen = screens.popleft()
-                sm.add_widget(current_screen)
+            with (
+                ak.block_touch_events(sm),
+                ak.stencil_widget_mask(sm, relative=True, working_layer='outer'),
+            ):
+                async with transition.slide(sm, working_layer='inner_outer', duration=0.8):
+                    sm.remove_widget(current_screen)
+                    current_screen = next(screens)
+                    sm.add_widget(current_screen)
 
 
 if __name__ == '__main__':

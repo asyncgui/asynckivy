@@ -2,7 +2,7 @@
 Transition (submodule)
 ======================
 
-The ``asynckivy.transition`` submodule provides various transition effects that can be used to create smooth visual
+The ``asynckivy.transition`` submodule provides various transition effects for creating smooth visual
 transitions for Kivy widgets. All APIs in this module are designed to be used with ``async with`` statements:
 
 .. code-block::
@@ -12,7 +12,8 @@ transitions for Kivy widgets. All APIs in this module are designed to be used wi
     async with transition.slide(widget):
         ...
 
-You can imitate the :class:`~kivy.uix.screenmanager.ScreenManager` by adding or removing widgets from the widget inside the with-block:
+You can imitate the behavior of the :class:`~kivy.uix.screenmanager.ScreenManager` by adding or removing widgets from
+a layout inside the with-block:
 
 .. code-block::
 
@@ -26,9 +27,25 @@ You can imitate the :class:`~kivy.uix.screenmanager.ScreenManager` by adding or 
 
     ...
 
-    async with transition.slide(layout, working_layer="outer"):
+    async with transition.slide(layout):
         layout.remove_widget(screen1)
         layout.add_widget(screen2)
+
+Actually, ScreenManager does more than just transitions — it also blocks touch events during transitions
+and clips its drawing area. To replicate those behaviors as well:
+
+.. code-block::
+
+    import asynckivy as ak
+
+    with (
+        ak.block_touch_events(layout),
+        ak.stencil_widget_mask(layout, relative=True, working_layer="outer"),
+    ):
+        async with transition.slide(layout, working_layer="inner_outer"):
+            layout.remove_widget(screen1)
+            layout.add_widget(screen2)
+
 
 API Reference
 -------------
