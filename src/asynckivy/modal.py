@@ -1,32 +1,3 @@
-'''
-* Displays any widget as a modal dialog.
-* Unlike :mod:`kivy.uix.modalview`, you have full control over the appearance and transitions.
-
-.. code-block::
-
-    from asynckivy import modal
-
-    async with modal.open(any_widget):
-        ...
-
-If you leave the with-block empty, the dialog will be dismissed immediately — which is probably not what you
-want. To keep it open, you need to pause the execution of the coroutine. For example:
-
-.. code-block::
-
-    async with modal.open(any_widget):
-        await ak.event(any_widget.ids.close_button, 'on_release')
-
-If the dialog doesn't have a button that dismiss it, it's okay to sleep forever inside the with-block.
-The user can still dismiss the dialog by touching outside of it or by pressing the escape key or the Android back
-button — unless ``auto_dismiss`` is set to False.
-
-.. code-block::
-
-    async with modal.open(any_widget):
-        await ak.sleep_forever()
-'''
-
 __all__ = (
     'open', 'Transition', 'no_transition', 'FadeTransition', 'SlideTransition',
 )
@@ -52,10 +23,26 @@ Transition: TypeAlias = Callable[[Widget, FloatLayout, WindowBase], AbstractAsyn
 
 @asynccontextmanager
 async def no_transition(dialog: Widget, parent: FloatLayout, window: WindowBase):
+    '''
+    .. code-block::
+
+        from asynckivy import modal
+
+        async with modal.open(widget, transition=modal.no_transition):
+            ...
+    '''
     yield
 
 
 class FadeTransition:
+    '''
+    .. code-block::
+
+        from asynckivy import modal
+
+        async with modal.open(widget, transition=modal.FadeTransition(...)):
+            ...
+    '''
     def __init__(self, *, in_duration=.1, out_duration=.1, background_color=DARK):
         self.in_duration = in_duration
         self.out_duration = out_duration
@@ -79,6 +66,14 @@ class FadeTransition:
 
 
 class SlideTransition:
+    '''
+    .. code-block::
+
+        from asynckivy import modal
+
+        async with modal.open(widget, transition=modal.SlideTransition(...)):
+            ...
+    '''
     def __init__(self, *, in_duration=.2, out_duration=.2, background_color=DARK,
                  in_curve='out_back', out_curve='in_back',
                  in_direction: Literal['left', 'right', 'down', 'up']='down',
