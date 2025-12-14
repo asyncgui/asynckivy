@@ -49,7 +49,7 @@ async def fade(target: Wow | Canvas=Window.canvas, *, goal_opacity=0., duration=
 async def slide(target: Wow=Window, *, duration=1., out_curve='in_back', in_curve='out_back',
                 x_direction: Literal['left', 'right', None]='left',
                 y_direction: Literal['down', 'up', None]=None,
-                use_outer_canvas=False):
+                working_layer="inner"):
     '''
     Slides the ``target`` out, executes the code inside the with-block, and then slides it back in.
 
@@ -68,7 +68,7 @@ async def slide(target: Wow=Window, *, duration=1., out_curve='in_back', in_curv
     elif y_direction == 'down':
         y_dist = -y_dist
 
-    with transform(target, use_outer_canvas=use_outer_canvas) as ig:
+    with transform(target, working_layer=working_layer) as ig:
         ig.add(mat := Translate())
         half_d = duration / 2
         await anim_attrs(mat, d=half_d, t=out_curve, x=x_dist, y=y_dist)
@@ -80,13 +80,13 @@ async def slide(target: Wow=Window, *, duration=1., out_curve='in_back', in_curv
 
 @asynccontextmanager
 async def scale(target: Wow=Window, *, duration=1, out_curve='out_quad', in_curve='in_quad',
-                use_outer_canvas=False):
+                working_layer="inner"):
     '''
     Shrinks the ``target``, executes the code inside the with-block, and then restores it to its original size.
 
     .. versionadded:: 0.9.0
     '''
-    with transform(target, use_outer_canvas=use_outer_canvas) as ig:
+    with transform(target, working_layer=working_layer) as ig:
         ig.add(mat := Scale(origin=target.center))
         half_d = duration / 2
         await anim_attrs(mat, d=half_d, t=out_curve, xyz=(0, 0, 1))

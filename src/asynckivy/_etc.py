@@ -93,16 +93,9 @@ def sandwich_canvas(target: Canvas, top_bun: Instruction, bottom_bun: Instructio
 
 
 @contextmanager
-def transform(widget, *, use_outer_canvas=False) -> Iterator[InstructionGroup]:
+def transform(widget, *, working_layer: CanvasLayer="inner") -> Iterator[InstructionGroup]:
     '''
-    Returns a context manager that sandwiches the ``widget``'s existing canvas instructions between
-    a :class:`kivy.graphics.PushMatrix` and a :class:`kivy.graphics.PopMatrix`, and inserts an
-    :class:`kivy.graphics.InstructionGroup` right next to the ``PushMatrix``. Those three instructions will be removed
-    when the context manager exits.
-
-    This may be useful when you want to animate a widget.
-
-    **Usage**
+    Returns a context manager that helps apply transformations to the given widget.
 
     .. code-block::
 
@@ -113,71 +106,19 @@ def transform(widget, *, use_outer_canvas=False) -> Iterator[InstructionGroup]:
                 ig.add(rotate := Rotate(origin=widget.center))
                 await anim_attrs(rotate, angle=angle)
 
-    If the position or size of the ``widget`` changes during the animation, you might need :class:`sync_attr`.
+    :param working_layer: Controls which part of the widget's canvas is affected by the transformation.
+        See :func:`sandwich_canvas` for details.
 
-    **The use_outer_canvas parameter**
-
-    While the context manager is active, the content of the widget's canvas would be:
-
-    .. code-block:: yaml
-
-        # ... represents existing instructions
-
-        Widget:
-            canvas.before:
-                ...
-            canvas:
-                PushMatrix
-                InstructionGroup
-                ...
-                PopMatrix
-            canvas.after:
-                ...
-
-    but if ``use_outer_canvas`` is True, it would be:
-
-    .. code-block:: yaml
-
-        Widget:
-            canvas.before:
-                PushMatrix
-                InstructionGroup
-                ...
-            canvas:
-                ...
-            canvas.after:
-                ...
-                PopMatrix
+    .. versionchanged:: 0.10.0
+        The ``use_outer_canvas`` parameter was replaced with the ``working_layer`` parameter.
     '''
 
-    c = widget.canvas
-    if use_outer_canvas:
-        before = c.before
-        after = c.after
-        push_mat_idx = 0
-        ig_idx = 1
-    else:
-        if c.has_before:
-            push_mat_idx = 1
-            ig_idx = 2
-        else:
-            push_mat_idx = 0
-            ig_idx = 1
-        before = after = c
-
-    push_mat = PushMatrix()
-    ig = InstructionGroup()
-    pop_mat = PopMatrix()
-
-    before.insert(push_mat_idx, push_mat)
-    before.insert(ig_idx, ig)
-    after.add(pop_mat)
-    try:
-        yield ig
-    finally:
-        after.remove(pop_mat)
-        before.remove(ig)
-        before.remove(push_mat)
+    top_bun = InstructionGroup()
+    top_bun.add(PushMatrix())
+    top_bun.add(user_space := InstructionGroup())
+    bottom_bun = PopMatrix()
+    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, insertion_layer=working_layer):
+        yield user_space
 
 
 class sync_attr:

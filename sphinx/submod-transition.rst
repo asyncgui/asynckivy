@@ -26,7 +26,7 @@ You can imitate the :class:`~kivy.uix.screenmanager.ScreenManager` by adding or 
 
     ...
 
-    async with transition.slide(layout, use_outer_canvas=True):
+    async with transition.slide(layout, working_layer="outer"):
         layout.remove_widget(screen1)
         layout.add_widget(screen2)
 

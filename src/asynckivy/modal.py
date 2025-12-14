@@ -97,7 +97,7 @@ class SlideTransition:
             with bg_canvas:
                 bg_color = Color(*self.background_color[:3], 0.)
                 Rectangle(size=parent.size)
-            with ak.transform(dialog, use_outer_canvas=True) as ig:
+            with ak.transform(dialog, working_layer="outer") as ig:
                 x_dist = y_dist = 0.
                 match self.in_direction:
                     case 'down':
