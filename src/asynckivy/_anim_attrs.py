@@ -1,4 +1,3 @@
-__all__ = ('anim_attrs', 'anim_attrs_abbr', )
 import types
 from functools import partial
 import kivy.clock

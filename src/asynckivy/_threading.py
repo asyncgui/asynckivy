@@ -1,4 +1,3 @@
-__all__ = ('run_in_thread', 'run_in_executor', )
 from threading import Thread
 from concurrent.futures import ThreadPoolExecutor
 from kivy.clock import Clock
