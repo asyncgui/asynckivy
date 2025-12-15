@@ -1,5 +1,3 @@
-__all__ = ("sleep", "sleep_free", "repeat_sleeping", "move_on_after", "n_frames", "sleep_freq", )
-
 from contextlib import AbstractAsyncContextManager
 import types
 
@@ -77,7 +75,6 @@ class sleep_freq:
     .. versionchanged:: 0.9.0
 
         * The API was made public again.
-        * The API was renamed from ``repeat_sleeping`` to ``sleep_freq``; the old name remains available as an alias.
         * The ``free_to_await`` parameter was added.
 
     The ``free_to_await`` parameter:
@@ -108,10 +105,6 @@ class sleep_freq:
 
     async def __aexit__(self, *args):
         self._trigger.cancel()
-
-
-repeat_sleeping = sleep_freq
-'''An alias of :class:`sleep_freq`.'''
 
 
 def move_on_after(seconds: float) -> AbstractAsyncContextManager[Task]:

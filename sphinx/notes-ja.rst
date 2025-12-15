@@ -78,7 +78,7 @@ Asyncジェネレータが抱える問題
 - :func:`~asynckivy.rest_of_touch_events`
 - :func:`~asynckivy.interpolate`
 - :func:`~asynckivy.interpolate_seq`
-- ``anim_with_xxx``
+- :func:`~asynckivy.anim_with_ratio`
 
 .. code-block::
 
