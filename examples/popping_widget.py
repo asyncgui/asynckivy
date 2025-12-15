@@ -5,7 +5,7 @@ Config.set('modules', 'showborder', '')
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
-from asynckivy import anim_with_dt_et_ratio, transform, block_touch_events
+from asynckivy import transform, block_touch_events, sleep_freq
 
 
 degrees_per_second = float
@@ -17,12 +17,14 @@ async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degree
         rotate = Rotate(origin=widget.center)
         ig.add(translate)
         ig.add(rotate)
-        async for dt, et, p in anim_with_dt_et_ratio(base=duration / 2.):
-            p -= 1.
-            translate.y = (-(p * p) + 1.) * height
-            rotate.angle = et * rotation_speed
-            if p >= 1.:
-                break
+        async with sleep_freq() as sleep:
+            elapsed_time = 0.
+            half_d = duration / 2.
+            while elapsed_time < duration:
+                elapsed_time += await sleep()
+                p = elapsed_time / half_d - 1.0
+                translate.y = (-(p * p) + 1.) * height
+                rotate.angle = elapsed_time * rotation_speed
 
 
 KV_CODE = r'''
