@@ -348,7 +348,7 @@ class smooth_attr:
         new_value = t_value + math_exp(negative_speed * dt) * diff
         setattr(follower_obj, follower_attr, new_value)
 
-    _update_follower = partial(_update_follower, getattr, setattr, math.exp)
+    _update_follower = staticmethod(partial(_update_follower, getattr, setattr, math.exp))
 
     def _update_follower_ver_seq(getattr, setattr, math_exp, zip, target_obj, target_attr,
                                  follower_obj, follower_attr, negative_speed, min, max, dt):
@@ -367,7 +367,7 @@ class smooth_attr:
         setattr(follower_obj, follower_attr, new_value)
         return still_going
 
-    _update_follower_ver_seq = partial(_update_follower_ver_seq, getattr, setattr, math.exp, zip)
+    _update_follower_ver_seq = staticmethod(partial(_update_follower_ver_seq, getattr, setattr, math.exp, zip))
 
 
 @contextmanager
