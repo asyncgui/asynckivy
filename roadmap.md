@@ -1,15 +1,19 @@
-# 0.9.0
+# 0.10.0
 
-- 適切な名前のファイルへコードを移す。例: `suppress_event` を `_event.py` へ。
-- Removes `MotionEventAlreadyEndedError`, and leaves the users to handle the `touch.time_end != -1` situation on their own.
+- ~~Remove `anim_with_xxx`~~
+- ~~適切な名前のファイルへコードを移す。~~
+- Add `transition.fade_multiple` 
+- ~~Add `block_touch_events`~~
+- ~~Update `imitating_screenmanager.py`~~
+- ~~Remove `__all__`s from private modules.~~
 
-# Eventually
+# 0.11.0
 
-- `asynckivy.fade_transition` を `asynckivy.transition.fade_transition` に統合
+- Remove `fade_transition`
 
 # Undetermind
 
-- `n_frames` をclosureを用いない実装にする。
-  - `kivy.clock.Clock.frames`
+- Re-implement `n_frames` without relying on closures
+  - Relying on  `kivy.clock.Clock.frames` instead.
 - `run_in_thread` が作るスレッドの名前を指定できるようにする。
-
+- Remove `anim_with_ratio`
