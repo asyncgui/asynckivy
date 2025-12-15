@@ -1,4 +1,3 @@
-__all__ = ("smooth_attr", )
 import typing as T
 from functools import partial
 import math

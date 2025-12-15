@@ -1,5 +1,3 @@
-__all__ = ("managed_start", )
-
 import asyncgui
 from kivy.clock import Clock
 
