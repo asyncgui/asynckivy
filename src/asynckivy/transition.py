@@ -1,5 +1,5 @@
 __all__ = (
-    'fade', 'slide', 'scale', 'iris', 'shader', 'gl_transitions_dot_com',
+    'fade', 'fade_multiple', 'slide', 'scale', 'iris', 'shader', 'gl_transitions_dot_com',
 )
 
 from typing import Literal, TypeAlias, Union
@@ -19,7 +19,7 @@ from kivy.core.window import Window, WindowBase
 from kivy.uix.widget import Widget
 
 import asynckivy as ak
-from asynckivy import transform, anim_attrs_abbr as anim_attrs
+from asynckivy import transform, anim_attrs_abbr as anim_attrs, sleep_freq
 
 
 linear = AnimationTransition.linear
@@ -43,6 +43,43 @@ async def fade(target: Wow | Canvas=Window.canvas, *, goal_opacity=0., duration=
         await anim_attrs(target, d=half_d, t=in_curve, opacity=original)
     finally:
         target.opacity = original
+
+
+@asynccontextmanager
+async def fade_multiple(*widgets, duration=1., out_curve=linear, in_curve=linear):
+    '''
+    Fades out the ``widgets`` simultaneously, executes the code inside the with-block, and then fades them back in.
+
+    .. versionadded:: 0.10.0
+    '''
+    zip_ = zip
+    half_d = duration / 2.
+    orig_opacities = [w.opacity for w in widgets]
+    if isinstance(out_curve, str):
+        out_curve = getattr(AnimationTransition, out_curve)
+    if isinstance(in_curve, str):
+        in_curve = getattr(AnimationTransition, in_curve)
+    try:
+        async with sleep_freq() as sleep:
+            elapsed_time = 0.
+            while True:
+                elapsed_time += await sleep()
+                p = 1.0 - out_curve(elapsed_time / half_d)
+                for w, o in zip_(widgets, orig_opacities):
+                    w.opacity = p * o
+                if elapsed_time >= half_d:
+                    break
+        yield
+        async with sleep_freq() as sleep:
+            elapsed_time = 0.
+            while elapsed_time < half_d:
+                elapsed_time += await sleep()
+                p = in_curve(elapsed_time / half_d)
+                for w, o in zip_(widgets, orig_opacities):
+                    w.opacity = p * o
+    finally:
+        for w, o in zip_(widgets, orig_opacities):
+            w.opacity = o
 
 
 @asynccontextmanager
