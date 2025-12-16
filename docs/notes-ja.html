@@ -1,0 +1,378 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="./">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="API Reference" href="reference.html" /><link rel="prev" title="Notes" href="notes.html" />
+
+    <!-- Generated with Sphinx 7.4.7 and Furo 2023.09.10 -->
+        <title>Notes 🇯🇵 - asynckivy 0.10.0.dev1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">asynckivy 0.10.0.dev1 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  
+  <span class="sidebar-brand-text">asynckivy 0.10.0.dev1 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Notes 🇯🇵</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="submod-transition.html">Transition (submodule)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="submod-modal.html">Modal (submodule)</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main">
+          <section id="notes-ja">
+<h1>Notes 🇯🇵<a class="headerlink" href="#notes-ja" title="Link to this heading">¶</a></h1>
+<section id="id1">
+<h2>このライブラリが存在する理由<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<p>Kivyはversion2.0.0で既に <a class="reference external" href="https://docs.python.org/3/library/asyncio.html#module-asyncio" title="(in Python v3.14)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">asyncio</span></code></a> と <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#module-trio" title="(in Trio v0.32.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">trio</span></code></a> の二つのasyncライブラリに対応しています。
+故に別のasyncライブラリを開発することは <a class="reference external" href="https://ja.wikipedia.org/wiki/%E8%BB%8A%E8%BC%AA%E3%81%AE%E5%86%8D%E7%99%BA%E6%98%8E">車輪の再発明</a> に思えるかもしれません。
+実際私はasync/await構文の仕組みを学ぶためだけにこのプロジェクトを始めたので元々は本当に車輪の再発明だったと言えます。</p>
+<p>しかし暫くKivyとTrioを合わせて使っているうちにTrioがタッチ処理のような素早い反応が求められる状況には向かないことに気づきました。
+asyncioも同じです。
+自分でそれを確かめたい人は <code class="docutils literal notranslate"><span class="pre">investigation/why_xxx_is_not_suitable_for_handling_touch_events.py</span></code> を実行してマウスボタンを可能な限り素早くクリックしてみてください。
+標準出力にて時折 <code class="docutils literal notranslate"><span class="pre">'up'</span></code> に対応する <code class="docutils literal notranslate"><span class="pre">'down'</span></code> が無かったり、
+タッチを受け取るウィジェットが <code class="docutils literal notranslate"><span class="pre">RelativeLayout</span></code> の子なのにタッチの座標が相対的になっていない事が分かると思います。</p>
+<p>これらの問題の原因は <a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.Event.set" title="(in Trio v0.32.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">trio.Event.set()</span></code></a> や <a class="reference external" href="https://docs.python.org/3/library/asyncio-sync.html#asyncio.Event.set" title="(in Python v3.14)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">asyncio.Event.set()</span></code></a> がEventの発火を待っているタスクを直ちに再開させるわけではなくいづれ再開するようにするからです。
+<a class="reference external" href="https://trio.readthedocs.io/en/stable/reference-core.html#trio.Nursery.start_soon" title="(in Trio v0.32.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">trio.Nursery.start_soon()</span></code></a> や <a class="reference external" href="https://docs.python.org/3/library/asyncio-task.html#asyncio.create_task" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">asyncio.create_task()</span></code></a> も直ちにタスクを開始するわけではなくいづれ開始するようにする為、同じ問題を孕んでいます。</p>
+<p>結局のところTrioもasyncioも非同期 <strong>入出力</strong> ライブラリであるため直ちにタスクを開始/再開させる機能は要らないという事なのでしょう。
+入出力自体がそれなりに時間のかかる処理である以上タスクの開始/再開を多少急いだところで雀の涙ほどの効果しか無いでしょうから。
+しかしKivyではこれが不可欠だと私は考えています。
+タスクの開始/再開が直ちに行わなければタッチイベントを表すオブジェクトの状態が変わってしまい本来あるべき状態でタッチを捌けなくなるからです。</p>
+</section>
+<section id="asynckivy">
+<h2>AsyncKivyにおける入出力<a class="headerlink" href="#asynckivy" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">asynckivy</span></code> はtrioやasyncioのような入出力機能を持たないのでGUIを固まらせずにそれをしたければ別のスレッドで行うのが良いと思います。
+今のところ関数を別のスレッドで実行する方法には次の二つの方法があります。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asynckivy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ak</span>
+
+<span class="n">executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">()</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_func</span><span class="p">():</span>
+    <span class="c1"># 方法その一</span>
+    <span class="c1"># 新しくthreadを作ってそこで渡された関数を実行し、その完了を待つ</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="k">await</span> <span class="n">ak</span><span class="o">.</span><span class="n">run_in_thread</span><span class="p">(</span><span class="n">外部のスレッドで実行させたい関数</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;return value:&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+    <span class="c1"># 方法そのニ</span>
+    <span class="c1"># ThreadPoolExecutor内で渡された関数を実行し、その完了を待つ</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="k">await</span> <span class="n">ak</span><span class="o">.</span><span class="n">run_in_executor</span><span class="p">(</span><span class="n">executor</span><span class="p">,</span> <span class="n">外部のスレッドで実行させたい関数</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;return value:&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>スレッド内で起きた例外(ExceptionではないBaseExceptionは除く)は呼び出し元に運ばれるので、
+以下のように通常の同期コードを書く感覚で例外を捌けます。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">asynckivy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ak</span>
+
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_func</span><span class="p">(</span><span class="n">label</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">ak</span><span class="o">.</span><span class="n">run_in_thread</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;htt...&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">Timeout</span><span class="p">:</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;制限時間内に応答無し&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">label</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;応答有り: &quot;</span> <span class="o">+</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span>
+</pre></div>
+</div>
+</section>
+<section id="async">
+<h2>Asyncジェネレータが抱える問題<a class="headerlink" href="#async" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">asyncio</span></code> や <code class="docutils literal notranslate"><span class="pre">trio</span></code> がasyncジェネレータに対して <a class="reference external" href="https://peps.python.org/pep-0525/#finalization">付け焼き刃的な処置</a>
+を行うせいなのか、これらのライブライリを使っているとasyncジェネレータの後始末が遅れる事があります。なので使い終わったら明示的に閉じて下さい。
+以下がasyncジェネレータを返す者達です。</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="reference.html#asynckivy.rest_of_touch_events" title="asynckivy.rest_of_touch_events"><code class="xref py py-func docutils literal notranslate"><span class="pre">rest_of_touch_events()</span></code></a></p></li>
+<li><p><a class="reference internal" href="reference.html#asynckivy.interpolate" title="asynckivy.interpolate"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate()</span></code></a></p></li>
+<li><p><a class="reference internal" href="reference.html#asynckivy.interpolate_seq" title="asynckivy.interpolate_seq"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate_seq()</span></code></a></p></li>
+<li><p><a class="reference internal" href="reference.html#asynckivy.anim_with_ratio" title="asynckivy.anim_with_ratio"><code class="xref py py-func docutils literal notranslate"><span class="pre">anim_with_ratio()</span></code></a></p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">aclosing</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="n">aclosing</span><span class="p">(</span><span class="n">interpolate</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> <span class="k">as</span> <span class="n">agen</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">agen</span><span class="p">:</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>加えてより問題なのはasyncジェネレータを使用する側で例外が起きた場合にその例外がジェネレータに運ばれないという事です。
+(一応これ自体は通常のジェネレータにも当てはまりますがそちらではあまり問題にならないと思います。)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">agen</span><span class="p">:</span>
+    <span class="c1"># ここで例外が起きてもagenには運ばれない</span>
+</pre></div>
+</div>
+<p>これが意味するのはasyncジェネレータを使用する側が中断された場合にその中断を表す例外がジェネレータに伝わらないという事です。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">agen</span><span class="p">:</span>
+    <span class="k">await</span> <span class="n">something</span>  <span class="c1"># ここで中断されるとagenは実装次第でそれに正しく対応できない。</span>
+</pre></div>
+</div>
+<p>長くなるので深入りはしませんがこの事が <code class="docutils literal notranslate"><span class="pre">asyncgui</span></code> の中断機構を壊し得ます。
+なので上記のAPIが返したasyncジェネレータの消費中はいかなるasync処理も行わないで下さい。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="n">rest_of_touch_events</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">awaitable</span>  <span class="c1"># 駄目</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">async_context_manager</span><span class="p">:</span>  <span class="c1"># 駄目</span>
+        <span class="o">...</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">__</span> <span class="ow">in</span> <span class="n">async_iterator</span><span class="p">:</span>  <span class="c1"># 駄目</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<p>もしどうしてもそのような事をしたければ代わりに <a class="reference internal" href="reference.html#asynckivy.rest_of_touch_events_cm" title="asynckivy.rest_of_touch_events_cm"><code class="xref py py-class docutils literal notranslate"><span class="pre">rest_of_touch_events_cm</span></code></a> や <a class="reference internal" href="reference.html#asynckivy.sleep_freq" title="asynckivy.sleep_freq"><code class="xref py py-class docutils literal notranslate"><span class="pre">sleep_freq</span></code></a> を使う事を検討して下さい。
+これらによってコードは少し長くなりますが、見返りとしてasyncジェネレータ特有の問題全てから解放されます。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">with</span> <span class="n">rest_of_touch_events_cm</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">free_to_await</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">on_touch_move</span><span class="p">:</span>
+    <span class="o">...</span>
+
+<span class="k">async</span> <span class="k">with</span> <span class="n">sleep_freq</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">free_to_await</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">sleep</span><span class="p">:</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="reference.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">API Reference</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="notes.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Notes</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2023, Mitō Nattōsai
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Notes 🇯🇵</a><ul>
+<li><a class="reference internal" href="#id1">このライブラリが存在する理由</a></li>
+<li><a class="reference internal" href="#asynckivy">AsyncKivyにおける入出力</a></li>
+<li><a class="reference internal" href="#async">Asyncジェネレータが抱える問題</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=1312878d"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/furo.js?v=32e29ea5"></script>
+    </body>
+</html>
