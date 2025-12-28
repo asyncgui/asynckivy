@@ -19,10 +19,12 @@ classifiers=[
     'Topic :: Software Development :: Libraries',
     'Operating System :: OS Independent',
 ]
-dependencies = ["asyncgui>=0.9.3,<0.10"]
+dependencies = [
+    "asyncgui>=0.9.3,<0.11",
+]
 
 [project.urls]
-Homepage = "https://github.com/asyncgui/asynckivy"
+Documentation = "https://asyncgui.github.io/asynckivy/"
 Repository = "https://github.com/asyncgui/asynckivy"
 
 [dependency-groups]
