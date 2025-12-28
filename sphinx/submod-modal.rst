@@ -23,8 +23,8 @@ To keep it open, you must prevent the with-block from exiting. For example:
     async with modal.open(any_widget):
         await ak.event(any_widget.ids.close_button, 'on_release')
 
-A close button is not required for a dialog to work.
-The user can still dismiss the dialog by touching outside of it, pressing the Escape key or pressing the Android back
+A close button is not required for a dialog to be closable.
+Users can still dismiss the dialog by touching outside of it, pressing the Escape key or pressing the Android back
 button — unless ``auto_dismiss`` is set to ``False``.
 
 .. code-block::
