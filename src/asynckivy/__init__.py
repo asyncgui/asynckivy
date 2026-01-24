@@ -3,6 +3,7 @@ __all__ = (
     'anim_attrs_abbr',
     'anim_with_ratio',
     'block_touch_events',
+    'cancel_managed_tasks',
     'event',
     'event_freq',
     'fade_transition',
@@ -36,4 +37,4 @@ from ._anim_attrs import anim_attrs, anim_attrs_abbr
 from ._interpolate import interpolate, interpolate_seq, fade_transition
 from ._threading import run_in_executor, run_in_thread
 from ._etc import transform, sync_attr, sync_attrs, stencil_mask, stencil_widget_mask, sandwich_canvas, smooth_attr
-from ._managed_start import managed_start
+from ._managed_start import managed_start, cancel_managed_tasks
