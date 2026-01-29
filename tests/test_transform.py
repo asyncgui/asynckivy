@@ -20,7 +20,7 @@ def list_children(canvas):
 def test_outer(widget):
     from asynckivy import transform
     c = widget.canvas
-    with transform(widget, working_layer="outer"):
+    with transform(widget, canvas_layer="outer"):
         assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase']
         assert list_children(c.before) == ['InstructionGroup', 'Color', ]
         assert list_children(c.before.children[0]) == ['PushMatrix', 'InstructionGroup', ]
@@ -33,7 +33,7 @@ def test_outer(widget):
 def test_inner_outer(widget):
     from asynckivy import transform
     c = widget.canvas
-    with transform(widget, working_layer="inner_outer"):
+    with transform(widget, canvas_layer="inner_outer"):
         assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase']
         assert list_children(c.before) == ['Color', 'InstructionGroup', ]
         assert list_children(c.before.children[1]) == ['PushMatrix', 'InstructionGroup', ]
@@ -46,7 +46,7 @@ def test_inner_outer(widget):
 def test_inner(widget):
     from asynckivy import transform
     c = widget.canvas
-    with transform(widget, working_layer="inner"):
+    with transform(widget, canvas_layer="inner"):
         assert list_children(c) == ['CanvasBase', 'InstructionGroup', 'Color', 'PopMatrix', 'CanvasBase']
         assert list_children(c.before) == ['Color', ]
         assert list_children(c.children[1]) == ['PushMatrix', 'InstructionGroup', ]

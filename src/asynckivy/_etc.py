@@ -97,7 +97,7 @@ def sandwich_canvas(target: Canvas, top_bun: Instruction, bottom_bun: Instructio
 
 
 @contextmanager
-def transform(widget, *, working_layer: CanvasLayer="inner") -> Iterator[InstructionGroup]:
+def transform(widget, *, canvas_layer: CanvasLayer="inner") -> Iterator[InstructionGroup]:
     '''
     Returns a context manager that helps apply transformations to the given widget.
 
@@ -110,18 +110,18 @@ def transform(widget, *, working_layer: CanvasLayer="inner") -> Iterator[Instruc
                 ig.add(rotate := Rotate(origin=widget.center))
                 await anim_attrs(rotate, angle=angle)
 
-    :param working_layer: Controls which part of the widget's canvas is affected by the transformation.
+    :param canvas_layer: Controls which part of the widget's canvas is affected by the transformation.
         See :func:`sandwich_canvas` for details.
 
     .. versionchanged:: 0.10.0
-        The ``use_outer_canvas`` parameter was replaced with the ``working_layer`` parameter.
+        The ``use_outer_canvas`` parameter was replaced with the ``canvas_layer`` parameter.
     '''
 
     top_bun = InstructionGroup()
     top_bun.add(PushMatrix())
     top_bun.add(user_space := InstructionGroup())
     bottom_bun = PopMatrix()
-    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, canvas_layer=working_layer):
+    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, canvas_layer=canvas_layer):
         yield user_space
 
 
@@ -371,7 +371,7 @@ class smooth_attr:
 
 
 @contextmanager
-def stencil_mask(widget, *, working_layer: CanvasLayer="inner") -> Iterator[InstructionGroup]:
+def stencil_mask(widget, *, canvas_layer: CanvasLayer="inner") -> Iterator[InstructionGroup]:
     '''
     Returns a context manager that allows restricting the drawing area of a specified widget to an arbitrary shape.
 
@@ -398,15 +398,15 @@ def stencil_mask(widget, *, working_layer: CanvasLayer="inner") -> Iterator[Inst
             ...
 
     Since this use case is so common, :func:`stencil_widget_mask` is provided as a shorthand.
-    Also, note that if the ``widget`` is a relative-type widget and the ``working_layer`` is not "outer",
+    Also, note that if the ``widget`` is a relative-type widget and the ``canvas_layer`` is not "outer",
     line A above must be removed.
 
-    :param working_layer: Controls which part of the widget's canvas is affected by the restriction.
+    :param canvas_layer: Controls which part of the widget's canvas is affected by the restriction.
         See :func:`sandwich_canvas` for details.
 
     .. versionadded:: 0.9.1
     .. versionchanged:: 0.10.0
-        The ``use_outer_canvas`` parameter was replaced with the ``working_layer`` parameter.
+        The ``use_outer_canvas`` parameter was replaced with the ``canvas_layer`` parameter.
     '''
     IG = InstructionGroup
     shared_part = IG()
@@ -418,12 +418,12 @@ def stencil_mask(widget, *, working_layer: CanvasLayer="inner") -> Iterator[Inst
     bottom_bun.add(StencilUnUse())
     bottom_bun.add(shared_part)
     bottom_bun.add(StencilPop())
-    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, canvas_layer=working_layer):
+    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, canvas_layer=canvas_layer):
         yield shared_part
 
 
 @contextmanager
-def stencil_widget_mask(widget, *, working_layer="inner", relative=False) -> Iterator[InstructionGroup]:
+def stencil_widget_mask(widget, *, canvas_layer="inner", relative=False) -> Iterator[InstructionGroup]:
     '''
     Returns a context manager that restricts the drawing area to the widget's own area.
 
@@ -433,18 +433,18 @@ def stencil_widget_mask(widget, *, working_layer="inner", relative=False) -> Ite
             ...
 
     :param relative: Must be set to True if the ``widget`` is a relative-type widget.
-    :param working_layer: Controls which part of the widget's canvas is affected by the restriction.
+    :param canvas_layer: Controls which part of the widget's canvas is affected by the restriction.
         See :func:`sandwich_canvas` for details.
 
     .. versionadded:: 0.9.1
     .. versionchanged:: 0.10.0
-        The ``use_outer_canvas`` parameter was replaced with the ``working_layer`` parameter.
+        The ``use_outer_canvas`` parameter was replaced with the ``canvas_layer`` parameter.
     '''
     rect = Rectangle()
     with (
-        sync_attr((widget, 'pos'), (rect, 'pos')) if (not relative) or working_layer == "outer" else nullcontext(),
+        sync_attr((widget, 'pos'), (rect, 'pos')) if (not relative) or canvas_layer == "outer" else nullcontext(),
         sync_attr((widget, 'size'), (rect, 'size')),
-        stencil_mask(widget, working_layer=working_layer) as drawable_area,
+        stencil_mask(widget, canvas_layer=canvas_layer) as drawable_area,
     ):
         drawable_area.add(rect)
         yield drawable_area

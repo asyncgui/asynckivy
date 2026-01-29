@@ -46,9 +46,9 @@ class SampleApp(App):
             await ak.event(btn, 'on_release')
             with (
                 ak.block_touch_events(sm),
-                ak.stencil_widget_mask(sm, relative=True, working_layer='outer'),
+                ak.stencil_widget_mask(sm, relative=True, canvas_layer="outer"),
             ):
-                async with transition.slide(sm, working_layer='inner_outer', duration=0.8):
+                async with transition.slide(sm, canvas_layer="inner_outer", duration=0.8):
                     sm.remove_widget(current_screen)
                     current_screen = next(screens)
                     sm.add_widget(current_screen)
