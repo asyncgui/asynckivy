@@ -17,7 +17,7 @@ CanvasLayer: T.TypeAlias = T.Literal["inner", "outer", "inner_outer"]
 
 @contextmanager
 def sandwich_canvas(target: Canvas, top_bun: Instruction, bottom_bun: Instruction,
-                    *, insertion_layer: CanvasLayer="inner"):
+                    *, canvas_layer: CanvasLayer="inner"):
     '''
     Returns a context manager that sandwiches the ``target``'s graphics instructions between the
     ``top_bun`` and ``bottom_bun``.
@@ -28,7 +28,7 @@ def sandwich_canvas(target: Canvas, top_bun: Instruction, bottom_bun: Instructio
         with sandwich_canvas(label.canvas, Translate(20, 0), Translate(-20, 0)):
             ...
 
-    The ``insertion_layer`` parameter controls where ``top_bun`` and ``bottom_bun`` are inserted within the target
+    The ``canvas_layer`` parameter controls where ``top_bun`` and ``bottom_bun`` are inserted within the target
     canvas. If set to "inner" (the default), they are inserted into the **outer side** of the **inner** canvas:
 
     .. code-block:: yaml
@@ -76,14 +76,14 @@ def sandwich_canvas(target: Canvas, top_bun: Instruction, bottom_bun: Instructio
     .. versionadded:: 0.10.0
     '''
     c = target
-    if insertion_layer == "inner":
+    if canvas_layer == "inner":
         c.insert(1 if c.has_before else 0, top_bun)
         c.add(bottom_bun)
         before = after = c
     else:
         before = c.before
         after = c.after
-        if insertion_layer == "outer":
+        if canvas_layer == "outer":
             before.insert(0, top_bun)
             after.add(bottom_bun)
         else:  # inner_outer
@@ -121,7 +121,7 @@ def transform(widget, *, working_layer: CanvasLayer="inner") -> Iterator[Instruc
     top_bun.add(PushMatrix())
     top_bun.add(user_space := InstructionGroup())
     bottom_bun = PopMatrix()
-    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, insertion_layer=working_layer):
+    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, canvas_layer=working_layer):
         yield user_space
 
 
@@ -418,7 +418,7 @@ def stencil_mask(widget, *, working_layer: CanvasLayer="inner") -> Iterator[Inst
     bottom_bun.add(StencilUnUse())
     bottom_bun.add(shared_part)
     bottom_bun.add(StencilPop())
-    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, insertion_layer=working_layer):
+    with sandwich_canvas(widget.canvas, top_bun, bottom_bun, canvas_layer=working_layer):
         yield shared_part
 
 
