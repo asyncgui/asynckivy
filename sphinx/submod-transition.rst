@@ -40,9 +40,9 @@ and clips its drawing area. To replicate those behaviors as well:
 
     with (
         ak.block_touch_events(layout),
-        ak.stencil_widget_mask(layout, relative=True, working_layer="outer"),
+        ak.stencil_widget_mask(layout, relative=True, canvas_layer="outer"),
     ):
-        async with transition.slide(layout, working_layer="inner_outer"):
+        async with transition.slide(layout, canvas_layer="inner_outer"):
             layout.remove_widget(screen1)
             layout.add_widget(screen2)
 
