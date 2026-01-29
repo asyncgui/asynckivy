@@ -40,7 +40,7 @@ def test_inner(canvas):
     from kivy.graphics import PushMatrix, PopMatrix
     from asynckivy import sandwich_canvas
     c = canvas
-    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), insertion_layer="inner"):
+    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), canvas_layer="inner"):
         assert list_children(c) == ['CanvasBase', 'PushMatrix', 'Color', 'PopMatrix', 'CanvasBase']
         assert list_children(c.before) == ['Color', ]
         assert list_children(c.after) == ['Color', ]
@@ -53,7 +53,7 @@ def test_outer(canvas):
     from kivy.graphics import PushMatrix, PopMatrix
     from asynckivy import sandwich_canvas
     c = canvas
-    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), insertion_layer="outer"):
+    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), canvas_layer="outer"):
         assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase']
         assert list_children(c.before) == ['PushMatrix', 'Color', ]
         assert list_children(c.after) == ['Color', 'PopMatrix', ]
@@ -66,7 +66,7 @@ def test_inner_outer(canvas):
     from kivy.graphics import PushMatrix, PopMatrix
     from asynckivy import sandwich_canvas
     c = canvas
-    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), insertion_layer="inner_outer"):
+    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), canvas_layer="inner_outer"):
         assert list_children(c) == ['CanvasBase', 'Color', 'CanvasBase']
         assert list_children(c.before) == ['Color', 'PushMatrix', ]
         assert list_children(c.after) == ['PopMatrix', 'Color', ]
@@ -80,7 +80,7 @@ def test_inner_no_before_nor_after():
     from asynckivy import sandwich_canvas
     c = Canvas()
     c.add(Color())
-    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), insertion_layer="inner"):
+    with sandwich_canvas(c, top_bun=PushMatrix(), bottom_bun=PopMatrix(), canvas_layer="inner"):
         assert list_children(c) == ['PushMatrix', 'Color', 'PopMatrix', ]
         assert not c.has_before
         assert not c.has_after
