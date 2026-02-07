@@ -179,12 +179,12 @@ class sync_attr:
             with sync_attr((widget, 'x'), (obj, 'xx')):
                 assert widget.x == obj.xx
     '''
-    __slots__ = ("__exit__", )
+    __slots__ = ("_exit", )
 
     def __init__(self, from_: tuple[EventDispatcher, str], to_: tuple[T.Any, str]):
         setattr(*to_, getattr(*from_))
         bind_uid = from_[0].fbind(from_[1], partial(self._sync, setattr, *to_))
-        self.__exit__ = partial(self._unbind, *from_, bind_uid)
+        self._exit = partial(self._unbind, *from_, bind_uid)
 
     @staticmethod
     def _sync(setattr, obj, attr_name, event_dispatcher, new_value):
@@ -196,6 +196,9 @@ class sync_attr:
 
     def __enter__(self):
         pass
+
+    def __exit__(self, *__):
+        self._exit()
 
 
 class sync_attrs:
@@ -248,13 +251,13 @@ class sync_attrs:
             with sync_attrs((widget, 'x'), (obj, 'xx')):
                 assert widget.x is obj.xx
     '''
-    __slots__ = ("__exit__", )
+    __slots__ = ("_exit", )
 
     def __init__(self, from_: tuple[EventDispatcher, str], *to_):
         sync = partial(self._sync, setattr, to_)
         sync(None, getattr(*from_))
         bind_uid = from_[0].fbind(from_[1], sync)
-        self.__exit__ = partial(self._unbind, *from_, bind_uid)
+        self._exit = partial(self._unbind, *from_, bind_uid)
 
     @staticmethod
     def _sync(setattr, to_, event_dispatcher, new_value):
@@ -265,6 +268,9 @@ class sync_attrs:
 
     def __enter__(self):
         pass
+
+    def __exit__(self, *__):
+        self._exit()
 
 
 class smooth_attr:
@@ -307,7 +313,7 @@ class smooth_attr:
 
     .. versionadded:: 0.8.0
     '''
-    __slots__ = ("__exit__", )
+    __slots__ = ("_exit", )
     _NUMERIC_TYPES = (P.NumericProperty, P.BoundedNumericProperty, )
     _SEQUENCE_TYPES = (P.ColorProperty, P.ReferenceListProperty, P.ListProperty, )
 
@@ -325,7 +331,7 @@ class smooth_attr:
             partial(update, *target, *follower, -speed, -min_diff, min_diff), 0
         )
         bind_uid = target_obj.fbind(target_attr, trigger)
-        self.__exit__ = partial(self._cleanup, trigger, target_obj, target_attr, bind_uid)
+        self._exit = partial(self._cleanup, trigger, target_obj, target_attr, bind_uid)
 
     @staticmethod
     def _cleanup(trigger, target_obj, target_attr, bind_uid, *__):
@@ -334,6 +340,9 @@ class smooth_attr:
 
     def __enter__(self):
         pass
+
+    def __exit__(self, *__):
+        self._exit()
 
     def _update_follower(getattr, setattr, math_exp, target_obj, target_attr, follower_obj, follower_attr,
                          negative_speed, min, max, dt):
