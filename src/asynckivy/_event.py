@@ -179,7 +179,6 @@ class block_touch_events:
         def f(w, t):
             return t.grab_current is None and w.collide_point(*t.pos)
         with (
-            suppress_event(widget, 'on_motion', filter=f),
             suppress_event(widget, 'on_touch_down', filter=f),
             suppress_event(widget, 'on_touch_move', filter=f),
             suppress_event(widget, 'on_touch_up', filter=f),
@@ -196,11 +195,11 @@ class block_touch_events:
 
     def __enter__(self):
         f = self._filter
-        self._dispatcher.bind(on_motion=f, on_touch_down=f, on_touch_move=f, on_touch_up=f)
+        self._dispatcher.bind(on_touch_down=f, on_touch_move=f, on_touch_up=f)
 
     def __exit__(self, *__):
         f = self._filter
-        self._dispatcher.unbind(on_motion=f, on_touch_down=f, on_touch_move=f, on_touch_up=f)
+        self._dispatcher.unbind(on_touch_down=f, on_touch_move=f, on_touch_up=f)
 
 
 async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=True) -> AsyncIterator[None]:
