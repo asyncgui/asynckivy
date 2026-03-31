@@ -55,8 +55,7 @@ ak.managed_start(what_you_want_to_do(...))
 Pin the minor version.
 
 ```text
-poetry add asynckivy@~0.9
-pip install "asynckivy>=0.9,<0.10"
+pip install "asynckivy>=0.10,<0.11"
 ```
 
 ## Usage
