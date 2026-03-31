@@ -8,8 +8,9 @@ def approx():
 
 
 
-def test_complete_the_iterations(approx, sleep_then_tick):
+def test_complete_the_iterations(approx, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
     values = []
 
     async def async_fn():
@@ -18,20 +19,21 @@ def test_complete_the_iterations(approx, sleep_then_tick):
 
     task = ak.start(async_fn())
     assert values == approx([0, 100]) ; values.clear()
-    sleep_then_tick(0.3)
+    kr.advance_a_frame(dt=0.3)
     assert values == approx([30, 70]) ; values.clear()
-    sleep_then_tick(0.3)
+    kr.advance_a_frame(dt=0.3)
     assert values == approx([60, 40]) ; values.clear()
-    sleep_then_tick(0.3)
+    kr.advance_a_frame(dt=0.3)
     assert values == approx([90, 10]) ; values.clear()
-    sleep_then_tick(0.3)
+    kr.advance_a_frame(dt=0.3)
     assert values == approx([100, 0]) ; values.clear()
     assert task.finished
 
 
 @pytest.mark.parametrize('step', [0, 10])
-def test_zero_duration(kivy_clock, step):
+def test_zero_duration(kivy_runner, step):
     import asynckivy as ak
+    kr = kivy_runner
     values = []
 
     async def async_fn():
@@ -40,13 +42,14 @@ def test_zero_duration(kivy_clock, step):
 
     task = ak.start(async_fn())
     assert values == [0, 100] ; values.clear()
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert values == [100, 0] ; values.clear()
     assert task.finished
 
 
-def test_break_during_the_iterations(approx, sleep_then_tick):
+def test_break_during_the_iterations(approx, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
     values = []
 
     async def async_fn():
@@ -57,8 +60,8 @@ def test_break_during_the_iterations(approx, sleep_then_tick):
 
     task = ak.start(async_fn())
     assert values == approx([0, 100]) ; values.clear()
-    sleep_then_tick(.3)
+    kr.advance_a_frame(dt=.3)
     assert values == approx([30, 70]) ; values.clear()
-    sleep_then_tick(.3)
+    kr.advance_a_frame(dt=.3)
     assert values == approx([60, 40]) ; values.clear()
     assert task.finished

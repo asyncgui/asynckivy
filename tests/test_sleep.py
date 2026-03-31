@@ -3,22 +3,24 @@ import pytest
 p_free = pytest.mark.parametrize("free", (True, False, ))
 
 @p_free
-def test_sleep(kivy_clock, sleep_then_tick, free):
+def test_sleep(kivy_runner, free):
     import asynckivy as ak
+    kr = kivy_runner
 
-    if free and not hasattr(kivy_clock, 'create_trigger_free'):
+    if free and not hasattr(kivy_runner, 'create_trigger_free'):
         pytest.skip("free-type Clock is not available")
     task = ak.start(ak.sleep_free(.1) if free else ak.sleep(.1))
     assert not task.finished
-    sleep_then_tick(.05)
+    kr.advance_a_frame(dt=.05)
     assert not task.finished
-    sleep_then_tick(.06)
+    kr.advance_a_frame(dt=.06)
     assert task.finished
 
 
 @pytest.mark.parametrize('free_to_await', [True, False])
-def test_sleep_freq(sleep_then_tick, free_to_await):
+def test_sleep_freq(kivy_runner, free_to_await):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def async_fn():
         nonlocal task_state
@@ -31,20 +33,21 @@ def test_sleep_freq(sleep_then_tick, free_to_await):
 
     task_state = None
     task = ak.start(async_fn())
-    sleep_then_tick(.2)
+    kr.advance_a_frame(dt=.2)
     assert task_state == 'A'
     assert not task.finished
-    sleep_then_tick(.5)
+    kr.advance_a_frame(dt=.5)
     assert task_state == 'B'
     assert not task.finished
-    sleep_then_tick(.5)
+    kr.advance_a_frame(dt=.5)
     assert task_state == 'C'
     assert task.finished
 
 
 @pytest.mark.parametrize('free_to_await', [True, pytest.param(False, marks=pytest.mark.xfail)])
-def test_sleep_freq_await_something_else(sleep_then_tick, free_to_await):
+def test_sleep_freq_await_something_else(kivy_runner, free_to_await):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def async_fn():
         async with ak.sleep_freq(step=.8, free_to_await=free_to_await) as sleep:
@@ -52,19 +55,20 @@ def test_sleep_freq_await_something_else(sleep_then_tick, free_to_await):
             await ak.sleep_forever()  # something else
 
     task = ak.start(async_fn())
-    sleep_then_tick(1.)
-    sleep_then_tick(1.)
+    kr.advance_a_frame(dt=1.)
+    kr.advance_a_frame(dt=1.)
     assert not task.cancelled
     task.cancel()
     assert task.cancelled
 
 
 @p_free
-def test_cancel_sleep(kivy_clock, free):
+def test_cancel_sleep(kivy_runner, free):
     import asynckivy as ak
+    kr = kivy_runner
     TS = ak.TaskState
 
-    if free and not hasattr(kivy_clock, 'create_trigger_free'):
+    if free and not hasattr(kivy_runner, 'create_trigger_free'):
         pytest.skip("free-type Clock is not available")
 
     async def async_fn():
@@ -78,14 +82,15 @@ def test_cancel_sleep(kivy_clock, free):
     assert task.state is TS.STARTED
     e.fire()
     assert task.state is TS.STARTED
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert task.state is TS.STARTED
     e.fire()
     assert task.state is TS.FINISHED
 
 
-def test_cancel_sleep_freq(kivy_clock):
+def test_cancel_sleep_freq(kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
     TS = ak.TaskState
 
     async def async_fn():
@@ -101,7 +106,7 @@ def test_cancel_sleep_freq(kivy_clock):
     assert task.state is TS.STARTED
     e.fire()
     assert task.state is TS.STARTED
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert task.state is TS.STARTED
     e.fire()
     assert task.state is TS.FINISHED

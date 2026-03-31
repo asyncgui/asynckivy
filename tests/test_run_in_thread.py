@@ -4,8 +4,9 @@ import time
 
 
 @pytest.mark.parametrize('daemon', (True, False))
-def test_thread_id(daemon, kivy_clock):
+def test_thread_id(daemon, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job():
         before = threading.get_ident()
@@ -16,13 +17,14 @@ def test_thread_id(daemon, kivy_clock):
     task = ak.start(job())
     time.sleep(.01)
     assert not task.finished
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert task.finished
 
 
 @pytest.mark.parametrize('daemon', (True, False))
-def test_propagate_exception(daemon, kivy_clock):
+def test_propagate_exception(daemon, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job():
         with pytest.raises(ZeroDivisionError):
@@ -31,13 +33,14 @@ def test_propagate_exception(daemon, kivy_clock):
     task = ak.start(job())
     time.sleep(.01)
     assert not task.finished
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert task.finished
 
 
 @pytest.mark.parametrize('daemon', (True, False))
-def test_no_exception(daemon, kivy_clock):
+def test_no_exception(daemon, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job():
         assert 'A' == await ak.run_in_thread(lambda: 'A', daemon=daemon)
@@ -45,5 +48,5 @@ def test_no_exception(daemon, kivy_clock):
     task = ak.start(job())
     time.sleep(.01)
     assert not task.finished
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert task.finished
