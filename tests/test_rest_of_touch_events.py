@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.parametrize('n_touch_moves', [0, 1, 10])
-def test_a_number_of_touch_moves(n_touch_moves):
+def test_count_a_number_of_on_touch_move_events(kivy_runner, n_touch_moves):
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
@@ -11,24 +11,21 @@ def test_a_number_of_touch_moves(n_touch_moves):
         n = 0
         async for __ in ak.rest_of_touch_events(w, t):
             n += 1
-        assert n == n_touch_moves
-        
+        return n
+
     w = Widget()
+    kivy_runner.window.add_widget(w)
+    kivy_runner.advance_a_frame()
     t = UnitTestTouch(0, 0)
     task = ak.start(async_fn(w, t))
+    t.touch_down()
     for __ in range(n_touch_moves):
-        t.grab_current = None
-        w.dispatch('on_touch_move', t)
-        t.grab_current = w
-        w.dispatch('on_touch_move', t)
-    t.grab_current = None
-    w.dispatch('on_touch_up', t)
-    t.grab_current = w
-    w.dispatch('on_touch_up', t)
-    assert task.finished
+        t.touch_move(0, 0)
+    t.touch_up()
+    assert task.result == n_touch_moves
 
 
-def test_break_during_a_for_loop():
+def test_break_during_the_iteration(kivy_runner):
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
@@ -48,19 +45,15 @@ def test_break_during_a_for_loop():
 
     n_touch_moves = 0
     w = Widget()
+    kivy_runner.window.add_widget(w)
+    kivy_runner.advance_a_frame()
     t = UnitTestTouch(0, 0)
     task = ak.start(async_fn(w, t))
     for expected in (1, 2, 2, ):
-        t.grab_current = None
-        w.dispatch('on_touch_move', t)
-        t.grab_current = w
-        w.dispatch('on_touch_move', t)
+        t.touch_move(0, 0)
         assert n_touch_moves == expected
         assert not task.finished
-    t.grab_current = None
-    w.dispatch('on_touch_up', t)
-    t.grab_current = w
-    w.dispatch('on_touch_up', t)
+    t.touch_up()
     assert n_touch_moves == 2
     assert task.finished
 
@@ -70,7 +63,7 @@ def test_break_during_a_for_loop():
         (True, [0, 0, 0, ], ),
         (False, [1, 2, 1, ], ),
     ])
-def test_stop_dispatching(stop_dispatching, expectation):
+def test_stop_dispatching(kivy_runner, stop_dispatching, expectation):
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
@@ -91,18 +84,14 @@ def test_stop_dispatching(stop_dispatching, expectation):
         on_touch_up=on_touch_up,
     )
     parent.add_widget(child)
+    kivy_runner.window.add_widget(parent)
+    kivy_runner.advance_a_frame()
     t = UnitTestTouch(0, 0)
     task = ak.start(async_fn(parent, t))
 
     for i in range(2):
-        t.grab_current = None
-        parent.dispatch('on_touch_move', t)
-        t.grab_current = parent
-        parent.dispatch('on_touch_move', t)
+        t.touch_move(0, 0)
         assert n_touches['move'] == expectation[i]
-    t.grab_current = None
-    parent.dispatch('on_touch_up', t)
-    t.grab_current = parent
-    parent.dispatch('on_touch_up', t)
+    t.touch_up()
     assert n_touches['up'] == expectation[2]
     assert task.finished

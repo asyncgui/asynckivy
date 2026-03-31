@@ -4,8 +4,9 @@ import time
 import threading
 
 
-def test_thread_id(kivy_clock):
+def test_thread_id(kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job(executor):
         before = threading.get_ident()
@@ -18,12 +19,13 @@ def test_thread_id(kivy_clock):
         task = ak.start(job(executor))
         time.sleep(.01)
         assert not task.finished
-        kivy_clock.tick()
+        kr.advance_a_frame()
         assert task.finished
 
 
-def test_propagate_exception(kivy_clock):
+def test_propagate_exception(kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job(executor):
         with pytest.raises(ZeroDivisionError):
@@ -33,12 +35,13 @@ def test_propagate_exception(kivy_clock):
         task = ak.start(job(executor))
         time.sleep(.01)
         assert not task.finished
-        kivy_clock.tick()
+        kr.advance_a_frame()
         assert task.finished
 
 
-def test_no_exception(kivy_clock):
+def test_no_exception(kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job(executor):
         assert 'A' == await ak.run_in_executor(executor, lambda: 'A')
@@ -47,13 +50,14 @@ def test_no_exception(kivy_clock):
         task = ak.start(job(executor))
         time.sleep(.01)
         assert not task.finished
-        kivy_clock.tick()
+        kr.advance_a_frame()
         assert task.finished
 
 
-def test_cancel_before_start_executing(kivy_clock):
+def test_cancel_before_start_executing(kivy_runner):
     import time
     import asynckivy as ak
+    kr = kivy_runner
 
     e = ak.StatefulEvent()
 
@@ -66,7 +70,7 @@ def test_cancel_before_start_executing(kivy_clock):
         time.sleep(.02)
         assert not task.finished
         assert not e.is_fired
-        kivy_clock.tick()
+        kr.advance_a_frame()
         task.cancel()
         assert task.cancelled
         assert not e.is_fired

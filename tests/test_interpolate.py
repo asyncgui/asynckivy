@@ -7,8 +7,9 @@ def approx():
     return partial(pytest.approx, abs=1)
 
 
-def test_complete_the_iteration(approx, sleep_then_tick):
+def test_complete_the_iteration(approx, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job():
         l = [v async for v in ak.interpolate(start=0, end=100)]
@@ -16,12 +17,13 @@ def test_complete_the_iteration(approx, sleep_then_tick):
 
     task = ak.start(job())
     for __ in range(4):
-        sleep_then_tick(.3)
+        kr.advance_a_frame(dt=.3)
     assert task.finished
 
 
-def test_break_during_the_iteration(approx, sleep_then_tick):
+def test_break_during_the_iteration(approx, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job():
         l = []
@@ -33,17 +35,18 @@ def test_break_during_the_iteration(approx, sleep_then_tick):
 
     task = ak.start(job())
     for __ in range(2):
-        sleep_then_tick(.3)
+        kr.advance_a_frame(dt=.3)
     assert task.finished
 
 
-def test_zero_duration(approx, sleep_then_tick):
+def test_zero_duration(approx, kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     async def job():
         l = [v async for v in ak.interpolate(start=0, end=100, duration=0)]
         assert l == approx([0, 100])
 
     task = ak.start(job())
-    sleep_then_tick(.1)
+    kr.advance_a_frame(dt=.1)
     assert task.finished

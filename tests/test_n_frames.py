@@ -2,28 +2,30 @@ import pytest
 
 
 @pytest.mark.parametrize("n", range(3))
-def test_non_negative_number_of_frames(kivy_clock, n):
+def test_non_negative_number_of_frames(kivy_runner, n):
     import asynckivy as ak
+    kr = kivy_runner
 
     task = ak.start(ak.n_frames(n))
     for __ in range(n):
         assert not task.finished
-        kivy_clock.tick()
+        kr.advance_a_frame()
     assert task.finished
 
 
-def test_cancel(kivy_clock):
+def test_cancel(kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
 
     task = ak.start(ak.n_frames(2))
     assert not task.finished
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert not task.finished
     task.cancel()
     assert task.cancelled
-    kivy_clock.tick()
-    kivy_clock.tick()
-    kivy_clock.tick()
+    kr.advance_a_frame()
+    kr.advance_a_frame()
+    kr.advance_a_frame()
 
 
 def test_negative_number_of_frames():
@@ -33,8 +35,9 @@ def test_negative_number_of_frames():
         ak.start(ak.n_frames(-2))
 
 
-def test_scoped_cancel(kivy_clock):
+def test_scoped_cancel(kivy_runner):
     import asynckivy as ak
+    kr = kivy_runner
     TS = ak.TaskState
 
     async def async_fn():
@@ -48,7 +51,7 @@ def test_scoped_cancel(kivy_clock):
     assert task.state is TS.STARTED
     e.fire()
     assert task.state is TS.STARTED
-    kivy_clock.tick()
+    kr.advance_a_frame()
     assert task.state is TS.STARTED
     e.fire()
     assert task.state is TS.FINISHED
