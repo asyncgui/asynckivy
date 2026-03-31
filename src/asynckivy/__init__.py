@@ -27,12 +27,13 @@ __all__ = (
     'sync_attr',
     'sync_attrs',
     'transform',
+    'visibility_aware_touch_events',
 )
 
 from asyncgui import *
 from ._sleep import sleep, sleep_free, move_on_after, n_frames, sleep_freq, anim_with_ratio
 from ._event import event, event_freq, suppress_event, rest_of_touch_events, rest_of_touch_events_cm, \
-    block_touch_events
+    block_touch_events, visibility_aware_touch_events
 from ._anim_attrs import anim_attrs, anim_attrs_abbr
 from ._interpolate import interpolate, interpolate_seq, fade_transition
 from ._threading import run_in_executor, run_in_thread

@@ -3,7 +3,10 @@ import types
 from functools import partial
 from contextlib import asynccontextmanager, ExitStack
 
-from asyncgui import _current_task, _sleep_forever, move_on_when, ExclusiveEvent, _wait_args
+from asyncgui import (
+    move_on_when, ExclusiveEvent, current_task,
+    _wait_args, _wait_args_0, _current_task, _sleep_forever,
+)
 
 
 @types.coroutine
@@ -278,3 +281,69 @@ async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, free
                        free_to_await=free_to_await) as on_touch_move,
         ):
             yield on_touch_move
+
+
+@asynccontextmanager
+async def visibility_aware_touch_events(widget, touch, *, stop_dispatching=False, free_to_await=False):
+    '''
+    (experimental)
+    Allows you to detect whether a touch moves within the visible area of a widget.
+    This can be useful when the widget is partially clipped by other widgets.
+
+    .. code-block::
+
+        __, touch = await event(widget, "on_touch_down")
+        was_inside = widget.collide_point(*touch.pos)
+
+        async with visibility_aware_touch_events(widget, touch) as on_touch_move:
+            while True:
+                is_inside = await on_touch_move()
+                if is_inside is was_inside:
+                    print("The touch moved within the same area.")
+                elif is_inside:
+                    print("The touch moved from outside to inside the visible area.")
+                else:
+                    print("The touch moved from inside to outside the visible area.")
+                was_inside = is_inside
+        print("The touch ended.")
+
+    .. warning::
+        Since :class:`~kivy.uix.scrollview.ScrollView` does not dispatch touch events
+        to its children for touches that start outside of it, this API will not work
+        properly if a ScrollView is in the parent hierarchy of the target widget and
+        the touch starts outside the ScrollView.
+
+    .. versionadded:: ???
+    '''
+    if free_to_await:
+        e = ExclusiveEvent()
+        resume_task = e.fire
+        wait_touch_move_event = e.wait_args_0
+        del e
+    else:
+        task = await current_task()
+        resume_task = task._step
+        wait_touch_move_event = _wait_args_0
+        del task
+
+    def on_touch_move(w, t, touch=touch, collide_point=widget.collide_point, resume_task=resume_task,
+                      stop_dispatching=stop_dispatching):
+        nonlocal inside
+        if t is not touch:
+            return
+        if t.grab_current is w:
+            resume_task(inside)
+            inside = False
+        else:
+            inside = collide_point(*t.pos)
+        return stop_dispatching
+    inside = False
+
+    with ExitStack() as stack:
+        touch.grab(widget)
+        stack.callback(touch.ungrab, widget)
+        stack.callback(widget.unbind_uid, "on_touch_move", widget.fbind("on_touch_move", on_touch_move))
+        async with move_on_when(
+            event(widget, "on_touch_up", filter=lambda w, t: t is touch, stop_dispatching=stop_dispatching)
+        ):
+            yield wait_touch_move_event
