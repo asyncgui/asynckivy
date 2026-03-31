@@ -9,10 +9,9 @@ import math
 import string
 
 from kivy.utils import colormap
-from kivy.graphics.texture import Texture
 from kivy.graphics import (
     Translate, Scale, InstructionGroup, StencilPop, StencilPush, StencilUnUse, StencilUse,
-    Rectangle, Ellipse, Color, VertexInstruction, Canvas, BindTexture, Fbo, RenderContext,
+    Rectangle, Ellipse, Color, VertexInstruction, Canvas, BindTexture, RenderContext,
 )
 from kivy.animation import AnimationTransition
 from kivy.core.window import Window, WindowBase
@@ -20,6 +19,7 @@ from kivy.uix.widget import Widget
 
 import asynckivy as ak
 from asynckivy import transform, anim_attrs_abbr as anim_attrs, sleep_freq
+from asynckivy.utils import render_widget_to_texture
 
 
 linear = AnimationTransition.linear
@@ -193,16 +193,6 @@ async def iris(target: WindowBase=Window, *, duration=1, out_curve='in_cubic', i
         canvas.remove(ig)
 
 
-def _render_to_texture(widget) -> Texture:
-    fbo = Fbo(size=widget.size)
-    fbo.children.extend(
-        (Translate(-widget.x, -widget.y, 0.), widget.canvas, )
-    )
-    fbo.draw()
-    fbo.children.clear()
-    return fbo.texture
-
-
 @asynccontextmanager
 async def shader(target: Widget, fs: str, *, duration=1., uniforms: Mapping=None,
                  progress_var: str='progress', out_texture_var: str='out_tex', in_texture_var: str='in_tex'):
@@ -250,7 +240,7 @@ async def shader(target: Widget, fs: str, *, duration=1., uniforms: Mapping=None
     with ExitStack() as stack:
         parent_canvas.remove(target.canvas)
         stack.callback(parent_canvas.insert, original_idx, target.canvas)
-        out_texture = _render_to_texture(target)
+        out_texture = render_widget_to_texture(target)
         ig = InstructionGroup()
         parent_canvas.insert(original_idx, ig)
         try:
@@ -262,7 +252,7 @@ async def shader(target: Widget, fs: str, *, duration=1., uniforms: Mapping=None
             parent_canvas.remove(ig)
             ig.clear()
 
-        in_texture = _render_to_texture(target)
+        in_texture = render_widget_to_texture(target)
         rc = RenderContext(fs=fs, use_parent_projection=True, use_parent_modelview=True)
         if not rc.shader.success:
             raise ValueError('Failed to set shader')
