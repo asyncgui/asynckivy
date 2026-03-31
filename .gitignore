@@ -7,4 +7,3 @@ bin/
 /.pytest_cache/
 /*kivymd*/
 /dist
-/docs/
