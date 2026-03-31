@@ -13,14 +13,14 @@ wheels = [
 
 [[package]]
 name = "asyncgui"
-version = "0.9.3"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/c5/faf9b660a0abd82f5009a14ae3f1ac7a025d03c0fd16639ed94c511262b6/asyncgui-0.9.3.tar.gz", hash = "sha256:46b283946a1814f600b502ee48082be9681097a72d8d011305e453d683a9064b", size = 9189, upload-time = "2025-08-02T23:15:28.161Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/d3/33167cf89e42efda561fbadb95c832a4a6d2ce2e84b74786b4427938be45/asyncgui-0.10.0.tar.gz", hash = "sha256:6e4732d5ae18776f0295a7d8c04d2f6a6848039f804b7963edc7079756eba1b2", size = 8599, upload-time = "2026-03-31T03:18:05.076Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f8/71/e208826b9c0f21d2c314e443dfde72f6ee30f6a31a57c86fc80fcdf1a7c1/asyncgui-0.9.3-py3-none-any.whl", hash = "sha256:ed73fc00c68d7e0d804eb239f2ad9c319dce57a5d31342c19aadc18f44270103", size = 9201, upload-time = "2025-08-02T23:15:26.727Z" },
+    { url = "https://files.pythonhosted.org/packages/73/22/34c2b683c68ef266c2f4bb8d07ffa17443d772ba1ad37606709d7d813211/asyncgui-0.10.0-py3-none-any.whl", hash = "sha256:a44983f34ce582303b802a2ff9c64daf1424967a3ae61cd393f5f901b751fcb8", size = 9070, upload-time = "2026-03-31T03:18:03.697Z" },
 ]
 
 [[package]]
@@ -45,7 +45,7 @@ doc = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "asyncgui", specifier = ">=0.9.3,<0.11" }]
+requires-dist = [{ name = "asyncgui", specifier = ">=0.10,<0.11" }]
 
 [package.metadata.requires-dev]
 dev = [
