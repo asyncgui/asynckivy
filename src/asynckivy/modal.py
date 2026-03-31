@@ -139,11 +139,9 @@ class SlideTransition:
 
 def _dismiss_when_escape_key_or_back_button_is_pressed(dismiss, window, key, *args):
     '''Dismiss when the escape key or the Android back button is pressed.'''
-    if key == 27:
-        dismiss(cause='escape_key')
-        return True
-    elif key == 1073742106:  # https://github.com/kivy/kivy/issues/9075
-        dismiss(cause='back_button')
+    # https://github.com/kivy/kivy/issues/9075
+    if key in (27, 1073742106):
+        dismiss()
         return True
 
 
@@ -170,7 +168,7 @@ class ParentOfModalDialog(FloatLayout):
         if dialog.collide_point(*touch.opos):
             dialog.dispatch('on_touch_down', touch)
         elif (f := self.dismiss) is not None:
-            f(cause='outside_touch')
+            f()
         return True
 
     def on_touch_move(self, touch):
@@ -206,7 +204,7 @@ async def open(
         the Escape key or presses the Android back button.
     :param transition: The transition effect to use when opening and dismissing the dialog.
 
-    You can check whether the dialog was auto-dismissed and determine the cause as follows:
+    You can check whether the dialog was auto-dismissed as follows:
 
     .. code-block::
 
@@ -215,8 +213,8 @@ async def open(
         if auto_dismiss_event.is_fired:
             print("The dialog was auto-dismissed")
 
-            # 'outside_touch', 'escape_key' or 'back_button'
-            cause_of_dismissal = auto_dismiss_event.params[1]['cause']
+    .. versionchanged:: 0.10.1
+        No longer able to tell the cause of auto-dismissal.
     '''
     async with AsyncExitStack() as stack:
         defer = stack.callback
