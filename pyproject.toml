@@ -20,7 +20,7 @@ classifiers=[
     'Operating System :: OS Independent',
 ]
 dependencies = [
-    "asyncgui>=0.10,<0.11",
+    "asyncgui>=0.11.1,<0.12",
 ]
 
 [project.urls]
@@ -29,7 +29,7 @@ Repository = "https://github.com/asyncgui/asynckivy"
 
 [dependency-groups]
 dev = [
-    "pytest>=7.0.1,<8",
+    "pytest>=9.0.3,<10",
     "flake8>=6.0.0,<7",
     "kivy===2.3.1",
 ]
