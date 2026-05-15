@@ -1,5 +1,4 @@
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
 from kivy.animation import AnimationTransition
 
 from ._sleep import sleep, sleep_freq
@@ -91,50 +90,3 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear) ->
         await sleep(0)
 
     yield [transition(1.) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
-
-
-@asynccontextmanager
-async def fade_transition(*widgets, duration=1.0, step=0):
-    '''
-    Returns an async context manager that:
-
-    * fades out the given widgets on ``__aenter__``
-    * fades them back  in on ``__aexit__``
-
-    .. code-block::
-
-        async with fade_transition(widget1, widget2):
-            ...
-
-    The ``widgets`` don't have to be actual Kivy widgets.
-    Anything with an attribute named ``opacity``--such as ``kivy.core.window.Window``--would work.
-
-    .. deprecated:: 0.9.0
-        This will be removed in version 0.11.0. Use :func:`asynckivy.transition.fade_multiple` instead.
-    '''
-    zip_ = zip
-    half_duration = duration / 2.
-    orig_opacities = [w.opacity for w in widgets]
-    try:
-        async with sleep_freq(step) as slp:
-            et = 0.
-            while True:
-                et += await slp()
-                p = 1.0 - (et / half_duration)
-                for w, o in zip_(widgets, orig_opacities):
-                    w.opacity = p * o
-                if et >= half_duration:
-                    break
-        yield
-        async with sleep_freq(step) as slp:
-            et = 0.
-            while True:
-                et += await slp()
-                if et >= half_duration:
-                    break
-                p = et / half_duration
-                for w, o in zip_(widgets, orig_opacities):
-                    w.opacity = p * o
-    finally:
-        for w, o in zip_(widgets, orig_opacities):
-            w.opacity = o

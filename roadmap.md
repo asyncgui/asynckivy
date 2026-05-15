@@ -1,16 +1,3 @@
-# 0.10.0
-
-- ~~Remove `anim_with_xxx`~~
-- ~~適切な名前のファイルへコードを移す。~~
-- ~~Add `transition.fade_multiple` ~~
-- ~~Add `block_touch_events`~~
-- ~~Update `imitating_screenmanager.py`~~
-- ~~Remove `__all__`s from private modules.~~
-
-# 0.11.0
-
-- Remove `fade_transition`
-
 # Undetermind
 
 - Re-implement `n_frames` without relying on closures
