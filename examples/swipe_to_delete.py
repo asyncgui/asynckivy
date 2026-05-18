@@ -3,6 +3,7 @@ https://youtu.be/T5mZPIsK9-o
 '''
 
 from functools import partial
+from contextlib import closing
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Translate
@@ -85,8 +86,8 @@ class SampleApp(App):
         container = ids.container
         while True:
             await ak.event(switch, 'active', filter=lambda _, active: active)
-            async with ak.run_as_main(ak.event(switch, 'active')):
-                await enable_swipe_to_delete(container)
+            with closing(ak.start(enable_swipe_to_delete(container))):
+                await ak.event(switch, "active")
 
 
 if __name__ == '__main__':

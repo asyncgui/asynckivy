@@ -1,3 +1,5 @@
+from contextlib import closing
+
 from kivy.app import App
 from kivy.lang import Builder
 import asynckivy as ak
@@ -45,8 +47,8 @@ class SampleApp(App):
         container = ids.container
         while True:
             await ak.event(switch, 'active', filter=lambda _, active: active)
-            async with ak.run_as_main(ak.event(switch, 'active')):
-                await enable_swipe_to_delete(container, delete_action=remove_corresponding_data)
+            with closing(ak.start(enable_swipe_to_delete(container, delete_action=remove_corresponding_data))):
+                await ak.event(switch, "active")
 
 
 if __name__ == '__main__':
