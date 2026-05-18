@@ -7,7 +7,7 @@ def test_sleep(kivy_runner, free):
     import asynckivy as ak
     kr = kivy_runner
 
-    if free and not hasattr(kivy_runner, 'create_trigger_free'):
+    if free and not hasattr(kivy_runner.clock, "create_trigger_free"):
         pytest.skip("free-type Clock is not available")
     task = ak.start(ak.sleep_free(.1) if free else ak.sleep(.1))
     assert not task.finished
@@ -24,7 +24,7 @@ def test_sleep_freq(kivy_runner, free_to_await):
 
     async def async_fn():
         nonlocal task_state
-        async with ak.sleep_freq(step=.5, free_to_await=free_to_await) as sleep:
+        with ak.sleep_freq(step=.5, free_to_await=free_to_await) as sleep:
             task_state = 'A'
             await sleep()
             task_state = 'B'
@@ -44,13 +44,13 @@ def test_sleep_freq(kivy_runner, free_to_await):
     assert task.finished
 
 
-@pytest.mark.parametrize('free_to_await', [True, pytest.param(False, marks=pytest.mark.xfail)])
+@pytest.mark.parametrize('free_to_await', [True, False])
 def test_sleep_freq_await_something_else(kivy_runner, free_to_await):
     import asynckivy as ak
     kr = kivy_runner
 
     async def async_fn():
-        async with ak.sleep_freq(step=.8, free_to_await=free_to_await) as sleep:
+        with ak.sleep_freq(step=.8, free_to_await=free_to_await) as sleep:
             await sleep()
             await ak.sleep_forever()  # something else
 
@@ -68,7 +68,7 @@ def test_cancel_sleep(kivy_runner, free):
     kr = kivy_runner
     TS = ak.TaskState
 
-    if free and not hasattr(kivy_runner, 'create_trigger_free'):
+    if free and not hasattr(kivy_runner.clock, "create_trigger_free"):
         pytest.skip("free-type Clock is not available")
 
     async def async_fn():
@@ -95,7 +95,7 @@ def test_cancel_sleep_freq(kivy_runner):
 
     async def async_fn():
         async with ak.move_on_when(e.wait()):
-            async with ak.sleep_freq(step=0) as sleep:
+            with ak.sleep_freq(step=0) as sleep:
                 await sleep()
                 pytest.fail()
             pytest.fail()

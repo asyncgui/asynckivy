@@ -1,13 +1,11 @@
 from collections.abc import AsyncIterator
-import types
 from functools import partial
 from contextlib import asynccontextmanager, ExitStack
 
-from asyncgui import _current_task, _sleep_forever, move_on_when, ExclusiveEvent, _wait_args
+from asyncgui import move_on_when, ExclusiveEvent
 
 
-@types.coroutine
-def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
+async def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
     '''
     Returns an :class:`~collections.abc.Awaitable` that can be used to wait for:
 
@@ -40,18 +38,18 @@ def event(event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
 
       This only works for events not for properties.
     '''
-    task = (yield _current_task)[0][0]
-    bind_id = event_dispatcher.fbind(event_name, partial(_event_callback, filter, task._step, stop_dispatching))
+    e = ExclusiveEvent()
+    bind_id = event_dispatcher.fbind(event_name, partial(_event_callback, filter, e.fire, stop_dispatching))
     assert bind_id  # check if binding succeeded
     try:
-        return (yield _sleep_forever)[0]
+        return await e.wait_args()
     finally:
         event_dispatcher.unbind_uid(event_name, bind_id)
 
 
-def _event_callback(filter, task_step, stop_dispatching, *args, **kwargs):
+def _event_callback(filter, callback, stop_dispatching, *args, **kwargs):
     if (filter is None) or filter(*args, **kwargs):
-        task_step(*args)
+        callback(*args)
         return stop_dispatching
 
 
@@ -74,7 +72,35 @@ class event_freq:
     .. code-block::
 
         __, touch = await event(widget, 'on_touch_down')
-        async with event_freq(widget, 'on_touch_move', filter=lambda w, t: t is touch) as on_touch_move:
+
+        with event_freq(widget, "on_touch_move", filter=lambda w, t: t is touch) as on_touch_move:
+            while True:
+                await on_touch_move()
+                ...
+
+    When listening for an ``on_touch_move`` event, you will often also want to listen for an ``on_touch_up`` event,
+    which leads to deeply nested code:
+
+    .. code-block::
+
+        __, touch = await event(widget, "on_touch_down")
+
+        def is_the_same_touch(w, t, touch=touch):
+            return t is touch
+        async with move_on_when(event(widget, "on_touch_up", filter=is_the_same_touch)):
+            with event_freq(widget, "on_touch_move", filter=is_the_same_touch) as on_touch_move:
+                while True:
+                    await on_touch_move()
+                    ...
+
+    To mitigate this, ``event_freq`` can also be used as an async context manager, making the above code less nested:
+
+    .. code-block::
+
+        async with (
+            move_on_when(event(widget, "on_touch_up", filter=is_the_same_touch)),
+            event_freq(widget, "on_touch_move", filter=is_the_same_touch) as on_touch_move,
+        ):
             while True:
                 await on_touch_move()
                 ...
@@ -84,35 +110,32 @@ class event_freq:
     .. versionchanged:: 0.9.0
         The ``free_to_await`` parameter was added.
 
-    The ``free_to_await`` parameter:
+    .. versionchanged:: 0.11.0
 
-    If set to False (the default), the only permitted async operation within the with-block is ``await xxx()``,
-    where ``xxx`` is the identifier specified in the as-clause. To lift this restriction, set ``free_to_await`` to
-    True — at the cost of slightly reduced performance.
+        * This can be used as either a synchronous or an asynchronous context manager.
+          Prefer the synchronous form, as it has less overhead.
     '''
-    __slots__ = ('_disp', '_name', '_filter', '_stop', '_bind_id', '_free_to_await')
+    __slots__ = ("_disp", "_name", "_filter", "_stop", "_bind_id", )
 
     def __init__(self, event_dispatcher, event_name, *, filter=None, stop_dispatching=False, free_to_await=False):
         self._disp = event_dispatcher
         self._name = event_name
         self._filter = filter
         self._stop = stop_dispatching
-        self._free_to_await = free_to_await
 
-    @types.coroutine
-    def __aenter__(self):
-        if self._free_to_await:
-            e = ExclusiveEvent()
-            self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, e.fire, self._stop))
-            return e.wait_args
-        else:
-            task = (yield _current_task)[0][0]
-            self._bind_id = self._disp.fbind(
-                self._name, partial(_event_callback, self._filter, task._step, self._stop))
-            return _wait_args
+    def __enter__(self):
+        e = ExclusiveEvent()
+        self._bind_id = self._disp.fbind(self._name, partial(_event_callback, self._filter, e.fire, self._stop))
+        return e.wait_args
+
+    def __exit__(self, *args):
+        self._disp.unbind_uid(self._name, self._bind_id)
+
+    async def __aenter__(self):
+        return self.__enter__()
 
     async def __aexit__(self, *args):
-        self._disp.unbind_uid(self._name, self._bind_id)
+        return self.__exit__(*args)
 
 
 class suppress_event:
@@ -258,11 +281,11 @@ async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, free
     def is_the_same_touch(w, t, touch=touch):
         return t is touch
     with ExitStack() as stack:
+        ec = stack.enter_context
         if grab:
             touch.grab(widget)
             stack.callback(touch.ungrab, widget)
             if stop_dispatching:
-                ec = stack.enter_context
                 se = partial(suppress_event, widget, filter=is_the_same_touch)
                 ec(se('on_touch_up'))
                 ec(se('on_touch_move'))
@@ -272,9 +295,6 @@ async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, free
             stop_dispatching = True
         else:
             filter = is_the_same_touch
-        async with (
-            move_on_when(event(widget, 'on_touch_up', filter=filter, stop_dispatching=stop_dispatching)),
-            event_freq(widget, 'on_touch_move', filter=filter, stop_dispatching=stop_dispatching,
-                       free_to_await=free_to_await) as on_touch_move,
-        ):
+        on_touch_move = ec(event_freq(widget, "on_touch_move", filter=filter, stop_dispatching=stop_dispatching))
+        async with move_on_when(event(widget, "on_touch_up", filter=filter, stop_dispatching=stop_dispatching)):
             yield on_touch_move

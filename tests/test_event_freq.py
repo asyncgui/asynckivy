@@ -22,7 +22,7 @@ def ed(ed_cls):
 def test_cleanup(ed, free_to_await):
     import asynckivy as ak
     async def async_fn():
-        async with ak.event_freq(ed, 'on_test', free_to_await=free_to_await) as on_test:
+        with ak.event_freq(ed, "on_test", free_to_await=free_to_await) as on_test:
             await on_test()
             await on_test()
         await ak.sleep_forever()
@@ -43,7 +43,7 @@ def test_event_parameters(ed, free_to_await):
     import asynckivy as ak
 
     async def async_fn():
-        async with ak.event_freq(ed, 'on_test', free_to_await=free_to_await) as on_test:
+        with ak.event_freq(ed, "on_test", free_to_await=free_to_await) as on_test:
             assert (ed, 1, 2, ) == await on_test()
             assert (ed, 3, 4, ) == await on_test()  # kwarg is ignored
 
@@ -60,7 +60,7 @@ def test_filter(ed, free_to_await):
     import asynckivy as ak
 
     async def async_fn():
-        async with ak.event_freq(ed, 'on_test', filter=lambda *args: args == (ed, 3, 4, ), free_to_await=free_to_await) as on_test:
+        with ak.event_freq(ed, "on_test", filter=lambda *args: args == (ed, 3, 4, ), free_to_await=free_to_await) as on_test:
             await on_test()
 
     task = ak.start(async_fn())
@@ -79,7 +79,7 @@ def test_stop_dispatching(ed, free_to_await):
 
     async def async_fn():
         ed.bind(on_test=lambda *args: called.append(1))
-        async with ak.event_freq(ed, 'on_test', stop_dispatching=True, free_to_await=free_to_await) as on_test:
+        with ak.event_freq(ed, "on_test", stop_dispatching=True, free_to_await=free_to_await) as on_test:
             await on_test()
 
     task = ak.start(async_fn())
@@ -99,7 +99,7 @@ def test_cancel(ed, free_to_await):
         def filter_func(*args):
             nonlocal called; called = True
             return True
-        async with ak.event_freq(ed, 'on_test', filter=filter_func, free_to_await=free_to_await) as on_test:
+        with ak.event_freq(ed, "on_test", filter=filter_func, free_to_await=free_to_await) as on_test:
             await on_test()
 
     called = False
@@ -114,12 +114,12 @@ def test_cancel(ed, free_to_await):
     assert not called
 
 
-@pytest.mark.parametrize('free_to_await', [True, pytest.param(False, marks=pytest.mark.xfail)])
+@pytest.mark.parametrize('free_to_await', [True, False])
 def test_await_something_else(ed, free_to_await):
     import asynckivy as ak
 
     async def async_fn(ed):
-        async with ak.event_freq(ed, 'on_test', free_to_await=free_to_await) as on_test:
+        with ak.event_freq(ed, "on_test", free_to_await=free_to_await) as on_test:
             await on_test()
             await ak.sleep_forever()  # something else
 

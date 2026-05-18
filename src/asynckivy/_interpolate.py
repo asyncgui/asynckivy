@@ -35,7 +35,7 @@ async def interpolate(start, end, *, duration=1.0, step=0, transition=linear) ->
     slope = end - start
     yield transition(0.) * slope + start
     if duration:
-        async with sleep_freq(step) as slp:
+        with sleep_freq(step) as slp:
             et = 0.  # elapsed time
             while True:
                 et += await slp()
@@ -78,7 +78,7 @@ async def interpolate_seq(start, end, *, duration, step=0, transition=linear) ->
     yield [transition(0.) * slope_elem + start_elem for slope_elem, start_elem in zip_(slope, start)]
 
     if duration:
-        async with sleep_freq(step) as slp:
+        with sleep_freq(step) as slp:
             et = 0.  # elapsed time
             while True:
                 et += await slp()

@@ -1,11 +1,10 @@
-import types
 from functools import partial
 import kivy.clock
 from kivy.animation import AnimationTransition
 import asyncgui
 
 
-def _update(setattr, zip, min, obj, duration, transition, anim_params, task, p_time, dt):
+def _update(setattr, zip, min, obj, duration, transition, anim_params, event, p_time, dt):
     time = p_time[0] + dt
     p_time[0] = time
 
@@ -26,19 +25,18 @@ def _update(setattr, zip, min, obj, duration, transition, anim_params, task, p_t
 
     # time to stop ?
     if progress >= 1.:
-        task._step()
+        event.fire()
         return False
 
 
 _update = partial(_update, setattr, zip, min)
 
 
-@types.coroutine
-def _anim_attrs(
+async def _anim_attrs(
         obj, duration, step, transition, animated_properties,
         getattr=getattr, isinstance=isinstance, tuple=tuple, str=str, partial=partial, native_seq_types=(tuple, list),
         zip=zip, Clock=kivy.clock.Clock, AnimationTransition=AnimationTransition,
-        _update=_update, _current_task=asyncgui._current_task, _sleep_forever=asyncgui._sleep_forever, /):
+        _update=_update, Event=asyncgui.ExclusiveEvent, /):
     if isinstance(transition, str):
         transition = getattr(AnimationTransition, transition)
 
@@ -55,12 +53,13 @@ def _anim_attrs(
         for attr_name, goal_value in animated_properties.items()
     ]
 
+    event = Event()
     try:
         clock_event = Clock.schedule_interval(
-            partial(_update, obj, duration, transition, anim_params, (yield _current_task)[0][0], [0., ]),
+            partial(_update, obj, duration, transition, anim_params, event, [0., ]),
             step,
         )
-        yield _sleep_forever
+        await event.wait()
     finally:
         clock_event.cancel()
 
