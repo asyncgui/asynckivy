@@ -60,7 +60,7 @@ async def fade_multiple(*widgets, duration=1., out_curve=linear, in_curve=linear
     if isinstance(in_curve, str):
         in_curve = getattr(AnimationTransition, in_curve)
     try:
-        async with sleep_freq() as sleep:
+        with sleep_freq() as sleep:
             elapsed_time = 0.
             while True:
                 elapsed_time += await sleep()
@@ -70,7 +70,7 @@ async def fade_multiple(*widgets, duration=1., out_curve=linear, in_curve=linear
                 if elapsed_time >= half_d:
                     break
         yield
-        async with sleep_freq() as sleep:
+        with sleep_freq() as sleep:
             elapsed_time = 0.
             while elapsed_time < half_d:
                 elapsed_time += await sleep()
@@ -269,7 +269,7 @@ async def shader(target: Widget, fs: str, *, duration=1., uniforms: Mapping=None
             for k, v in uniforms.items():
                 rc[k] = v
 
-        async with ak.sleep_freq() as sleep:
+        with ak.sleep_freq() as sleep:
             while elapsed_time < duration:
                 elapsed_time += await sleep()
                 rc[progress_var] = elapsed_time / duration

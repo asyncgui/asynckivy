@@ -12,19 +12,22 @@ degrees_per_second = float
 
 
 async def pop_widget(widget, *, height=300., duration=1., rotation_speed: degrees_per_second=360., ignore_touch=False):
-    with block_touch_events(widget) if ignore_touch else nullcontext(), transform(widget) as ig:  # <- InstructionGroup
+    with (
+        block_touch_events(widget) if ignore_touch else nullcontext(),
+        transform(widget) as ig,  # <- InstructionGroup
+        sleep_freq() as sleep,
+    ):
         translate = Translate()
         rotate = Rotate(origin=widget.center)
         ig.add(translate)
         ig.add(rotate)
-        async with sleep_freq() as sleep:
-            elapsed_time = 0.
-            half_d = duration / 2.
-            while elapsed_time < duration:
-                elapsed_time += await sleep()
-                p = elapsed_time / half_d - 1.0
-                translate.y = (-(p * p) + 1.) * height
-                rotate.angle = elapsed_time * rotation_speed
+        elapsed_time = 0.
+        half_d = duration / 2.
+        while elapsed_time < duration:
+            elapsed_time += await sleep()
+            p = elapsed_time / half_d - 1.0
+            translate.y = (-(p * p) + 1.) * height
+            rotate.angle = elapsed_time * rotation_speed
 
 
 KV_CODE = r'''

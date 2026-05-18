@@ -1,11 +1,9 @@
 from contextlib import AbstractAsyncContextManager
-import types
 
 from kivy.clock import Clock
-from asyncgui import _current_task, _sleep_forever, move_on_when, Task, Cancelled, ExclusiveEvent, _wait_args_0
+from asyncgui import move_on_when, Task, ExclusiveEvent
 
 
-@types.coroutine
 def sleep(duration):
     '''
     An async form of :meth:`kivy.clock.Clock.schedule_once`.
@@ -14,18 +12,12 @@ def sleep(duration):
 
         dt = await sleep(5)  # wait for 5 seconds
     '''
-    task = (yield _current_task)[0][0]
-    clock_event = Clock.create_trigger(task._step, duration, False, False)
+    e = ExclusiveEvent()
+    clock_event = Clock.create_trigger(e.fire, duration, False, False)
     clock_event()
-
-    try:
-        return (yield _sleep_forever)[0][0]
-    except Cancelled:
-        clock_event.cancel()
-        raise
+    return e.wait_args_0()
 
 
-@types.coroutine
 def sleep_free(duration):
     '''
     An async form of :meth:`kivy.clock.Clock.schedule_once_free`.
@@ -34,15 +26,10 @@ def sleep_free(duration):
 
         dt = await sleep_free(5)  # wait for 5 seconds
     '''
-    task = (yield _current_task)[0][0]
-    clock_event = Clock.create_trigger_free(task._step, duration, False, False)
+    e = ExclusiveEvent()
+    clock_event = Clock.create_trigger_free(e.fire, duration, False, False)
     clock_event()
-
-    try:
-        return (yield _sleep_forever)[0][0]
-    except Cancelled:
-        clock_event.cancel()
-        raise
+    return e.wait_args_0()
 
 
 class sleep_freq:
@@ -62,49 +49,43 @@ class sleep_freq:
 
     .. code-block::
 
-        async with sleep_freq(0.1) as sleep:
+        with sleep_freq(0.1) as sleep:
             while True:
                 dt = await sleep()
                 print(dt)
                 if some_condition:
                     break
 
-    .. versionchanged:: 0.8.0
-        The API was made private.
-
     .. versionchanged:: 0.9.0
 
         * The API was made public again.
         * The ``free_to_await`` parameter was added.
 
-    The ``free_to_await`` parameter:
+    .. versionchanged:: 0.11.0
 
-    If set to False (the default), the only permitted async operation within the with-block is ``await xxx()``,
-    where ``xxx`` is the identifier specified in the as-clause. To lift this restriction, set ``free_to_await`` to
-    True — at the cost of slightly reduced performance.
+        * This can be used as either a synchronous or an asynchronous context manager.
+          Prefer the synchronous form, as it has less overhead.
     '''
 
-    __slots__ = ('_step', '_trigger', '_free_to_await')
+    __slots__ = ("_step", "_trigger", )
 
     def __init__(self, step=0, free_to_await=False):
         self._step = step
-        self._free_to_await = free_to_await
 
-    @types.coroutine
-    def __aenter__(self):
-        if self._free_to_await:
-            e = ExclusiveEvent()
-            self._trigger = t = Clock.create_trigger(e.fire, self._step, True, False)
-            t()
-            return e.wait_args_0
-        else:
-            task = (yield _current_task)[0][0]
-            self._trigger = t = Clock.create_trigger(task._step, self._step, True, False)
-            t()
-            return _wait_args_0
+    def __enter__(self):
+        e = ExclusiveEvent()
+        self._trigger = t = Clock.create_trigger(e.fire, self._step, True, False)
+        t()
+        return e.wait_args_0
+
+    def __exit__(self, *args):
+        self._trigger.cancel()
+
+    async def __aenter__(self):
+        return self.__enter__()
 
     async def __aexit__(self, *args):
-        self._trigger.cancel()
+        return self.__exit__(*args)
 
 
 async def anim_with_ratio(*, base, step=0):
@@ -120,7 +101,7 @@ async def anim_with_ratio(*, base, step=0):
 
     .. code-block::
 
-        async with sleep_freq() as sleep:
+        with sleep_freq() as sleep:
             base = 3
             total_elapsed_time = 0.
             while True:
@@ -147,7 +128,7 @@ async def anim_with_ratio(*, base, step=0):
         The ``duration`` parameter was replaced with ``base``.
         The loop no longer ends on its own.
     '''
-    async with sleep_freq(step=step) as sleep:
+    with sleep_freq(step=step) as sleep:
         et = 0.
         while True:
             et += await sleep()
@@ -173,8 +154,7 @@ def move_on_after(seconds: float) -> AbstractAsyncContextManager[Task]:
     return move_on_when(sleep(seconds))
 
 
-@types.coroutine
-def n_frames(n: int):
+async def n_frames(n: int):
     '''
     Waits for a specified number of frames to elapse.
 
@@ -193,18 +173,18 @@ def n_frames(n: int):
     if not n:
         return
 
-    task = (yield _current_task)[0][0]
+    e = ExclusiveEvent()
 
     def callback(dt):
         nonlocal n
         n -= 1
         if not n:
-            task._step()
+            e.fire()
             return False
 
     clock_event = Clock.schedule_interval(callback, 0)
 
     try:
-        yield _sleep_forever
+        await e.wait()
     finally:
         clock_event.cancel()

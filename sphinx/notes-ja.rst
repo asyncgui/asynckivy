@@ -117,11 +117,3 @@ Asyncジェネレータが抱える問題
 
 もしどうしてもそのような事をしたければ代わりに :class:`~asynckivy.rest_of_touch_events_cm` や :class:`~asynckivy.sleep_freq` を使う事を検討して下さい。
 これらによってコードは少し長くなりますが、見返りとしてasyncジェネレータ特有の問題全てから解放されます。
-
-.. code-block::
-    
-    async with rest_of_touch_events_cm(..., free_to_await=True) as on_touch_move:
-        ...
-
-    async with sleep_freq(..., free_to_await=True) as sleep:
-        ...

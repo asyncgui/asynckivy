@@ -136,11 +136,3 @@ Therefore, do **not** perform any async operations while consuming the async gen
 If you really need to perform async operations while consuming those async generators,
 consider using :class:`~asynckivy.rest_of_touch_events_cm` or :class:`~asynckivy.sleep_freq` instead.
 They make your code more verbose, but they free you from having to deal with the problems, since they don't rely on async generators at all.
-
-.. code-block::
-    
-    async with rest_of_touch_events_cm(..., free_to_await=True) as on_touch_move:
-        ...
-
-    async with sleep_freq(..., free_to_await=True) as sleep:
-        ...
