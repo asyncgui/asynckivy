@@ -40,8 +40,9 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity=0.2):
         ig.insert(0, translate := Translate())
         initial_velocity = scale_x ** 2 * 1000.0
         gravity = GRAVITY * gravity
-        async with ak.wait_all_cm(ak.anim_attrs(scale, x=1.0, y=1.0, duration=0.1)):
-            async with ak.sleep_freq() as sleep:
+        async with ak.open_nursery() as nursery:
+            nursery.start(ak.anim_attrs(scale, x=1.0, y=1.0, duration=0.1))
+            with ak.sleep_freq() as sleep:
                 elapsed_time = 0.
                 while True:
                     elapsed_time += await sleep()
