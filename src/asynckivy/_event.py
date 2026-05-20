@@ -114,10 +114,11 @@ class event_freq:
 
         * This can be used as either a synchronous or an asynchronous context manager.
           Prefer the synchronous form, as it has less overhead.
+        * The ``free_to_await`` parameter was removed. You can treat it as if it were always set to True.
     '''
     __slots__ = ("_disp", "_name", "_filter", "_stop", "_bind_id", )
 
-    def __init__(self, event_dispatcher, event_name, *, filter=None, stop_dispatching=False, free_to_await=False):
+    def __init__(self, event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
         self._disp = event_dispatcher
         self._name = event_name
         self._filter = filter
@@ -263,7 +264,7 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=Tr
 
 
 @asynccontextmanager
-async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, free_to_await=False, grab=True):
+async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, grab=True):
     '''
     A variant of :func:`rest_of_touch_events`.
     This version is more verbose, but remains safe even when Kivy is running in async mode.
@@ -277,6 +278,11 @@ async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, free
         print('on_touch_up')
 
     .. versionadded:: 0.9.1
+
+    .. versionchanged:: 0.11.0
+
+        * The ``free_to_await`` parameter was removed. You can treat it as if it were always set to True.
+
     '''
     def is_the_same_touch(w, t, touch=touch):
         return t is touch
