@@ -17,14 +17,13 @@ def test_sleep(kivy_runner, free):
     assert task.finished
 
 
-@pytest.mark.parametrize('free_to_await', [True, False])
-def test_sleep_freq(kivy_runner, free_to_await):
+def test_sleep_freq(kivy_runner):
     import asynckivy as ak
     kr = kivy_runner
 
     async def async_fn():
         nonlocal task_state
-        with ak.sleep_freq(step=.5, free_to_await=free_to_await) as sleep:
+        with ak.sleep_freq(step=.5) as sleep:
             task_state = 'A'
             await sleep()
             task_state = 'B'
@@ -44,13 +43,12 @@ def test_sleep_freq(kivy_runner, free_to_await):
     assert task.finished
 
 
-@pytest.mark.parametrize('free_to_await', [True, False])
-def test_sleep_freq_await_something_else(kivy_runner, free_to_await):
+def test_sleep_freq_await_something_else(kivy_runner):
     import asynckivy as ak
     kr = kivy_runner
 
     async def async_fn():
-        with ak.sleep_freq(step=.8, free_to_await=free_to_await) as sleep:
+        with ak.sleep_freq(step=.8) as sleep:
             await sleep()
             await ak.sleep_forever()  # something else
 

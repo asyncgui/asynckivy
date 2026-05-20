@@ -65,11 +65,12 @@ class sleep_freq:
 
         * This can be used as either a synchronous or an asynchronous context manager.
           Prefer the synchronous form, as it has less overhead.
+        * The ``free_to_await`` parameter was removed. You can treat it as if it were always set to True.
     '''
 
     __slots__ = ("_step", "_trigger", )
 
-    def __init__(self, step=0, free_to_await=False):
+    def __init__(self, step=0):
         self._step = step
 
     def __enter__(self):
