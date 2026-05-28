@@ -58,12 +58,14 @@ async def ask_yes_no_question(
         ids.question.text = question
         ids.yes_button.text = yes_text
         ids.no_button.text = no_text
-        async with modal.open(dialog, window=window, auto_dismiss=auto_dismiss, transition=transition) as ad_event:
+        async with modal.open(
+            dialog, window=window, auto_dismiss=auto_dismiss, transition=transition
+        ) as auto_dismissed:
             tasks = await ak.wait_any(
                 ak.event(ids.yes_button, 'on_release'),
                 ak.event(ids.no_button, 'on_release'),
             )
-        if ad_event.is_fired:
+        if auto_dismissed:
             return None
         return 'yes' if tasks[0].finished else 'no'
     finally:

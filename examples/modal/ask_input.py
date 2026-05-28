@@ -67,13 +67,15 @@ async def ask_input(
         ti.input_filter = input_filter
         ti.input_type = input_type
         ti.focus = True
-        async with modal.open(dialog, window=window, auto_dismiss=auto_dismiss, transition=transition) as ad_event:
+        async with modal.open(
+            dialog, window=window, auto_dismiss=auto_dismiss, transition=transition
+        ) as auto_dismissed:
             tasks = await ak.wait_any(
                 ak.event(ti, 'on_text_validate'),
                 ak.event(ids.ok_button, 'on_release'),
                 ak.event(ids.cancel_button, 'on_release'),
             )
-        if ad_event.is_fired or tasks[2].finished:
+        if auto_dismissed or tasks[2].finished:
             return None
         return ti.text
     finally:

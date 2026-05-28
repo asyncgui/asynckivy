@@ -51,9 +51,11 @@ async def show_message_box(
         ids = dialog.ids
         ids.msg.text = message
         ids.ok_button.text = ok_text
-        async with modal.open(dialog, window=window, auto_dismiss=auto_dismiss, transition=transition) as ad_event:
+        async with modal.open(
+            dialog, window=window, auto_dismiss=auto_dismiss, transition=transition
+        ) as auto_dismissed:
             await ak.event(ids.ok_button, 'on_release')
-        if ad_event.is_fired:
+        if auto_dismissed:
             return None
         return True
     finally:
