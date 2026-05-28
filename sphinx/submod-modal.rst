@@ -6,7 +6,7 @@ The ``asynckivy.modal`` submodule provides an easy way to display modal dialogs 
 Unlike :mod:`kivy.uix.modalview`:
 
 * You can use any widget as a modal dialog. (:class:`~kivy.uix.modalview.ModalView` is not required.)
-* Consequently, you have full control over the dialog's appearance and transitions.
+* You have full control over the dialog's appearance and transitions.
 
 .. code-block::
 

@@ -5,7 +5,7 @@ __all__ = (
 from typing import TypeAlias, Literal
 from functools import partial
 from collections.abc import Callable, AsyncIterator
-from contextlib import AsyncExitStack, contextmanager, asynccontextmanager, AbstractAsyncContextManager
+from contextlib import AsyncExitStack, asynccontextmanager, AbstractAsyncContextManager
 
 from kivy.graphics import Translate, Rectangle, Color, CanvasBase
 from kivy.core.window import Window, WindowBase
@@ -145,26 +145,18 @@ def _dismiss_when_escape_key_or_back_button_is_pressed(dismiss, window, key, *ar
         return True
 
 
-class ParentOfModalDialog(FloatLayout):
+class KXModalDialogParent(FloatLayout):
     '''(internal)'''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._block_inputs = True
         self.dismiss: Callable | None = None
 
-    @contextmanager
-    def accept_inputs(self):
-        self._block_inputs = False
-        try:
-            yield
-        finally:
-            self._block_inputs = True
-
     def on_touch_down(self, touch):
         if self._block_inputs:
             return True
         dialog = self.children[0]
-        # ParentOfModalDialog is not a relative-type widget, no need for translation
+        # KXModalDialogParent is not a relative-type widget, no need for translation
         if dialog.collide_point(*touch.opos):
             dialog.dispatch('on_touch_down', touch)
         elif (f := self.dismiss) is not None:
@@ -175,7 +167,7 @@ class ParentOfModalDialog(FloatLayout):
         if self._block_inputs:
             return True
         dialog = self.children[0]
-        # ParentOfModalDialog is not a relative ...
+        # KXModalDialogParent is not a relative ...
         if dialog.collide_point(*touch.pos):
             dialog.dispatch('on_touch_move', touch)
         return True
@@ -184,7 +176,7 @@ class ParentOfModalDialog(FloatLayout):
         if self._block_inputs:
             return True
         dialog = self.children[0]
-        # ParentOfModalDialog is not a relative ...
+        # KXModalDialogParent is not a relative ...
         if dialog.collide_point(*touch.pos):
             dialog.dispatch('on_touch_up', touch)
         return True
@@ -208,28 +200,37 @@ async def open(
 
     .. code-block::
 
-        async with open(dialog) as auto_dismiss_event:
+        async with modal.open(dialog) as auto_dismissed:
             ...
-        if auto_dismiss_event.is_fired:
+        if auto_dismissed:
             print("The dialog was auto-dismissed")
 
     .. versionchanged:: 0.10.1
         No longer able to tell the cause of auto-dismissal.
+
+    .. versionchanged:: 0.11.0
+        Changed how auto-dismissal is checked.
     '''
     async with AsyncExitStack() as stack:
         defer = stack.callback
 
-        parent = _cache.pop() if _cache else ParentOfModalDialog(); defer(_cache.append, parent)
+        parent = _cache.pop() if _cache else KXModalDialogParent(); defer(_cache.append, parent)
         parent.dismiss = None
         parent.add_widget(dialog); defer(parent.remove_widget, dialog)
         window.add_widget(parent); defer(window.remove_widget, parent)
 
         await stack.enter_async_context(transition(dialog, parent, window))
         ad_event = ak.StatefulEvent()  # 'ad' stands for 'auto dismiss'
+        auto_dismissed = []  # Just want a mutable boolean value not a sequence
         if auto_dismiss:
             keyboard_handler = partial(_dismiss_when_escape_key_or_back_button_is_pressed, ad_event.fire)
             defer(window.unbind_uid, "on_keyboard", window.fbind("on_keyboard", keyboard_handler))
             parent.dismiss = ad_event.fire
             await stack.enter_async_context(ak.move_on_when(ad_event.wait()))
-        with parent.accept_inputs():
-            yield ad_event
+        parent._block_inputs = False
+        try:
+            yield auto_dismissed
+        finally:
+            parent._block_inputs = True
+            if ad_event.is_fired:
+                auto_dismissed.append(None)

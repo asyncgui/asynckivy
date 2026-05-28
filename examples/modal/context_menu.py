@@ -54,9 +54,9 @@ async def show_context_menu_at(pos, *, window: WindowBase=Window, _cache=[]):
         await ak.sleep(0)  # Wait for the size of the menu to be calculated
         menu.x = pos[0]
         menu.top = pos[1]
-        async with modal.open(menu, window=window, transition=modal.no_transition) as ad_event:
+        async with modal.open(menu, window=window, transition=modal.no_transition) as auto_dismissed:
             tasks = await ak.wait_any(*[ak.event(c, 'on_press') for c in menu.children])
-        if ad_event.is_fired:
+        if auto_dismissed:
             return None
         for t in tasks:
             if t.finished:
