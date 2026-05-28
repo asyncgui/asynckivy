@@ -39,12 +39,13 @@ class Painter(RelativeLayout):
             Color(*get_random_color())
             line = Line(width=2)
 
-        async for __ in ak.rest_of_touch_events(self, touch, stop_dispatching=True):
-            # Don't await anything during the loop
-            x, y = self_to_local(*touch.pos)
-            min_x, max_x = (x, ox) if x < ox else (ox, x)
-            min_y, max_y = (y, oy) if y < oy else (oy, y)
-            line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
+        async with ak.rest_of_touch_events(self, touch, stop_dispatching=True) as on_touch_move:
+            while True:
+                await on_touch_move()
+                x, y = self_to_local(*touch.pos)
+                min_x, max_x = (x, ox) if x < ox else (ox, x)
+                min_y, max_y = (y, oy) if y < oy else (oy, y)
+                line.rectangle = (min_x, min_y, max_x - min_x, max_y - min_y, )
 
 
 class SampleApp(App):

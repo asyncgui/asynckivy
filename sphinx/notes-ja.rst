@@ -51,7 +51,7 @@ AsyncKivyにおける入出力
         r = await ak.run_in_executor(executor, 外部のスレッドで実行させたい関数)
         print("return value:", r)
 
-スレッド内で起きた例外(ExceptionではないBaseExceptionは除く)は呼び出し元に運ばれるので、
+スレッド内で起きた例外(ExceptionではないBaseExceptionは除く)はスレッドを利用したコルーチンまで運ばれるので、
 以下のように通常の同期コードを書く感覚で例外を捌けます。
 
 .. code-block::
@@ -67,6 +67,7 @@ AsyncKivyにおける入出力
         else:
             label.text = "応答有り: " + response.text
 
+<!--
 ----------------------------------
 Asyncジェネレータが抱える問題
 ----------------------------------
@@ -117,3 +118,4 @@ Asyncジェネレータが抱える問題
 
 もしどうしてもそのような事をしたければ代わりに :class:`~asynckivy.rest_of_touch_events_cm` や :class:`~asynckivy.sleep_freq` を使う事を検討して下さい。
 これらによってコードは少し長くなりますが、見返りとしてasyncジェネレータ特有の問題全てから解放されます。
+-->
