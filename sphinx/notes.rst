@@ -81,6 +81,7 @@ to the caller so you can catch them like you do in synchronous code:
 
 .. _the-problem-with-async-generators:
 
+<!--
 ---------------------------------
 The Problem with Async Generators
 ---------------------------------
@@ -136,3 +137,4 @@ Therefore, do **not** perform any async operations while consuming the async gen
 If you really need to perform async operations while consuming those async generators,
 consider using :class:`~asynckivy.rest_of_touch_events_cm` or :class:`~asynckivy.sleep_freq` instead.
 They make your code more verbose, but they free you from having to deal with the problems, since they don't rely on async generators at all.
+-->

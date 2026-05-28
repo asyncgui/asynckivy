@@ -1,16 +1,20 @@
 import pytest
 
 
-@pytest.mark.parametrize('n_touch_moves', [0, 1, 10])
-def test_count_a_number_of_on_touch_move_events(kivy_runner, n_touch_moves):
+@pytest.mark.parametrize('n_touch_moves', [0, 1, 2])
+@pytest.mark.parametrize("grab", [True, False])
+@pytest.mark.parametrize("stop_dispatching", [True, False])
+def test_event_count(kivy_runner, n_touch_moves, grab, stop_dispatching):
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
 
     async def async_fn(w, t):
         n = 0
-        async for __ in ak.rest_of_touch_events(w, t):
-            n += 1
+        async with ak.rest_of_touch_events(w, t, grab=grab, stop_dispatching=stop_dispatching) as on_touch_move:
+            while True:
+                await on_touch_move()
+                n += 1
         return n
 
     w = Widget()
@@ -35,11 +39,13 @@ def test_break_during_the_iteration(kivy_runner):
         nonlocal n_touch_moves
         weak_w = weakref.ref(w)
         assert weak_w not in t.grab_list
-        async for __ in ak.rest_of_touch_events(w, t):
-            assert weak_w in t.grab_list
-            n_touch_moves += 1
-            if n_touch_moves == 2:
-                break
+        async with ak.rest_of_touch_events(w, t) as on_touch_move:
+            while True:
+                await on_touch_move()
+                assert weak_w in t.grab_list
+                n_touch_moves += 1
+                if n_touch_moves == 2:
+                    break
         assert weak_w not in t.grab_list
         await ak.event(w, 'on_touch_up')
 
@@ -58,25 +64,26 @@ def test_break_during_the_iteration(kivy_runner):
     assert task.finished
 
 
-@pytest.mark.parametrize(
-    'stop_dispatching, expectation', [
-        (True, [0, 0, 0, ], ),
-        (False, [1, 2, 1, ], ),
-    ])
-def test_stop_dispatching(kivy_runner, stop_dispatching, expectation):
+@pytest.mark.parametrize("grab", [True, False])
+@pytest.mark.parametrize("stop_dispatching, expectation", [
+    (True, {"move": 0, "up": 0}, ),
+    (False, {"move": 2, "up": 1}, ),
+])
+def test_child_event_counts(kivy_runner, stop_dispatching, grab, expectation):
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
 
     async def async_fn(parent, t):
-        async for __ in ak.rest_of_touch_events(parent, t, stop_dispatching=stop_dispatching):
-            pass
+        async with ak.rest_of_touch_events(parent, t, stop_dispatching=stop_dispatching, grab=grab) as on_touch_move:
+            while True:
+                await on_touch_move()
 
-    n_touches = {'move': 0, 'up': 0, }
+    event_counts = {"move": 0, "up": 0, }
     def on_touch_move(*args):
-        n_touches['move'] += 1
+        event_counts["move"] += 1
     def on_touch_up(*args):
-        n_touches['up'] += 1
+        event_counts["up"] += 1
 
     parent = Widget()
     child = Widget(
@@ -88,10 +95,9 @@ def test_stop_dispatching(kivy_runner, stop_dispatching, expectation):
     kivy_runner.advance_a_frame()
     t = UnitTestTouch(0, 0)
     task = ak.start(async_fn(parent, t))
-
-    for i in range(2):
-        t.touch_move(0, 0)
-        assert n_touches['move'] == expectation[i]
+    t.touch_down()
+    t.touch_move(0, 0)
+    t.touch_move(0, 0)
     t.touch_up()
-    assert n_touches['up'] == expectation[2]
+    assert event_counts == expectation
     assert task.finished

@@ -1,4 +1,3 @@
-from collections.abc import AsyncIterator
 from functools import partial
 from contextlib import asynccontextmanager, ExitStack
 
@@ -226,81 +225,74 @@ class block_touch_events:
         self._dispatcher.unbind(on_touch_down=f, on_touch_move=f, on_touch_up=f)
 
 
-async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=True) -> AsyncIterator[None]:
-    '''
-    Returns an async iterator that yields None on each ``on_touch_move`` event
-    and stops when the corresponding ``on_touch_up`` event occurs.
-
-    .. code-block::
-
-        async for __ in rest_of_touch_events(widget, touch):
-            print('on_touch_move')
-        print('on_touch_up')
-
-    :param grab: If set to ``False``, this API will not rely on ``touch.grab()``, which means there is no guarantee
-        that all events from the given touch will be delivered to the widget, as documented in
-        `grabbing-touch-events`_. If the corresponding ``on_touch_up`` event is not delivered, the iterator will wait
-        indefinitely for it. Do not set this to ``False`` unless you know what you are doing.
-    :param stop_dispatching: Whether to stop dispatching non-grabbed touch events corresponding to the given touch.
-                             (Grabbed events are always stopped if the ``grab`` is ``True``.)
-                             For details, see `event-bubbling`_.
-
-    .. warning::
-        You should not use this when Kivy is running in async mode. Use :func:`rest_of_touch_events_cm` instead.
-
-    .. versionchanged:: 0.9.0
-        The ``timeout`` parameter was removed.
-
-    .. versionchanged:: 0.9.1
-        The ``grab`` parameter was added.
-
-    .. _grabbing-touch-events: https://kivy.org/doc/master/guide/inputs.html#grabbing-touch-events
-    .. _event-bubbling: https://kivy.org/doc/master/api-kivy.uix.widget.html#widget-touch-event-bubbling
-    '''
-    async with rest_of_touch_events_cm(widget, touch, stop_dispatching=stop_dispatching, grab=grab) as on_touch_move:
-        while True:
-            await on_touch_move()
-            yield
-
-
 @asynccontextmanager
-async def rest_of_touch_events_cm(widget, touch, *, stop_dispatching=False, grab=True):
+async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=True):
     '''
-    A variant of :func:`rest_of_touch_events`.
-    This version is more verbose, but remains safe even when Kivy is running in async mode.
+    Returns an async context manager that helps to await both ``on_touch_move`` and
+    ``on_touch_up`` events at the same time.
 
     .. code-block::
 
-        async with rest_of_touch_events_cm(widget, touch) as on_touch_move:
+        async with rest_of_touch_events(widget, touch) as on_touch_move:
             while True:
                 await on_touch_move()
-                print('on_touch_move')
-        print('on_touch_up')
+                print("touch moved")
+        print("touch ended")
+
+    :param grab:
+        If set to ``False``, this API will not rely on ``touch.grab()``, which means there is no guarantee
+        that all events from the given touch will be delivered to the widget, as documented in
+        `grabbing-touch-events`_. If the corresponding ``on_touch_up`` event is not delivered, the
+        ``await on_touch_move()`` line will wait indefinitely for it.
+        Do not set this to ``False`` unless you know what you are doing.
+
+    :param stop_dispatching:
+        Whether to stop dispatching non-grabbed touch events corresponding to the given touch.
+        (Grabbed touch events are always stopped if the ``grab`` is ``True``, and are never stopped
+        if the ``grab`` is ``False``.) For details, see `event-bubbling`_.
 
     .. versionadded:: 0.9.1
 
     .. versionchanged:: 0.11.0
 
         * The ``free_to_await`` parameter was removed. You can treat it as if it were always set to True.
+        * The API renamed from ``rest_of_touch_events_cm`` to ``rest_of_touch_events``.
+          The original ``rest_of_touch_events`` was removed.
 
+    .. _grabbing-touch-events: https://kivy.org/doc/master/guide/inputs.html#grabbing-touch-events
+    .. _event-bubbling: https://kivy.org/doc/master/api-kivy.uix.widget.html#widget-touch-event-bubbling
     '''
-    def is_the_same_touch(w, t, touch=touch):
-        return t is touch
     with ExitStack() as stack:
         ec = stack.enter_context
+
+        if stop_dispatching:
+            if grab:
+                def filter(w, t, touch=touch):
+                    return t is touch
+            else:
+                def filter(w, t, touch=touch):
+                    return t is touch and t.grab_current is not w
+        elif grab:
+            def filter(w, t, touch=touch):
+                return t is touch and t.grab_current is w
+        else:
+            filter = None
+        if filter is not None:
+            se = partial(suppress_event, widget, filter=filter)
+            ec(se("on_touch_up"))
+            ec(se("on_touch_move"))
+
         if grab:
             touch.grab(widget)
             stack.callback(touch.ungrab, widget)
-            if stop_dispatching:
-                se = partial(suppress_event, widget, filter=is_the_same_touch)
-                ec(se('on_touch_up'))
-                ec(se('on_touch_move'))
 
             def filter(w, t, touch=touch):
                 return t is touch and t.grab_current is w
             stop_dispatching = True
         else:
-            filter = is_the_same_touch
+            def filter(w, t, touch=touch):
+                return t is touch and t.grab_current is None
+
         on_touch_move = ec(event_freq(widget, "on_touch_move", filter=filter, stop_dispatching=stop_dispatching))
         async with move_on_when(event(widget, "on_touch_up", filter=filter, stop_dispatching=stop_dispatching)):
             yield on_touch_move

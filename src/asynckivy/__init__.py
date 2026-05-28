@@ -12,7 +12,6 @@ __all__ = (
     'move_on_after',
     'n_frames',
     'rest_of_touch_events',
-    'rest_of_touch_events_cm',
     'run_in_executor',
     'run_in_thread',
     'sandwich_canvas',
@@ -30,7 +29,7 @@ __all__ = (
 
 from asyncgui import *
 from ._sleep import sleep, sleep_free, move_on_after, n_frames, sleep_freq, anim_with_ratio
-from ._event import event, event_freq, suppress_event, rest_of_touch_events, rest_of_touch_events_cm, \
+from ._event import event, event_freq, suppress_event, rest_of_touch_events, \
     block_touch_events
 from ._anim_attrs import anim_attrs, anim_attrs_abbr
 from ._interpolate import interpolate, interpolate_seq

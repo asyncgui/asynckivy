@@ -40,9 +40,11 @@ async def enable_swipe_to_delete(target_layout, *, swipe_distance=400., delete_a
                 ox = touch.ox
                 with ak.transform(c) as ig:
                     ig.add(translate := Translate())
-                    async for __ in ak.rest_of_touch_events(layout, touch):
-                        translate.x = dx = touch.x - ox
-                        c.opacity = 1.0 - abs(dx) / swipe_distance
+                    async with ak.rest_of_touch_events(layout, touch) as on_touch_move:
+                        while True:
+                            await on_touch_move()
+                            translate.x = dx = touch.x - ox
+                            c.opacity = 1.0 - abs(dx) / swipe_distance
                     if c.opacity < 0.3:
                         delete_action(layout, c)
             finally:
