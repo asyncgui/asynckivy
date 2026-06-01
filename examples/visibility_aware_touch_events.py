@@ -55,7 +55,7 @@ class SampleApp(App):
                 ak.event(target, "on_touch_move"),
             )
             touch = (tasks[0].result if tasks[0].finished else tasks[1].result)[1]
-            was_inside = target.collide_point(*target.parent.to_widget(*touch.pos))
+            was_inside = target.collide_point(*touch.pos)
             color.a = .5 if was_inside else .1
 
             async with ak.visibility_aware_touch_events(target, touch) as on_touch_move:
