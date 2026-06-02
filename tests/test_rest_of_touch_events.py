@@ -4,7 +4,7 @@ import pytest
 @pytest.mark.parametrize('n_touch_moves', [0, 1, 2])
 @pytest.mark.parametrize("grab", [True, False])
 @pytest.mark.parametrize("stop_dispatching", [True, False])
-def test_event_count(kivy_runner, n_touch_moves, grab, stop_dispatching):
+def test_full_consumption(kivy_runner, n_touch_moves, grab, stop_dispatching):
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
@@ -29,7 +29,7 @@ def test_event_count(kivy_runner, n_touch_moves, grab, stop_dispatching):
     assert task.result == n_touch_moves
 
 
-def test_break_during_the_iteration(kivy_runner):
+def test_partial_consumption(kivy_runner):
     from kivy.uix.widget import Widget
     from kivy.tests.common import UnitTestTouch
     import asynckivy as ak
@@ -80,9 +80,11 @@ def test_child_event_counts(kivy_runner, stop_dispatching, grab, expectation):
                 await on_touch_move()
 
     event_counts = {"move": 0, "up": 0, }
-    def on_touch_move(*args):
+    def on_touch_move(w, t):
+        assert t.grab_current is None
         event_counts["move"] += 1
-    def on_touch_up(*args):
+    def on_touch_up(w, t):
+        assert t.grab_current is None
         event_counts["up"] += 1
 
     parent = Widget()
