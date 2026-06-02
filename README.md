@@ -55,7 +55,7 @@ ak.managed_start(what_you_want_to_do(...))
 Pin the minor version.
 
 ```text
-pip install "asynckivy>=0.10,<0.11"
+pip install "asynckivy>=0.11,<0.12"
 ```
 
 ## Usage
