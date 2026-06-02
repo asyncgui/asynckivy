@@ -54,7 +54,7 @@ ak.managed_start(what_you_want_to_do(...))
 マイナーバージョンが変わった時は何らかの重要な互換性の無い変更が加えられた事を意味するので使う際はマイナーバージョンまでを固定してください。
 
 ```text
-pip install "asynckivy>=0.10,<0.11"
+pip install "asynckivy>=0.11,<0.12"
 ```
 
 ## 使い方
