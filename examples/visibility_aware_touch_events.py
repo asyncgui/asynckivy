@@ -19,7 +19,6 @@ FloatLayout:
             pos_hint: {"x": .5, "y": .5, }
             canvas:
                 Color:
-                    group: "color"
                 Rectangle:
                     pos: self.pos
                     size: self.size
@@ -45,18 +44,16 @@ class SampleApp(App):
         )
 
         target = self.root.ids.target.__self__
-        color = target.canvas.get_group("color")[0]
-        color.a = .1
+        target.opacity = .1
 
         while True:
-            # Not a recommended way to use `wait_any`, but for the simplicity of the code.
             tasks = await ak.wait_any(
                 ak.event(target, "on_touch_down"),
                 ak.event(target, "on_touch_move"),
             )
             touch = (tasks[0].result if tasks[0].finished else tasks[1].result)[1]
             was_inside = target.collide_point(*touch.pos)
-            color.a = .5 if was_inside else .1
+            target.opacity = .5 if was_inside else .1
 
             async with ak.visibility_aware_touch_events(target, touch) as on_touch_move:
                 while True:
@@ -64,9 +61,9 @@ class SampleApp(App):
                     if was_inside is is_inside:
                         pass
                     else:
-                        color.a = .5 if is_inside else .1
+                        target.opacity = .5 if is_inside else .1
                         was_inside = is_inside
-            color.a = .1
+            target.opacity = .1
 
 
 if __name__ == "__main__":
