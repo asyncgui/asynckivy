@@ -190,7 +190,7 @@ class block_touch_events:
         with block_touch_events(widget):
             ...
 
-    Returns a context manager that blocks all touch events that meet **both** of the following criteria:
+    Returns a context manager that consumes all touch events that meet **both** of the following criteria:
 
     * The touch is not currently grabbed by any widget. (i.e. ``touch.grab_current is None``)
     * The touch is inside the widget's bounding box. (i.e. ``widget.collide_point(*touch.pos)``)
@@ -256,8 +256,19 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=Tr
     .. versionchanged:: 0.11.0
 
         * The ``free_to_await`` parameter was removed. You can treat it as if it were always set to True.
-        * The API renamed from ``rest_of_touch_events_cm`` to ``rest_of_touch_events``.
-          The original ``rest_of_touch_events`` was removed.
+        * The API was renamed from ``rest_of_touch_events_cm`` to ``rest_of_touch_events``.
+          The original ``rest_of_touch_events`` was removed. If you want the original, you can easily reimplement it:
+
+          .. code-block::
+
+              async def original_rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=True):
+                  async with rest_of_touch_events(
+                      widget, touch, stop_dispatching=stop_dispatching, grab=grab
+                  ) as on_touch_move:
+                      while True:
+                          yield await on_touch_move()
+
+          However, be aware of :ref:`the-problem-with-async-generators`.
 
     .. _grabbing-touch-events: https://kivy.org/doc/master/guide/inputs.html#grabbing-touch-events
     .. _event-bubbling: https://kivy.org/doc/master/api-kivy.uix.widget.html#widget-touch-event-bubbling
