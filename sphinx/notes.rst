@@ -29,6 +29,12 @@ If touch events aren't processed promptly, their state might change before tasks
 Their core design might not be ideal for GUI applications in the first place.
 That's why I continue to develop the asynckivy library to this day.
 
+Edit:
+Python 3.14 introduced a ``eager_start`` parameter for :func:`asyncio.create_task` and :meth:`asyncio.TaskGroup.create_task`.
+There is also a discussion about `immediate resumption`_.
+So, it is possible that asyncio will eventually support all the capabilities provided by asynckivy.
+
+.. _immediate resumption: https://discuss.python.org/t/an-eager-way-to-set-result-on-asyncio-future/106161
 .. _reinventing the wheel: https://en.wikipedia.org/wiki/Reinventing_the_wheel
 
 .. _io-in-asynckivy:
@@ -81,7 +87,6 @@ to the caller so you can catch them like you do in synchronous code:
 
 .. _the-problem-with-async-generators:
 
-<!--
 ---------------------------------
 The Problem with Async Generators
 ---------------------------------
@@ -90,10 +95,9 @@ The Problem with Async Generators
 which sometimes delays the cleanup of async generators when either library is running.
 You can read more about this in `PEP 525 <https://peps.python.org/pep-0525/#finalization>`__.
 
-Because of this, you have to explicitly close async generators when you're done with them.
+Because of this, you have to explicitly close async generators when you're done with them if either library is running.
 The following ones are affected:
 
-- :func:`~asynckivy.rest_of_touch_events`
 - :func:`~asynckivy.interpolate`
 - :func:`~asynckivy.interpolate_seq`
 - :func:`~asynckivy.anim_with_ratio`
@@ -123,18 +127,13 @@ This means that if the consumer is cancelled, the exception representing that ca
         await something  # If cancelled here, the agen won't be able to respond to it correctly depending on how it's implemented.
 
 I won't go into the details here — it's complicated — but in short, this behavior can break ``asyncgui``'s cancellation system.
-Therefore, do **not** perform any async operations while consuming the async generators returned by the APIs listed above.
+Therefore, do **not** perform any async operations while consuming an async generator.
 
 .. code-block::
 
-    async for __ in rest_of_touch_events(...):
-        await awaitable  # NOT ALLOWED
-        async with async_context_manager:  # NOT ALLOWED
+    async for __ in async_generator:
+        await awaitable  # Don't
+        async with async_context_manager:  # Don't
             ...
-        async for __ in async_iterator:  # NOT ALLOWED
+        async for __ in async_iterator:  # Don't
             ...
-
-If you really need to perform async operations while consuming those async generators,
-consider using :class:`~asynckivy.rest_of_touch_events_cm` or :class:`~asynckivy.sleep_freq` instead.
-They make your code more verbose, but they free you from having to deal with the problems, since they don't rely on async generators at all.
--->

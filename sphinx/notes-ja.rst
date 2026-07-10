@@ -6,15 +6,15 @@ Notes |ja|
 このライブラリが存在する理由
 ----------------------------------
 
-Kivyはversion2.0.0で既に :mod:`asyncio` と :mod:`trio` の二つのasyncライブラリに対応しています。
+Kivyはversion2.0.0で :mod:`asyncio` と :mod:`trio` の二つのasyncライブラリに対応しました。
 故に別のasyncライブラリを開発することは `車輪の再発明`_ に思えるかもしれません。
 実際私はasync/await構文の仕組みを学ぶためだけにこのプロジェクトを始めたので元々は本当に車輪の再発明だったと言えます。
 
 しかし暫くKivyとTrioを合わせて使っているうちにTrioがタッチ処理のような素早い反応が求められる状況には向かないことに気づきました。
 asyncioも同じです。
-自分でそれを確かめたい人は ``investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`` を実行してマウスボタンを可能な限り素早くクリックしてみてください。
+それを確かめたい人は ``investigation/why_xxx_is_not_suitable_for_handling_touch_events.py`` を実行してマウスボタンを可能な限り素早くクリックしてみてください。
 標準出力にて時折 ``'up'`` に対応する ``'down'`` が無かったり、
-タッチを受け取るウィジェットが ``RelativeLayout`` の子なのにタッチの座標が相対的になっていない事が分かると思います。
+タッチを受け取るウィジェットの親が ``RelativeLayout`` なのにタッチの座標が相対的になっていない事が分かると思います。
 
 これらの問題の原因は :meth:`trio.Event.set` や :meth:`asyncio.Event.set` がEventの発火を待っているタスクを直ちに再開させるわけではなくいづれ再開するようにするからです。
 :meth:`trio.Nursery.start_soon` や :func:`asyncio.create_task` も直ちにタスクを開始するわけではなくいづれ開始するようにする為、同じ問題を孕んでいます。
@@ -24,6 +24,12 @@ asyncioも同じです。
 しかしKivyではこれが不可欠だと私は考えています。
 タスクの開始/再開が直ちに行わなければタッチイベントを表すオブジェクトの状態が変わってしまい本来あるべき状態でタッチを捌けなくなるからです。
 
+(追記)
+Python3.14にて :func:`asyncio.create_task` と :meth:`asyncio.TaskGroup.create_task` に ``eager_start`` 引数が加わりました。
+また `直ちに再開する機能`_ も議題になっているようです。
+なのでasynckivyができる事が全てasyncioでもできるようになる未来はあるかもしれません、
+
+.. _直ちに再開する機能: https://discuss.python.org/t/an-eager-way-to-set-result-on-asyncio-future/106161
 .. _車輪の再発明: https://ja.wikipedia.org/wiki/%E8%BB%8A%E8%BC%AA%E3%81%AE%E5%86%8D%E7%99%BA%E6%98%8E
 
 -------------------------
@@ -67,7 +73,6 @@ AsyncKivyにおける入出力
         else:
             label.text = "応答有り: " + response.text
 
-<!--
 ----------------------------------
 Asyncジェネレータが抱える問題
 ----------------------------------
@@ -76,7 +81,6 @@ Asyncジェネレータが抱える問題
 を行うせいなのか、これらのライブライリを使っているとasyncジェネレータの後始末が遅れる事があります。なので使い終わったら明示的に閉じて下さい。
 以下がasyncジェネレータを返す者達です。
 
-- :func:`~asynckivy.rest_of_touch_events`
 - :func:`~asynckivy.interpolate`
 - :func:`~asynckivy.interpolate_seq`
 - :func:`~asynckivy.anim_with_ratio`
@@ -105,17 +109,13 @@ Asyncジェネレータが抱える問題
         await something  # ここで中断されるとagenは実装次第でそれに正しく対応できない。
 
 長くなるので深入りはしませんがこの事が ``asyncgui`` の中断機構を壊し得ます。
-なので上記のAPIが返したasyncジェネレータの消費中はいかなるasync処理も行わないで下さい。
+なのでasyncジェネレータの消費中はいかなるasync処理も行わないで下さい。
 
 .. code-block::
 
-    async for __ in rest_of_touch_events(...):
+    async for v in async_generator:
         await awaitable  # 駄目
         async with async_context_manager:  # 駄目
             ...
         async for __ in async_iterator:  # 駄目
             ...
-
-もしどうしてもそのような事をしたければ代わりに :class:`~asynckivy.rest_of_touch_events_cm` や :class:`~asynckivy.sleep_freq` を使う事を検討して下さい。
-これらによってコードは少し長くなりますが、見返りとしてasyncジェネレータ特有の問題全てから解放されます。
--->

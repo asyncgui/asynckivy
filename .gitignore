@@ -7,4 +7,5 @@ bin/
 /.pytest_cache/
 /.vscode/
 /dist
+/.kivy/
 /docs/
