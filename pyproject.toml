@@ -5,17 +5,13 @@ description = "Async library for Kivy"
 authors = [{ name = "Nattōsai Mitō", email = "flow4re2c@gmail.com" }]
 license = "MIT"
 readme = 'README.md'
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.11,<4.0"
 keywords = ['async', 'kivy']
 classifiers=[
     'Development Status :: 5 - Production/Stable',
     'License :: OSI Approved :: MIT License',
     'Intended Audience :: Developers',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Programming Language :: Python :: 3.12',
-    'Programming Language :: Python :: 3.13',
     'Topic :: Software Development :: Libraries',
     'Operating System :: OS Independent',
 ]
@@ -31,7 +27,7 @@ Repository = "https://github.com/asyncgui/asynckivy"
 dev = [
     "pytest>=9.0.3,<10",
     "flake8>=6.0.0,<7",
-    "kivy===2.3.1",
+    "kivy",
 ]
 doc = [
     "sphinx>=7.0.0,<8",
@@ -42,6 +38,9 @@ doc = [
 
 [tool.uv]
 default-groups = ["dev", ]
+
+[tool.uv.sources]
+kivy = { git = "https://github.com/kivy/kivy", rev = "be90b9f4bdb28c734e1cc01d6e7a7e1440e5216e" }
 
 [build-system]
 requires = ["uv_build>=0.9.2,<0.12.0"]
