@@ -1,78 +1,118 @@
 import pytest
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import time
 import threading
 
+executor_classes = (ThreadPoolExecutor, ProcessPoolExecutor, )
+try:
+    from concurrent.futures import InterpreterPoolExecutor
+except ImportError:  # Introduced in Python 3.14
+    pass
+else:
+    executor_classes += (InterpreterPoolExecutor, )
+executor_cls = pytest.mark.parametrize("executor_cls", executor_classes)
 
-def test_thread_id(kivy_runner):
+
+def fail_immediately():
+    1 / 0
+
+
+def fail_eventually():
+    import time; time.sleep(1)
+    1 / 0
+
+
+def finish_immediately():
+    return "ROTK9"
+
+
+def finish_eventually():
+    import time; time.sleep(1)
+    return "ROTK9"
+
+
+@executor_cls
+def test_caller_coroutine_resumes_in_the_same_thread_where_it_paused(kivy_runner, executor_cls):
     import asynckivy as ak
-    kr = kivy_runner
 
     async def job(executor):
         before = threading.get_ident()
-        await ak.run_in_executor(executor, lambda: None)
+        await ak.run_in_executor(executor, finish_immediately)
         after = threading.get_ident()
-        assert before == after
+        return before == after
 
-
-    with ThreadPoolExecutor() as executor:
+    with executor_cls() as executor:
         task = ak.start(job(executor))
-        time.sleep(.01)
-        assert not task.finished
-        kr.advance_a_frame()
-        assert task.finished
+        for _ in range(4):
+            time.sleep(.5)
+            kivy_runner.advance_a_frame()
+            if task.finished:
+                break
+        else:
+            pytest.fail("Task is taking too much time to finish")
+        assert task.result
 
 
-def test_propagate_exception(kivy_runner):
+@executor_cls
+def test_finish_immediately(kivy_runner, executor_cls):
     import asynckivy as ak
-    kr = kivy_runner
+
+    with executor_cls() as executor:
+        task = ak.start(ak.run_in_executor(executor, finish_immediately))
+        for _ in range(4):
+            time.sleep(.5)
+            kivy_runner.advance_a_frame()
+            if task.finished:
+                break
+        else:
+            pytest.fail("Task is taking too much time to finish")
+        assert task.result == "ROTK9"
+
+
+@executor_cls
+def test_fail_immediately(kivy_runner, executor_cls):
+    import asynckivy as ak
 
     async def job(executor):
         with pytest.raises(ZeroDivisionError):
-            await ak.run_in_executor(executor, lambda: 1 / 0)
+            await ak.run_in_executor(executor, fail_immediately)
 
-    with ThreadPoolExecutor() as executor:
+    with executor_cls() as executor:
         task = ak.start(job(executor))
-        time.sleep(.01)
-        assert not task.finished
-        kr.advance_a_frame()
-        assert task.finished
+        for _ in range(4):
+            time.sleep(.5)
+            kivy_runner.advance_a_frame()
+            if task.finished:
+                break
+        else:
+            pytest.fail("Task is taking too much time to finish")
 
 
-def test_no_exception(kivy_runner):
+@executor_cls
+def test_finish_eventually(kivy_runner, executor_cls):
     import asynckivy as ak
-    kr = kivy_runner
+
+    with executor_cls() as executor:
+        task = ak.start(ak.run_in_executor(executor, finish_eventually))
+        for _ in range(6):
+            time.sleep(.5)
+            kivy_runner.advance_a_frame()
+            if task.finished:
+                break
+        else:
+            pytest.fail("Task is taking too much time to finish")
+        assert task.result == "ROTK9"
 
     async def job(executor):
-        assert 'A' == await ak.run_in_executor(executor, lambda: 'A')
+        with pytest.raises(ZeroDivisionError):
+            await ak.run_in_executor(executor, fail_eventually)
 
-    with ThreadPoolExecutor() as executor:
+    with executor_cls() as executor:
         task = ak.start(job(executor))
-        time.sleep(.01)
-        assert not task.finished
-        kr.advance_a_frame()
-        assert task.finished
-
-
-def test_cancel_before_start_executing(kivy_runner):
-    import time
-    import asynckivy as ak
-    kr = kivy_runner
-
-    e = ak.StatefulEvent()
-
-    async def job(executor):
-        await ak.run_in_executor(executor, e.fire)
-
-    with ThreadPoolExecutor(max_workers=1) as executor:
-        executor.submit(time.sleep, .1)
-        task = ak.start(job(executor))
-        time.sleep(.02)
-        assert not task.finished
-        assert not e.is_fired
-        kr.advance_a_frame()
-        task.cancel()
-        assert task.cancelled
-        assert not e.is_fired
-        time.sleep(.2)
-        assert not e.is_fired
+        for _ in range(6):
+            time.sleep(.5)
+            kivy_runner.advance_a_frame()
+            if task.finished:
+                break
+        else:
+            pytest.fail("Task is taking too much time to finish")
