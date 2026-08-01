@@ -266,7 +266,8 @@ async def rest_of_touch_events(widget, touch, *, stop_dispatching=False, grab=Tr
                       widget, touch, stop_dispatching=stop_dispatching, grab=grab
                   ) as on_touch_move:
                       while True:
-                          yield await on_touch_move()
+                          await on_touch_move()
+                          yield
 
           However, be aware of :ref:`the-problem-with-async-generators`.
 
