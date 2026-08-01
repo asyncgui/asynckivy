@@ -27,7 +27,7 @@ asyncioも同じです。
 (追記)
 Python3.14にて :func:`asyncio.create_task` と :meth:`asyncio.TaskGroup.create_task` に ``eager_start`` 引数が加わりました。
 また `直ちに再開する機能`_ も議題になっているようです。
-なのでasynckivyができる事が全てasyncioでもできるようになる未来はあるかもしれません、
+なので将来asynckivyができる事が全てasyncioでもできるようになるかもしれません、
 
 .. _直ちに再開する機能: https://discuss.python.org/t/an-eager-way-to-set-result-on-asyncio-future/106161
 .. _車輪の再発明: https://ja.wikipedia.org/wiki/%E8%BB%8A%E8%BC%AA%E3%81%AE%E5%86%8D%E7%99%BA%E6%98%8E

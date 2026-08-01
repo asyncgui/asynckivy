@@ -26,7 +26,8 @@ async def run_in_thread(func, *, daemon=None):
     See :ref:`io-in-asynckivy` for details.
 
     .. warning::
-        When the caller Task is cancelled, the ``func`` will be left running, which violates "structured concurrency".
+        When the caller Task is cancelled, the ``func`` will be left running, which violates structured concurrency.
+        Also, do not call this function from outside the main thread unless you know what you're doing.
     '''
     ev = asyncgui.ExclusiveEvent()
     Thread(
@@ -52,11 +53,10 @@ async def run_in_executor(executor: Executor, func, *args):
 
     :param args: Arguments to pass to the ``executor.submit`` method.
 
-    See :ref:`io-in-asynckivy` for details.
-
     .. warning::
         When the caller Task is cancelled, the ``func`` will be left running if it has already started,
-        which violates "structured concurrency".
+        which violates structured concurrency.
+        Also, do not call this function from outside the main thread unless you know what you're doing.
 
     .. versionchanged:: 0.11.1
         Added support for passing arguments to the ``executor.submit`` method.
