@@ -45,14 +45,3 @@ API Reference
     :members:
     :undoc-members:
     :exclude-members:
-
-
-Notes
------
-
-You might wonder why this module has its own transitions when there's already a ``transition`` submodule.
-The reason is that modal dialogs require transitions in which the dialog moves in first and then moves out,
-whereas the transitions in the ``transition`` submodule move a widget out first and then back in.
-
-Perhaps I should rename the ``transition`` submodule to ``outin_transition`` and move the modal dialog transitions
-into a separate ``inout_transition`` submodule.

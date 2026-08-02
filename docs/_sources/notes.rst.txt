@@ -58,7 +58,7 @@ I/O without blocking the main thread.
     def thread_blocking_operation():
         '''
         This function is called from outside the main thread so you should not
-        perform any graphics-related operations here.
+        interact with Kivy except through ``Clock``.
         '''
 
 

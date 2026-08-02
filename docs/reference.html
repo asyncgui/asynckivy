@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Transition (submodule)" href="submod-transition.html" /><link rel="prev" title="Notes 🇯🇵" href="notes-ja.html" />
 
     <!-- Generated with Sphinx 7.4.7 and Furo 2023.09.10 -->
-        <title>API Reference - asynckivy 0.11.0 documentation</title>
+        <title>API Reference - asynckivy 0.11.1.dev0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=135e06be" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=36a5483c" />
@@ -123,7 +123,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">asynckivy 0.11.0 documentation</div></a>
+      <a href="index.html"><div class="brand">asynckivy 0.11.1.dev0 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -146,7 +146,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">asynckivy 0.11.0 documentation</span>
+  <span class="sidebar-brand-text">asynckivy 0.11.1.dev0 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -575,7 +575,8 @@ The original <code class="docutils literal notranslate"><span class="pre">rest_o
         <span class="n">widget</span><span class="p">,</span> <span class="n">touch</span><span class="p">,</span> <span class="n">stop_dispatching</span><span class="o">=</span><span class="n">stop_dispatching</span><span class="p">,</span> <span class="n">grab</span><span class="o">=</span><span class="n">grab</span>
     <span class="p">)</span> <span class="k">as</span> <span class="n">on_touch_move</span><span class="p">:</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="k">await</span> <span class="n">on_touch_move</span><span class="p">()</span>
+            <span class="k">await</span> <span class="n">on_touch_move</span><span class="p">()</span>
+            <span class="k">yield</span>
 </pre></div>
 </div>
 <p>However, be aware of <a class="reference internal" href="notes.html#the-problem-with-async-generators"><span class="std std-ref">The Problem with Async Generators</span></a>.</p>
@@ -586,19 +587,29 @@ The original <code class="docutils literal notranslate"><span class="pre">rest_o
 
 <dl class="py function">
 <dt class="sig sig-object py" id="asynckivy.run_in_executor">
-<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_in_executor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ThreadPoolExecutor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#asynckivy.run_in_executor" title="Link to this definition">¶</a></dt>
-<dd><p>Runs a function within a <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ThreadPoolExecutor" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">concurrent.futures.ThreadPoolExecutor</span></code></a>, and waits for the completion of the
+<em class="property"><span class="k"><span class="pre">async</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_in_executor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Executor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#asynckivy.run_in_executor" title="Link to this definition">¶</a></dt>
+<dd><p>Runs a function within a <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.Executor" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">concurrent.futures.Executor</span></code></a>, and waits for the completion of the
 function.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">executor</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">()</span>
 <span class="o">...</span>
 <span class="n">return_value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">run_in_executor</span><span class="p">(</span><span class="n">executor</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="notes.html#io-in-asynckivy"><span class="std std-ref">I/O in AsyncKivy</span></a> for details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> – Arguments to pass to the <code class="docutils literal notranslate"><span class="pre">executor.submit</span></code> method.</p>
+</dd>
+</dl>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>When the caller Task is cancelled, the <code class="docutils literal notranslate"><span class="pre">func</span></code> will be left running if it has already started,
-which violates “structured concurrency”.</p>
+which violates structured concurrency.
+Also, do not call this function from outside the main thread unless you know what you’re doing.</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.11.1: </span>Added support for passing arguments to the <code class="docutils literal notranslate"><span class="pre">executor.submit</span></code> method.
+Added support for <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.ProcessPoolExecutor" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProcessPoolExecutor</span></code></a> and
+<a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html#concurrent.futures.InterpreterPoolExecutor" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">InterpreterPoolExecutor</span></code></a>.</p>
 </div>
 </dd></dl>
 
@@ -612,7 +623,8 @@ which violates “structured concurrency”.</p>
 <p>See <a class="reference internal" href="notes.html#io-in-asynckivy"><span class="std std-ref">I/O in AsyncKivy</span></a> for details.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>When the caller Task is cancelled, the <code class="docutils literal notranslate"><span class="pre">func</span></code> will be left running, which violates “structured concurrency”.</p>
+<p>When the caller Task is cancelled, the <code class="docutils literal notranslate"><span class="pre">func</span></code> will be left running, which violates structured concurrency.
+Also, do not call this function from outside the main thread unless you know what you’re doing.</p>
 </div>
 </dd></dl>
 
@@ -1118,7 +1130,7 @@ touch starts outside the ScrollView.</p>
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=f3b36f1a"></script>
+</div><script src="_static/documentation_options.js?v=54e43d81"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=32e29ea5"></script>
