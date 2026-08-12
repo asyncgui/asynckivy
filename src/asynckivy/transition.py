@@ -131,38 +131,41 @@ async def scale(target: Wow=Window, *, duration=1, out_curve='out_quad', in_curv
         await anim_attrs(mat, d=half_d, t=in_curve, xyz=(1, 1, 1))
 
 
-def _calc_enclosing_circle_radius(circle_center, rectangle_size, max=max, hypot=math.hypot, abs=abs):
+def _calc_enclosing_circle_radius(circle_center, rect_pos, rect_size, max=max, hypot=math.hypot, abs=abs):
     '''
     Calculates the minimum radius required for a circle centered at the given position to fully
-    enclose a rectangle of the given size, assuming its bottom-left corner is at (0, 0).
+    enclose the rectangle defined by the given position and size.
 
     .. code-block::
 
-        radius = _calc_enclosing_circle_radius(circle_center, rectangle_size)
+        radius = _calc_enclosing_circle_radius(circle_center, widget.pos, widget.size)
     '''
-    w, h = rectangle_size
-    x, y = circle_center
-    return hypot(max(abs(x), abs(w - x)), max(abs(y), abs(h - y)))
+    cx, cy = circle_center
+    rx, ry = rect_pos
+    rw, rh = rect_size
+    return hypot(max(abs(cx - rx), abs(rx + rw - cx)), max(abs(cy - ry), abs(ry + rh - cy)))
 
 
 @asynccontextmanager
-async def iris(target: WindowBase=Window, *, duration=1, out_curve='in_cubic', in_curve='out_cubic',
+async def iris(target: Wow=Window, *, duration=1, out_curve='in_cubic', in_curve='out_cubic',
                color: Sequence[float]=colormap['white'], circle_center: Sequence[float]=None,
                overlay: VertexInstruction=None):
     '''
-    縮む円によって ``target`` が見える範囲を絞っていき、完全に見えなくなったらwithブロック内を実行し、その後円を広げて ``target`` を再び見せる。
+    Narrows the visible area of ``target`` with a shrinking circle, runs the code inside the with-block
+    once it becomes completely invisible, and then expands the circle to make ``target`` visible again.
 
     .. versionadded:: 0.9.0
+    .. versionchanged:: 0.11.1
+        Added support for widget as target.
     '''
-    if not isinstance(target, WindowBase):
-        raise TypeError(f"'target' must be a WindowBase instance, not {type(target).__name__}")
     half_d = duration / 2
     canvas = target.canvas
     if circle_center is None:
         circle_center = target.center
     if overlay is None:
         overlay = Rectangle(size=target.size)
-    radius = _calc_enclosing_circle_radius(circle_center, target.size)
+    target_pos = (0, 0) if isinstance(target, WindowBase) else target.pos
+    radius = _calc_enclosing_circle_radius(circle_center, target_pos, target.size)
     diameter = radius * 2.
     ellipse_start_pos = (circle_center[0] - radius, circle_center[1] - radius)
     ellipse_start_size = (diameter, diameter)
@@ -180,7 +183,7 @@ async def iris(target: WindowBase=Window, *, duration=1, out_curve='in_cubic', i
     ig_add(inner_ig)
     ig_add(StencilPop())
 
-    canvas.add(ig)
+    canvas.after.add(ig)
     try:
         await anim_attrs(ellipse, d=half_d, t=out_curve, pos=circle_center, size=(0, 0))
         # Setting the ellipse size to (0, 0) isn't enough to nullify the stencil effect for some reason,
@@ -190,7 +193,7 @@ async def iris(target: WindowBase=Window, *, duration=1, out_curve='in_cubic', i
         inner_ig.add(ellipse)
         await anim_attrs(ellipse, d=half_d, t=in_curve, pos=ellipse_start_pos, size=ellipse_start_size)
     finally:
-        canvas.remove(ig)
+        canvas.after.remove(ig)
 
 
 @asynccontextmanager

@@ -45,19 +45,19 @@ class TestApp(App):
             async with t.gl_transitions_dot_com(label, fs=cross_warp):
                 label.text = 'iris'
 
-            await touch_down()
-            async with t.iris(duration=0.8, color=colormap['darkslategray']):
+            __, touch = await touch_down()
+            async with t.iris(color=colormap["darkslategray"], circle_center=touch.pos):
                 label.halign = 'center'
                 label.text = 'iris with a custom overlay'
 
-            await touch_down()
+            __, touch = await touch_down()
             rect = Rectangle(size=Window.size, source='data/logo/kivy-icon-128.png')
             texture = rect.texture
             texture.wrap = 'repeat'
             x_ratio = Window.width / texture.width
             y_ratio = Window.height / texture.height
             rect.tex_coords = (0, y_ratio, x_ratio, y_ratio, x_ratio, 0, 0, 0)
-            async with t.iris(overlay=rect, out_curve='linear', in_curve='linear'):
+            async with t.iris(overlay=rect, out_curve="linear", in_curve="linear", circle_center=touch.pos):
                 await ak.sleep(.3)
                 label.text = 'slide'
                 await ak.sleep(.3)
