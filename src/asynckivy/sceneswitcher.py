@@ -15,13 +15,13 @@ def _import_scene(absolute_name: str) -> Scene:
     return getattr(import_module(module_name), scene_name)
 
 
-def _yield_prohibited_await(coro: Coroutine):
+def _non_pausing_await(coro: Coroutine):
     try:
         coro.send(None)
     except StopIteration as e:
         return e.value
     else:
-        raise RuntimeError("一時停止してはいけない箇所で停止しました")
+        raise SceneSwitcherError("Coroutine paused")
     
 
 class SceneSwitcherError(Exception):
@@ -36,7 +36,8 @@ async def _empty_scene(parent: Widget, userdata: UserData):
 
 
 async def run(first_scene: Scene | str, *, parent: Widget=None, userdata: UserData=None):
-    yield_prohibited_await = _yield_prohibited_await
+    non_pausing_await = _non_pausing_await
+    empty_scene = _empty_scene
     nullctx = contextlib.nullcontext()
     if parent is None:
         from kivy.app import App
@@ -49,7 +50,7 @@ async def run(first_scene: Scene | str, *, parent: Widget=None, userdata: UserDa
     try:
         while True:
             if next_scene is None:
-                next_scene = _empty_scene
+                next_scene = empty_scene
             elif isinstance(next_scene, str):
                 next_scene = _import_scene(next_scene)
             next_agen = next_scene(parent, userdata)
@@ -58,16 +59,16 @@ async def run(first_scene: Scene | str, *, parent: Widget=None, userdata: UserDa
             inuse_agens.append(next_agen)
             async with transition or nullctx:
                 if cur_scene is not None:
-                    yield_prohibited_await(cur_agen.aclose())
+                    non_pausing_await(cur_agen.aclose())
                     inuse_agens.remove(cur_agen)
-                if next_scene is _empty_scene:
-                    return
-                r = yield_prohibited_await(next_agen.asend(None))
-            if r is not None:
-                raise SceneSwitcherError(f"The first value yielded must be None, but got {repr(r)}.")
+                r = non_pausing_await(next_agen.asend(None))
+                if r is not None:
+                    raise SceneSwitcherError(f"The first value yielded must be None, but got {repr(r)}.")
+            if next_scene is empty_scene:
+                return
             cur_scene = next_scene
             cur_agen = next_agen
             next_scene, transition = await cur_agen.asend(None)
     finally:
         for agen in inuse_agens:
-            yield_prohibited_await(agen.aclose())
+            non_pausing_await(agen.aclose())
