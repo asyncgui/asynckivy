@@ -24,13 +24,15 @@ def _yield_prohibited_await(coro: Coroutine):
         raise RuntimeError("一時停止してはいけない箇所で停止しました")
     
 
-# async def pseudo_scene_example(parent: Widget, userdata: UserData):
-#     with ExitStack() as stack:
-#         # set up
-#         yield
-#         # run the scene
-#         yield next_scene, how_to_transition
-#     # tear down
+class SceneSwitcherError(Exception):
+    '''
+    Base class for all exceptions raised by the ``sceneswitcher`` submodule.
+    '''
+
+
+async def _empty_scene(parent: Widget, userdata: UserData):
+    yield
+    yield None, None
 
 
 async def run(first_scene: Scene | str, *, parent: Widget=None, userdata: UserData=None):
@@ -46,24 +48,26 @@ async def run(first_scene: Scene | str, *, parent: Widget=None, userdata: UserDa
     next_scene = first_scene
     try:
         while True:
-            if isinstance(next_scene, str):
+            if next_scene is None:
+                next_scene = _empty_scene
+            elif isinstance(next_scene, str):
                 next_scene = _import_scene(next_scene)
             next_agen = next_scene(parent, userdata)
             if not isasyncgen(next_agen):
-                raise TypeError(f"{next_scene} didn't return an async generator")
+                raise SceneSwitcherError(f"{next_scene} didn't return an async generator")
             inuse_agens.append(next_agen)
             async with transition or nullctx:
                 if cur_scene is not None:
                     yield_prohibited_await(cur_agen.aclose())
                     inuse_agens.remove(cur_agen)
+                if next_scene is _empty_scene:
+                    return
                 r = yield_prohibited_await(next_agen.asend(None))
             if r is not None:
-                raise RuntimeError(f"The first value yielded must be None, but got {r}.")
+                raise SceneSwitcherError(f"The first value yielded must be None, but got {repr(r)}.")
             cur_scene = next_scene
             cur_agen = next_agen
             next_scene, transition = await cur_agen.asend(None)
-            if next_scene is None:
-                return
     finally:
         for agen in inuse_agens:
             yield_prohibited_await(agen.aclose())
