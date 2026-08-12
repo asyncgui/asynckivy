@@ -183,7 +183,7 @@ async def iris(target: Wow=Window, *, duration=1, out_curve='in_cubic', in_curve
     ig_add(inner_ig)
     ig_add(StencilPop())
 
-    canvas.add(ig)
+    canvas.after.add(ig)
     try:
         await anim_attrs(ellipse, d=half_d, t=out_curve, pos=circle_center, size=(0, 0))
         # Setting the ellipse size to (0, 0) isn't enough to nullify the stencil effect for some reason,
@@ -193,7 +193,7 @@ async def iris(target: Wow=Window, *, duration=1, out_curve='in_cubic', in_curve
         inner_ig.add(ellipse)
         await anim_attrs(ellipse, d=half_d, t=in_curve, pos=ellipse_start_pos, size=ellipse_start_size)
     finally:
-        canvas.remove(ig)
+        canvas.after.remove(ig)
 
 
 @asynccontextmanager
