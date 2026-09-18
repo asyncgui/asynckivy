@@ -6,6 +6,7 @@
 - Remove `anim_with_ratio`
 - `modal` サブモジュールでは `out_duration` と `in_duration` を個別に指定するのに対し `transition` サブモジュールでは両者を足した `duration` を指定する。
   この仕様のばらつきを統一する。
+- Rename the `transition` submodule to `outin_transition`
 
 
 # 0.12.0

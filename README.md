@@ -121,3 +121,4 @@ For more details, read the [documentation](https://asyncgui.github.io/asynckivy/
 - CPython 3.11 + Kivy 2.3
 - CPython 3.12 + Kivy 2.3
 - CPython 3.13 + Kivy 2.3
+- CPython 3.14 + Kivy [`be90b9f`](https://github.com/kivy/kivy/tree/be90b9f4bdb28c734e1cc01d6e7a7e1440e5216e)

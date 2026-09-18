@@ -186,8 +186,8 @@ async def iris(target: Wow=Window, *, duration=1, out_curve='in_cubic', in_curve
     canvas.after.add(ig)
     try:
         await anim_attrs(ellipse, d=half_d, t=out_curve, pos=circle_center, size=(0, 0))
-        # Setting the ellipse size to (0, 0) isn't enough to nullify the stencil effect for some reason,
-        # so we remove it from the canvas and re-add it later.
+        # The Ellipse instruction has a bug where setting its size to (0, 0) can sometimes leave a visible artifact.
+        # As a workaround, I remove it from the canvas and re-add it later.
         inner_ig.remove(ellipse)
         yield
         inner_ig.add(ellipse)
