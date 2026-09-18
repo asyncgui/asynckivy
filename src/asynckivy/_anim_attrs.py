@@ -95,7 +95,7 @@ def anim_attrs(obj, *, duration=1.0, step=0, transition=AnimationTransition.line
 
 def anim_attrs_abbr(obj, *, d=1.0, s=0, t=AnimationTransition.linear, **animated_properties):
     '''
-    :func:`anim_attrs` cannot animate attributes named ``step``, ``duration`` and ``transition`` but this one can.
+    :func:`anim_attrs` cannot animate attributes named ``step``, ``duration`` or ``transition`` but this one can.
 
     .. versionadded:: 0.6.1
     .. versionchanged:: 0.9.0
