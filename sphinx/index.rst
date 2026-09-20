@@ -58,6 +58,7 @@ You may also want to read the ``asyncgui``'s documentation as it is the foundati
    reference
    submod-transition
    submod-modal
+   submod-sceneswitcher
 
 * https://github.com/asyncgui/asyncgui
 * https://github.com/asyncgui/asynckivy
