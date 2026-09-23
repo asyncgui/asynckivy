@@ -16,7 +16,6 @@ __all__ = (
     'run_in_thread',
     'sandwich_canvas',
     'sleep',
-    'sleep_free',
     'sleep_freq',
     'smooth_attr',
     'stencil_mask',
@@ -29,7 +28,7 @@ __all__ = (
 )
 
 from asyncgui import *
-from ._sleep import sleep, sleep_free, move_on_after, n_frames, sleep_freq, anim_with_ratio
+from ._sleep import sleep, move_on_after, n_frames, sleep_freq, anim_with_ratio
 from ._event import event, event_freq, suppress_event, rest_of_touch_events, \
     block_touch_events, visibility_aware_touch_events
 from ._anim_attrs import anim_attrs, anim_attrs_abbr
