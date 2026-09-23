@@ -12,4 +12,4 @@
 # 0.12.0
 
 - `sync_attr` `sync_attrs` `smooth_attr` を通常のコンテキストマネージャのように `__enter__()` の実行によって効力を発揮するように変更する。
-- Remove `sleep_free`
+- ~~Remove `sleep_free`~~
