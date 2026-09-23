@@ -22,7 +22,7 @@ wheels = [
 
 [[package]]
 name = "asynckivy"
-version = "0.11.1.dev0"
+version = "0.11.1"
 source = { editable = "." }
 dependencies = [
     { name = "asyncgui" },
