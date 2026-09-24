@@ -17,13 +17,13 @@ def human(human_cls):
     return human_cls()
 
 
-def test_sync_attr(human):
+def test_sync_attr_reuse(human):
     import types
     import asynckivy as ak
 
     obj = types.SimpleNamespace()
-    with ak.sync_attr(from_=(human, 'age'), to_=(obj, 'AGE')):
-        assert obj.AGE == 10
+    with ak.sync_attr(from_=(human, 'age'), to_=(obj, 'AGE')) as cm:
+        assert not hasattr(obj, "AGE")
         human.age = 2
         assert obj.AGE == 2
         human.age = 0
@@ -31,15 +31,31 @@ def test_sync_attr(human):
     human.age = 1
     assert obj.AGE == 0
 
+    # reuse
+    with cm:
+        human.age = 3
+        assert obj.AGE == 3
 
-def test_sync_attrs(human):
+
+def test_sync_attr_reenter(human):
     import types
     import asynckivy as ak
 
     obj = types.SimpleNamespace()
-    with ak.sync_attrs((human, 'age'), (obj, 'AGE'), (obj, 'age')):
-        assert obj.AGE == 10
-        assert obj.age == 10
+    with ak.sync_attr(from_=(human, "age"), to_=(obj, "AGE")) as cm:
+        with pytest.raises(Exception):
+            with cm:
+                pass
+
+
+def test_sync_attrs_reuse(human):
+    import types
+    import asynckivy as ak
+
+    obj = types.SimpleNamespace()
+    with ak.sync_attrs((human, 'age'), (obj, 'AGE'), (obj, 'age')) as cm:
+        assert not hasattr(obj, "AGE")
+        assert not hasattr(obj, "age")
         human.age = 2
         assert obj.AGE == 2
         assert obj.age == 2
@@ -49,3 +65,20 @@ def test_sync_attrs(human):
     human.age = 1
     assert obj.AGE == 0
     assert obj.age == 0
+
+    # reuse
+    with cm:
+        human.age = 3
+        assert obj.AGE == 3
+        assert obj.age == 3
+
+
+def test_sync_attrs_reenter(human):
+    import types
+    import asynckivy as ak
+
+    obj = types.SimpleNamespace()
+    with ak.sync_attrs((human, "age"), (obj, "AGE"), (obj, "age")) as cm:
+        with pytest.raises(Exception):
+            with cm:
+                pass
