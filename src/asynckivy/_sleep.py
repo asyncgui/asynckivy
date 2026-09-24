@@ -18,20 +18,6 @@ def sleep(duration):
     return e.wait_args_0()
 
 
-def sleep_free(duration):
-    '''
-    An async form of :meth:`kivy.clock.Clock.schedule_once_free`.
-
-    .. code-block::
-
-        dt = await sleep_free(5)  # wait for 5 seconds
-    '''
-    e = ExclusiveEvent()
-    clock_event = Clock.create_trigger_free(e.fire, duration, False, False)
-    clock_event()
-    return e.wait_args_0()
-
-
 class sleep_freq:
     '''
     An async form of :meth:`kivy.clock.Clock.schedule_interval`. The following callback-style code:

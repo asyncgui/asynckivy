@@ -127,7 +127,7 @@ def transform(widget, *, canvas_layer: CanvasLayer="inner") -> Iterator[Instruct
 
 class sync_attr:
     '''
-    Creates one-directional binding between attributes.
+    Returns a context manager that creates a one-directional binding between attributes.
 
     .. code-block::
 
@@ -136,32 +136,26 @@ class sync_attr:
         widget = Widget(x=100)
         obj = types.SimpleNamespace()
 
-        sync_attr(from_=(widget, 'x'), to_=(obj, 'xx'))
-        assert obj.xx == 100  # synchronized
-        widget.x = 10
-        assert obj.xx == 10  # synchronized
-        obj.xx = 20
-        assert widget.x == 10  # but not the other way around
+        with sync_attr(from_=(widget, "x"), to_=(obj, "xx")):
+            assert not hasattr(obj, "xx")  # not synchronized yet
+            widget.x = 10
+            assert obj.xx == 10  # Once 'widget.x' has changes, 'obj.xx' is synchronized
+            widget.x = 15
+            assert obj.xx == 15
+            obj.xx = 20
+            assert widget.x == 15  # but not the other way around
 
-    To make its effect temporary, use it with a with-statement:
-
-    .. code-block::
-
-        # The effect lasts only within the with-block.
-        with sync_attr(...):
-            ...
-
-    This can be particularly useful when combined with :func:`transform`.
+    A real-world example:
 
     .. code-block::
 
         from kivy.graphics import Rotate
 
         async def rotate_widget(widget, *, angle=360.):
-            rotate = Rotate()
+            rotate = Rotate(origin=widget.center)
             with (
                 transform(widget) as ig,
-                sync_attr(from_=(widget, 'center'), to_=(rotate, 'origin')),
+                sync_attr(from_=(widget, "center"), to_=(rotate, "origin")),
             ):
                 ig.add(rotate)
                 await anim_attrs(rotate, angle=angle)
@@ -178,27 +172,33 @@ class sync_attr:
 
             with sync_attr((widget, 'x'), (obj, 'xx')):
                 assert widget.x == obj.xx
+
+    .. versionchanged:: 0.12.0
+        Reverted all the changes made in version 0.8.0.
+        Also, the context manager is now reusable (but not reentrant).
     '''
-    __slots__ = ("_exit", )
+    __slots__ = ("_from", "_sync", "_bind_uid", )
 
     def __init__(self, from_: tuple[EventDispatcher, str], to_: tuple[T.Any, str]):
-        setattr(*to_, getattr(*from_))
-        bind_uid = from_[0].fbind(from_[1], partial(self._sync, setattr, *to_))
-        self._exit = partial(self._unbind, *from_, bind_uid)
+        self._from = from_
+        self._sync = partial(self._synchronize, setattr, *to_)
+        self._bind_uid = None
 
     @staticmethod
-    def _sync(setattr, obj, attr_name, event_dispatcher, new_value):
-        setattr(obj, attr_name, new_value)
-
-    @staticmethod
-    def _unbind(event_dispatcher, event_name, bind_uid, *__):
-        event_dispatcher.unbind_uid(event_name, bind_uid)
+    def _synchronize(setattr, to_obj, to_attr, from_obj, from_value):
+        setattr(to_obj, to_attr, from_value)
 
     def __enter__(self):
-        pass
+        if self._bind_uid is not None:
+            raise Exception("`sync_attr` context manager is already active")
+        self._bind_uid = self._from[0].fbind(self._from[1], self._sync)
+        return self
 
     def __exit__(self, *__):
-        self._exit()
+        if self._bind_uid is None:
+            raise Exception("`sync_attr` context manager is not active")
+        self._from[0].unbind_uid(self._from[1], self._bind_uid)
+        self._bind_uid = None
 
 
 class sync_attrs:
@@ -218,18 +218,18 @@ class sync_attrs:
         with sync_attrs((widget, 'x'), (obj1, 'x'), (obj2, 'xx')):
             ...
 
-    This can be particularly useful when combined with :func:`transform`.
+    A real-world example:
 
     .. code-block::
 
         from kivy.graphics import Rotate, Scale
 
         async def scale_and_rotate_widget(widget, *, scale=2.0, angle=360.):
-            rotate = Rotate()
-            scale = Scale()
+            rotate = Rotate(origin=widget.center)
+            scale = Scale(origin=widget.center)
             with (
                 transform(widget) as ig,
-                sync_attrs((widget, 'center'), (rotate, 'origin'), (scale, 'origin')),
+                sync_attrs((widget, "center"), (rotate, "origin"), (scale, "origin")),
             ):
                 ig.add(rotate)
                 ig.add(scale)
@@ -250,32 +250,39 @@ class sync_attrs:
 
             with sync_attrs((widget, 'x'), (obj, 'xx')):
                 assert widget.x is obj.xx
-    '''
-    __slots__ = ("_exit", )
 
-    def __init__(self, from_: tuple[EventDispatcher, str], *to_):
-        sync = partial(self._sync, setattr, to_)
-        sync(None, getattr(*from_))
-        bind_uid = from_[0].fbind(from_[1], sync)
-        self._exit = partial(self._unbind, *from_, bind_uid)
+    .. versionchanged:: 0.12.0
+        Reverted all the changes made in version 0.8.0.
+        Also, the context manager is now reusable (but not reentrant).
+    '''
+    __slots__ = ("_from", "_sync", "_bind_uid", )
+
+    def __init__(self, from_: tuple[EventDispatcher, str], *tos):
+        self._from = from_
+        self._sync = partial(self._synchronize, setattr, tos)
+        self._bind_uid = None
 
     @staticmethod
-    def _sync(setattr, to_, event_dispatcher, new_value):
-        for obj, attr_name in to_:
-            setattr(obj, attr_name, new_value)
-
-    _unbind = staticmethod(sync_attr._unbind)
+    def _synchronize(setattr, tos, from_obj, from_value):
+        for to_obj, to_attr in tos:
+            setattr(to_obj, to_attr, from_value)
 
     def __enter__(self):
-        pass
+        if self._bind_uid is not None:
+            raise Exception("`sync_attrs` context manager is already active")
+        self._bind_uid = self._from[0].fbind(self._from[1], self._sync)
+        return self
 
     def __exit__(self, *__):
-        self._exit()
+        if self._bind_uid is None:
+            raise Exception("`sync_attrs` context manager is not active")
+        self._from[0].unbind_uid(self._from[1], self._bind_uid)
+        self._bind_uid = None
 
 
 class smooth_attr:
     '''
-    Makes an attribute smoothly follow another.
+    Returns a context manager that makes one attribute smoothly follow another using exponential decay.
 
     .. code-block::
 
@@ -284,15 +291,8 @@ class smooth_attr:
         widget = Widget(x=0)
         obj = types.SimpleNamespace(xx=100)
 
-        # 'obj.xx' will smoothly follow 'widget.x'.
-        smooth_attr(target=(widget, 'x'), follower=(obj, 'xx'))
-
-    To make its effect temporary, use it with a with-statement:
-
-    .. code-block::
-
-        # The effect lasts only within the with-block.
-        with smooth_attr(...):
+        # 'obj.xx' will smoothly follow 'widget.x' while the context manager is active.
+        with smooth_attr(target=(widget, "x"), follower=(obj, "xx")):
             ...
 
     A key feature of this API is that if the target value changes while being followed,
@@ -312,8 +312,13 @@ class smooth_attr:
         you most likely want to set this to a very small value, such as ``0.01``. Defaults to ``dp(2)``.
 
     .. versionadded:: 0.8.0
+
+    .. versionchanged:: 0.12.0
+        The context manager is now an ordinary context manager, in other words,
+        it only has an effect between ``__enter__()`` and ``__exit__()`` calls.
+        It is also now reusable (but not reentrant).
     '''
-    __slots__ = ("_exit", )
+    __slots__ = ("_trigger", "_target", "_bind_uid", )
     _NUMERIC_TYPES = (P.NumericProperty, P.BoundedNumericProperty, )
     _SEQUENCE_TYPES = (P.ColorProperty, P.ReferenceListProperty, P.ListProperty, )
 
@@ -327,22 +332,25 @@ class smooth_attr:
             update = self._update_follower_ver_seq
         else:
             raise ValueError(f"Unsupported target type: {target_desc}")
-        trigger = Clock.schedule_interval(
-            partial(update, *target, *follower, -speed, -min_diff, min_diff), 0
+        self._trigger = Clock.create_trigger(
+            partial(update, *target, *follower, -speed, -min_diff, min_diff), 0, interval=True,
         )
-        bind_uid = target_obj.fbind(target_attr, trigger)
-        self._exit = partial(self._cleanup, trigger, target_obj, target_attr, bind_uid)
-
-    @staticmethod
-    def _cleanup(trigger, target_obj, target_attr, bind_uid, *__):
-        trigger.cancel()
-        target_obj.unbind_uid(target_attr, bind_uid)
+        self._bind_uid = None
+        self._target = target
 
     def __enter__(self):
-        pass
+        if self._bind_uid is not None:
+            raise Exception("`smooth_attr` context manager is already active")
+        self._bind_uid = self._target[0].fbind(self._target[1], self._trigger)
+        self._trigger()
+        return self
 
     def __exit__(self, *__):
-        self._exit()
+        if self._bind_uid is None:
+            raise Exception("`smooth_attr` context manager is not active")
+        self._target[0].unbind_uid(self._target[1], self._bind_uid)
+        self._bind_uid = None
+        self._trigger.cancel()
 
     def _update_follower(getattr, setattr, math_exp, target_obj, target_attr, follower_obj, follower_attr,
                          negative_speed, min, max, dt):

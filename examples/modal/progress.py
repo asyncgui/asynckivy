@@ -62,7 +62,7 @@ class ProgressDialog(BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        ak.smooth_attr((self, 'goal_progress'), (self, 'progress'), min_diff=0.01)
+        ak.smooth_attr((self, "goal_progress"), (self, "progress"), min_diff=0.01).__enter__()
         self.cancelled = False
         '''Whether the user dismissed the dialog via its cancel button.'''
 
