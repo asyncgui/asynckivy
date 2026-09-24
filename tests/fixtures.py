@@ -22,6 +22,7 @@ class KivyRunner:
     def advance_a_frame(self, *, dt=0.1) -> None:
         self.current_time += dt
         self.eventloop.idle()
+    advance_frame = advance_a_frame
 
 
 @pytest.fixture()

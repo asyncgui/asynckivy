@@ -20,10 +20,10 @@ class AnimatedRectangle(EventDispatcher):
         super().__init__(**kwargs)
         self.canvas = canvas = CanvasBase()
         with canvas:
-            ak.smooth_attr((self, "color"), (Color(self.color), "rgba"), min_diff=0.02, speed=4)
+            ak.smooth_attr((self, "color"), (Color(self.color), "rgba"), min_diff=0.02, speed=4).__enter__()
             rect = Rectangle(pos=self.pos, size=self.size)
-            ak.smooth_attr((self, "pos"), (rect, "pos"))
-            ak.smooth_attr((self, "size"), (rect, "size"))
+            ak.smooth_attr((self, "pos"), (rect, "pos")).__enter__()
+            ak.smooth_attr((self, "size"), (rect, "size")).__enter__()
 
 
 class SampleApp(App):
