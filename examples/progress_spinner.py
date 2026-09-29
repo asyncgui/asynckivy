@@ -49,5 +49,5 @@ class TestApp(App):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     TestApp(title="Progress Spinner").run()

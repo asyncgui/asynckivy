@@ -9,7 +9,7 @@ def _wrapper(func, ev):
     exc = None
     try:
         ret = func()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         exc = e
     finally:
         Clock.schedule_once(lambda __: ev.fire(ret, exc))
@@ -31,7 +31,7 @@ async def run_in_thread(func, *, daemon=None):
     '''
     ev = asyncgui.ExclusiveEvent()
     Thread(
-        name='asynckivy.run_in_thread',
+        name="asynckivy.run_in_thread",
         target=_wrapper, daemon=daemon, args=(func, ev, ),
     ).start()
     ret, exc = (await ev.wait())[0]

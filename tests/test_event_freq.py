@@ -1,11 +1,11 @@
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def ed_cls():
     from kivy.event import EventDispatcher
     class ConcreteEventDispatcher(EventDispatcher):
-        __events__ = ('on_test', 'on_test2', )
+        __events__ = ("on_test", "on_test2", )
         def on_test(self, *args, **kwargs):
             pass
         def on_test2(self, *args, **kwargs):
@@ -27,11 +27,11 @@ def test_cleanup(ed):
         await ak.sleep_forever()
 
     task = ak.start(async_fn())
-    ed.dispatch('on_test')
+    ed.dispatch("on_test")
     assert not task.finished
-    ed.dispatch('on_test')
+    ed.dispatch("on_test")
     assert not task.finished
-    ed.dispatch('on_test')
+    ed.dispatch("on_test")
     assert not task.finished
     task._step()
     assert task.finished
@@ -47,9 +47,9 @@ def test_event_parameters(ed):
 
     task = ak.start(async_fn())
     assert not task.finished
-    ed.dispatch('on_test', 1, 2)
+    ed.dispatch("on_test", 1, 2)
     assert not task.finished
-    ed.dispatch('on_test', 3, 4, kwarg='A')
+    ed.dispatch("on_test", 3, 4, kwarg="A")
     assert task.finished
 
 
@@ -62,9 +62,9 @@ def test_filter(ed):
 
     task = ak.start(async_fn())
     assert not task.finished
-    ed.dispatch('on_test', 1, 2)
+    ed.dispatch("on_test", 1, 2)
     assert not task.finished
-    ed.dispatch('on_test', 3, 4)
+    ed.dispatch("on_test", 3, 4)
     assert task.finished
 
 
@@ -80,10 +80,10 @@ def test_stop_dispatching(ed):
 
     task = ak.start(async_fn())
     assert not called
-    ed.dispatch('on_test')
+    ed.dispatch("on_test")
     assert not called
     assert task.finished
-    ed.dispatch('on_test')
+    ed.dispatch("on_test")
     assert called
 
 
@@ -104,7 +104,7 @@ def test_cancel(ed):
     task.close()
     assert not task.finished
     assert not called
-    ed.dispatch('on_test')
+    ed.dispatch("on_test")
     assert not task.finished
     assert not called
 
@@ -118,8 +118,8 @@ def test_await_something_else(ed):
             await ak.sleep_forever()  # something else
 
     task = ak.start(async_fn(ed))
-    ed.dispatch('on_test')
-    ed.dispatch('on_test')
+    ed.dispatch("on_test")
+    ed.dispatch("on_test")
     assert not task.cancelled
     task.cancel()
     assert task.cancelled

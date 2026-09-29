@@ -1,7 +1,7 @@
 from contextlib import nullcontext
 
 from kivy.config import Config
-Config.set('modules', 'showborder', '')
+Config.set("modules", "showborder", "")
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.graphics import Rotate, Translate
@@ -60,5 +60,5 @@ class SampleApp(App):
         return Builder.load_string(KV_CODE)
 
 
-if __name__ == '__main__':
-    SampleApp(title='popping widget').run()
+if __name__ == "__main__":
+    SampleApp(title="popping widget").run()

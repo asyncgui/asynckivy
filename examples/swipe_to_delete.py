@@ -76,7 +76,7 @@ class SampleApp(App):
         root = Builder.load_string(KV_CODE)
         add_widget = root.ids.container.add_widget
         for i in range(20):
-            add_widget(Button(text=str(i), size_hint_y=None, height='50dp'))
+            add_widget(Button(text=str(i), size_hint_y=None, height="50dp"))
         return root
 
     def on_start(self):
@@ -87,10 +87,10 @@ class SampleApp(App):
         switch = ids.switch
         container = ids.container
         while True:
-            await ak.event(switch, 'active', filter=lambda _, active: active)
+            await ak.event(switch, "active", filter=lambda _, active: active)
             with closing(ak.start(enable_swipe_to_delete(container))):
                 await ak.event(switch, "active")
 
 
-if __name__ == '__main__':
-    SampleApp(title='Swipe to Delete').run()
+if __name__ == "__main__":
+    SampleApp(title="Swipe to Delete").run()

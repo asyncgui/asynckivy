@@ -1,5 +1,5 @@
 from kivy.config import Config
-Config.set('input', 'mouse', 'mouse,disable_multitouch')
+Config.set("input", "mouse", "mouse,disable_multitouch")
 from kivy.core.window import Window, WindowBase
 from kivy.lang import Builder
 from kivy.factory import Factory
@@ -55,7 +55,7 @@ async def show_context_menu_at(pos, *, window: WindowBase=Window, _cache=[]):
         menu.x = pos[0]
         menu.top = pos[1]
         async with modal.open(menu, window=window, transition=modal.no_transition) as auto_dismissed:
-            tasks = await ak.wait_any(*[ak.event(c, 'on_press') for c in menu.children])
+            tasks = await ak.wait_any(*[ak.event(c, "on_press") for c in menu.children])
         if auto_dismissed:
             return None
         for t in tasks:
@@ -83,14 +83,14 @@ def main():
             ak.managed_start(self.menu_handler())
 
         async def menu_handler(self):
-            on_right_click = partial(ak.event, self.root, 'on_touch_down', filter=lambda w, t: t.button == 'right')
+            on_right_click = partial(ak.event, self.root, "on_touch_down", filter=lambda w, t: t.button == "right")
             while True:
                 __, t = await on_right_click()
                 selection = await show_context_menu_at(t.pos)
                 if selection is not None:
-                    print('Selected menu item:', selection)
+                    print("Selected menu item:", selection)
     TestApp().run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

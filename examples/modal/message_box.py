@@ -36,7 +36,7 @@ MessageBox = Factory.MessageBox
 
 
 async def show_message_box(
-    message: str, *, window: WindowBase=Window, ok_text='OK',
+    message: str, *, window: WindowBase=Window, ok_text="OK",
     transition=modal.SlideTransition(), auto_dismiss=True, _cache=[],
 ) -> Awaitable[Literal[True, None]]:
     '''
@@ -54,7 +54,7 @@ async def show_message_box(
         async with modal.open(
             dialog, window=window, auto_dismiss=auto_dismiss, transition=transition
         ) as auto_dismissed:
-            await ak.event(ids.ok_button, 'on_release')
+            await ak.event(ids.ok_button, "on_release")
         if auto_dismissed:
             return None
         return True
@@ -89,5 +89,5 @@ def main():
     TestApp().run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

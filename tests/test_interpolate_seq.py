@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def approx():
     from functools import partial
     return partial(pytest.approx, abs=1)
@@ -30,7 +30,7 @@ def test_complete_the_iterations(approx, kivy_runner):
     assert task.finished
 
 
-@pytest.mark.parametrize('step', [0, 10])
+@pytest.mark.parametrize("step", [0, 10])
 def test_zero_duration(kivy_runner, step):
     import asynckivy as ak
     kr = kivy_runner

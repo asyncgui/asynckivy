@@ -20,22 +20,22 @@ def test_sleep_freq(kivy_runner):
     async def async_fn():
         nonlocal task_state
         with ak.sleep_freq(step=.5) as sleep:
-            task_state = 'A'
+            task_state = "A"
             await sleep()
-            task_state = 'B'
+            task_state = "B"
             await sleep()
-            task_state = 'C'
+            task_state = "C"
 
     task_state = None
     task = ak.start(async_fn())
     kr.advance_a_frame(dt=.2)
-    assert task_state == 'A'
+    assert task_state == "A"
     assert not task.finished
     kr.advance_a_frame(dt=.5)
-    assert task_state == 'B'
+    assert task_state == "B"
     assert not task.finished
     kr.advance_a_frame(dt=.5)
-    assert task_state == 'C'
+    assert task_state == "C"
     assert task.finished
 
 

@@ -40,9 +40,9 @@ YesNoDialog = Factory.YesNoDialog
 
 
 async def ask_yes_no_question(
-    question: str, *, window: WindowBase=Window, yes_text='Yes', no_text='No',
+    question: str, *, window: WindowBase=Window, yes_text="Yes", no_text="No",
     transition=modal.FadeTransition(), auto_dismiss=True, _cache=[],
-) -> Awaitable[Literal['yes', 'no', None]]:
+) -> Awaitable[Literal["yes", "no", None]]:
     '''
     Asks the user a yes/no question via a modal dialog.
 
@@ -62,12 +62,12 @@ async def ask_yes_no_question(
             dialog, window=window, auto_dismiss=auto_dismiss, transition=transition
         ) as auto_dismissed:
             tasks = await ak.wait_any(
-                ak.event(ids.yes_button, 'on_release'),
-                ak.event(ids.no_button, 'on_release'),
+                ak.event(ids.yes_button, "on_release"),
+                ak.event(ids.no_button, "on_release"),
             )
         if auto_dismissed:
             return None
-        return 'yes' if tasks[0].finished else 'no'
+        return "yes" if tasks[0].finished else "no"
     finally:
         _cache.append(dialog)
 
@@ -104,10 +104,10 @@ def main():
             for q in questions:
                 answer = await ask_yes_no_question(q)
                 if answer is None:
-                    answer = '<no answer>'
-                print(q, '->', answer)
+                    answer = "<no answer>"
+                print(q, "->", answer)
     TestApp().run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

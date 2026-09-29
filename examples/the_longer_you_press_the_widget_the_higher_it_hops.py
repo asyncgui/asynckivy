@@ -9,7 +9,7 @@ import asynckivy as ak
 
 GRAVITY = -9.80665 * cm(100)  # gravitational acceleration in pixels/second**2
 ignore_touch_down = partial(
-    ak.suppress_event, event_name='on_touch_down', filter=lambda w, t: w.collide_point(*t.opos))
+    ak.suppress_event, event_name="on_touch_down", filter=lambda w, t: w.collide_point(*t.opos))
 
 
 async def bounce_widget(widget, *, scale_x_max=3.0, gravity=0.2):
@@ -29,7 +29,7 @@ async def bounce_widget(widget, *, scale_x_max=3.0, gravity=0.2):
         ig.add(scale)
         async with ak.run_as_daemon(
                 ak.anim_attrs(scale, x=scale_x_max, y=1.0 / scale_x_max, duration=0.25 * scale_x_max)):
-            await ak.event(widget, 'on_release')
+            await ak.event(widget, "on_release")
 
         # phase 2: Widget becomes thiner and taller after it got released.
         scale_x = scale.x
@@ -106,5 +106,5 @@ class SampleApp(App):
         return Builder.load_string(KV_CODE)
 
 
-if __name__ == '__main__':
-    SampleApp(title='The longer you press the widget, the higher it hops').run()
+if __name__ == "__main__":
+    SampleApp(title="The longer you press the widget, the higher it hops").run()

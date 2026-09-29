@@ -37,34 +37,34 @@ class TestApp(App):
     async def main(self):
         await ak.n_frames(4)
         label = self.root
-        label.halign = 'center'
-        label.text = 'crosswarp\n(from gl-transitions.com)'
-        touch_down = partial(ak.event, label, 'on_touch_down')
+        label.halign = "center"
+        label.text = "crosswarp\n(from gl-transitions.com)"
+        touch_down = partial(ak.event, label, "on_touch_down")
         while True:
             await touch_down()
             async with t.gl_transitions_dot_com(label, fs=cross_warp):
-                label.text = 'iris'
+                label.text = "iris"
 
             __, touch = await touch_down()
             async with t.iris(color=colormap["darkslategray"], circle_center=touch.pos):
-                label.halign = 'center'
-                label.text = 'iris with a custom overlay'
+                label.halign = "center"
+                label.text = "iris with a custom overlay"
 
             __, touch = await touch_down()
-            rect = Rectangle(size=Window.size, source='data/logo/kivy-icon-128.png')
+            rect = Rectangle(size=Window.size, source="data/logo/kivy-icon-128.png")
             texture = rect.texture
-            texture.wrap = 'repeat'
+            texture.wrap = "repeat"
             x_ratio = Window.width / texture.width
             y_ratio = Window.height / texture.height
             rect.tex_coords = (0, y_ratio, x_ratio, y_ratio, x_ratio, 0, 0, 0)
             async with t.iris(overlay=rect, out_curve="linear", in_curve="linear", circle_center=touch.pos):
                 await ak.sleep(.3)
-                label.text = 'slide'
+                label.text = "slide"
                 await ak.sleep(.3)
 
             await touch_down()
             async with t.slide(duration=0.6):
-                label.halign = 'left'
+                label.halign = "left"
                 label.text = dedent('''
                     slide(
                         x_direction='right',
@@ -72,18 +72,18 @@ class TestApp(App):
                     )''')
 
             await touch_down()
-            async with t.slide(duration=0.6, x_direction='right', y_direction='up'):
-                label.text = 'scale'
+            async with t.slide(duration=0.6, x_direction="right", y_direction="up"):
+                label.text = "scale"
 
             await touch_down()
             async with t.scale(duration=0.4):
-                label.text = 'fade'
+                label.text = "fade"
 
             await touch_down()
             async with t.fade(duration=0.6):
-                label.halign = 'center'
-                label.text = 'crosswarp\n(from gl-transitions.com)'
+                label.halign = "center"
+                label.text = "crosswarp\n(from gl-transitions.com)"
 
 
-if __name__ == '__main__':
-    TestApp(title='Transition Showcase').run()
+if __name__ == "__main__":
+    TestApp(title="Transition Showcase").run()

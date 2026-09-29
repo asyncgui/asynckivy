@@ -19,7 +19,7 @@ class Painter(RelativeLayout):
         return widget.collide_point(*touch.opos) and (not touch.is_mouse_scrolling)
 
     async def main(self):
-        on_touch_down = partial(ak.event, self, 'on_touch_down', filter=self.accepts_touch, stop_dispatching=True)
+        on_touch_down = partial(ak.event, self, "on_touch_down", filter=self.accepts_touch, stop_dispatching=True)
         while True:
             __, touch = await on_touch_down()
             await self.draw_rect(touch)
@@ -51,4 +51,4 @@ class SampleApp(App):
 
 
 if __name__ == "__main__":
-    SampleApp(title='Painter').run()
+    SampleApp(title="Painter").run()

@@ -32,11 +32,11 @@ class SampleApp(App):
         await ak.n_frames(2)
         label = self.root.ids.label.__self__
         with ak.stencil_widget_mask(label, canvas_layer="outer"):
-            for text in itertools.cycle('ABC'):
-                async with slide_transition(label, out_curve='in_back', in_curve='out_back'):
+            for text in itertools.cycle("ABC"):
+                async with slide_transition(label, out_curve="in_back", in_curve="out_back"):
                     label.text = text
                 await ak.sleep(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     SampleApp(title="Stencil Mask").run()

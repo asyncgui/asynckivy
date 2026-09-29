@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def approx():
     from functools import partial
     return partial(pytest.approx, abs=1)

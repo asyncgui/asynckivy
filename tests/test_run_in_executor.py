@@ -14,12 +14,12 @@ executor_cls = pytest.mark.parametrize("executor_cls", executor_classes)
 
 
 def fail_immediately():
-    1 / 0
+    return 1 / 0
 
 
 def fail_eventually():
     import time; time.sleep(1)
-    1 / 0
+    return 1 / 0
 
 
 def finish_immediately():
