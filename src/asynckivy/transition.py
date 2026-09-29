@@ -1,5 +1,5 @@
 __all__ = (
-    'fade', 'fade_multiple', 'slide', 'scale', 'iris', 'shader', 'gl_transitions_dot_com',
+    "fade", "fade_multiple", "slide", "scale", "iris", "shader", "gl_transitions_dot_com",
 )
 
 from typing import Literal, TypeAlias, Union
@@ -83,9 +83,9 @@ async def fade_multiple(*widgets, duration=1., out_curve=linear, in_curve=linear
 
 
 @asynccontextmanager
-async def slide(target: Wow=Window, *, duration=1., out_curve='in_back', in_curve='out_back',
-                x_direction: Literal['left', 'right', None]='left',
-                y_direction: Literal['down', 'up', None]=None,
+async def slide(target: Wow=Window, *, duration=1., out_curve="in_back", in_curve="out_back",
+                x_direction: Literal["left", "right", None]="left",
+                y_direction: Literal["down", "up", None]=None,
                 canvas_layer="inner"):
     '''
     Slides the ``target`` out, executes the code inside the with-block, and then slides it back in.
@@ -98,11 +98,11 @@ async def slide(target: Wow=Window, *, duration=1., out_curve='in_back', in_curv
     x_dist, y_dist = target.size
     if x_direction is None:
         x_dist = 0
-    elif x_direction == 'left':
+    elif x_direction == "left":
         x_dist = -x_dist
     if y_direction is None:
         y_dist = 0
-    elif y_direction == 'down':
+    elif y_direction == "down":
         y_dist = -y_dist
 
     with transform(target, canvas_layer=canvas_layer) as ig:
@@ -116,7 +116,7 @@ async def slide(target: Wow=Window, *, duration=1., out_curve='in_back', in_curv
 
 
 @asynccontextmanager
-async def scale(target: Wow=Window, *, duration=1, out_curve='out_quad', in_curve='in_quad',
+async def scale(target: Wow=Window, *, duration=1, out_curve="out_quad", in_curve="in_quad",
                 canvas_layer="inner"):
     '''
     Shrinks the ``target``, executes the code inside the with-block, and then restores it to its original size.
@@ -147,8 +147,8 @@ def _calc_enclosing_circle_radius(circle_center, rect_pos, rect_size, max=max, h
 
 
 @asynccontextmanager
-async def iris(target: Wow=Window, *, duration=1, out_curve='in_cubic', in_curve='out_cubic',
-               color: Sequence[float]=colormap['white'], circle_center: Sequence[float]=None,
+async def iris(target: Wow=Window, *, duration=1, out_curve="in_cubic", in_curve="out_cubic",
+               color: Sequence[float]=colormap["white"], circle_center: Sequence[float]=None,
                overlay: VertexInstruction=None):
     '''
     Narrows the visible area of ``target`` with a shrinking circle, runs the code inside the with-block
@@ -198,7 +198,7 @@ async def iris(target: Wow=Window, *, duration=1, out_curve='in_cubic', in_curve
 
 @asynccontextmanager
 async def shader(target: Widget, fs: str, *, duration=1., uniforms: Mapping=None,
-                 progress_var: str='progress', out_texture_var: str='out_tex', in_texture_var: str='in_tex'):
+                 progress_var: str="progress", out_texture_var: str="out_tex", in_texture_var: str="in_tex"):
     '''
     A transition that uses a GLSL fragment shader.
 
@@ -258,7 +258,7 @@ async def shader(target: Widget, fs: str, *, duration=1., uniforms: Mapping=None
         in_texture = render_widget_to_texture(target)
         rc = RenderContext(fs=fs, use_parent_projection=True, use_parent_modelview=True)
         if not rc.shader.success:
-            raise ValueError('Failed to set shader')
+            raise ValueError("Failed to set shader")
         parent_canvas.insert(original_idx, rc)
         stack.callback(parent_canvas.remove, rc)
         rc.add(BindTexture(texture=out_texture, index=1))
@@ -332,9 +332,9 @@ def gl_transitions_dot_com(target: Widget, fs: str, *, duration=1., uniforms: Ma
     return shader(
         target,
         GL_TRANSITIONS_DOT_COM_TEMPLATE.substitute(usercode=fs),
-        progress_var='progress',
-        out_texture_var='out_tex',
-        in_texture_var='in_tex',
+        progress_var="progress",
+        out_texture_var="out_tex",
+        in_texture_var="in_tex",
         duration=duration,
         uniforms=uniforms,
     )

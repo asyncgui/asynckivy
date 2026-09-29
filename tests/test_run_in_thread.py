@@ -3,7 +3,7 @@ import threading
 import time
 
 
-@pytest.mark.parametrize('daemon', (True, False))
+@pytest.mark.parametrize("daemon", (True, False))
 def test_thread_id(daemon, kivy_runner):
     import asynckivy as ak
     kr = kivy_runner
@@ -21,7 +21,7 @@ def test_thread_id(daemon, kivy_runner):
     assert task.finished
 
 
-@pytest.mark.parametrize('daemon', (True, False))
+@pytest.mark.parametrize("daemon", (True, False))
 def test_propagate_exception(daemon, kivy_runner):
     import asynckivy as ak
     kr = kivy_runner
@@ -37,13 +37,13 @@ def test_propagate_exception(daemon, kivy_runner):
     assert task.finished
 
 
-@pytest.mark.parametrize('daemon', (True, False))
+@pytest.mark.parametrize("daemon", (True, False))
 def test_no_exception(daemon, kivy_runner):
     import asynckivy as ak
     kr = kivy_runner
 
     async def job():
-        assert 'A' == await ak.run_in_thread(lambda: 'A', daemon=daemon)
+        assert "A" == await ak.run_in_thread(lambda: "A", daemon=daemon)
 
     task = ak.start(job())
     time.sleep(.01)

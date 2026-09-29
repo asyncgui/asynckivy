@@ -85,7 +85,7 @@ async def open_progress_dialog(
         dialog.ids.label.text = text
         async with (
             modal.open(dialog, window=window, auto_dismiss=False, transition=transition),
-            ak.move_on_when(ak.event(dialog.ids.cancel_button, 'on_release')) as cancel_tracker,
+            ak.move_on_when(ak.event(dialog.ids.cancel_button, "on_release")) as cancel_tracker,
         ):
             yield dialog
     finally:
@@ -138,7 +138,7 @@ def main():
                 res = await ak.run_in_thread(lambda: requests.get("https://httpbin.org/delay/1"))
 
                 async with ft():
-                    label.text = res.json()['headers']['User-Agent']
+                    label.text = res.json()["headers"]["User-Agent"]
                 await ak.sleep(1)
 
                 async with ft():
@@ -154,5 +154,5 @@ def main():
     TestApp().run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

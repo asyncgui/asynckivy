@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.mark.parametrize('n_touch_moves', [0, 1, 2])
+@pytest.mark.parametrize("n_touch_moves", [0, 1, 2])
 @pytest.mark.parametrize("grab", [True, False])
 @pytest.mark.parametrize("stop_dispatching", [True, False])
 def test_full_consumption(kivy_runner, n_touch_moves, grab, stop_dispatching):
@@ -47,7 +47,7 @@ def test_partial_consumption(kivy_runner):
                 if n_touch_moves == 2:
                     break
         assert weak_w not in t.grab_list
-        await ak.event(w, 'on_touch_up')
+        await ak.event(w, "on_touch_up")
 
     n_touch_moves = 0
     w = Widget()

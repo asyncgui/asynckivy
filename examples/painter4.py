@@ -18,14 +18,14 @@ from kivy.core.window import Window
 class Painter(RelativeLayout):
     @cached_property
     def _ud_key(self):
-        return 'Painter.' + str(self.uid)
+        return "Painter." + str(self.uid)
 
     @staticmethod
-    def accepts_touch(self, touch) -> bool:
-        return self.collide_point(*touch.opos) and (not touch.is_mouse_scrolling) and (self._ud_key not in touch.ud)
+    def accepts_touch(wid, touch) -> bool:
+        return wid.collide_point(*touch.opos) and (not touch.is_mouse_scrolling) and (wid._ud_key not in touch.ud)
 
     async def main(self):
-        on_touch_down = partial(ak.event, self, 'on_touch_down', filter=self.accepts_touch, stop_dispatching=True)
+        on_touch_down = partial(ak.event, self, "on_touch_down", filter=self.accepts_touch, stop_dispatching=True)
         async with ak.open_nursery() as nursery:
             while True:
                 __, touch = await on_touch_down()
@@ -44,8 +44,8 @@ class Painter(RelativeLayout):
         def filter(w, t, touch=touch):
             return t is touch
         async with (
-            ak.move_on_when(ak.event(Window, 'on_touch_up', filter=filter)),
-            ak.event_freq(self, 'on_touch_move', filter=filter, stop_dispatching=True) as on_touch_move,
+            ak.move_on_when(ak.event(Window, "on_touch_up", filter=filter)),
+            ak.event_freq(self, "on_touch_move", filter=filter, stop_dispatching=True) as on_touch_move,
         ):
             while True:
                 await on_touch_move()
@@ -64,4 +64,4 @@ class SampleApp(App):
 
 
 if __name__ == "__main__":
-    SampleApp(title='Painter').run()
+    SampleApp(title="Painter").run()

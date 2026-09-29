@@ -183,7 +183,7 @@ class sync_attr:
         Reverted all the changes made in version 0.8.0.
         Also, the context manager is now reusable (but not reentrant).
     '''
-    __slots__ = ("_from", "_sync", "_bind_uid", )
+    __slots__ = ("_bind_uid", "_from", "_sync")
 
     def __init__(self, from_: tuple[EventDispatcher, str], to_: tuple[T.Any, str]):
         self._from = from_
@@ -260,7 +260,7 @@ class sync_attrs:
         Reverted all the changes made in version 0.8.0.
         Also, the context manager is now reusable (but not reentrant).
     '''
-    __slots__ = ("_from", "_sync", "_bind_uid", )
+    __slots__ = ("_bind_uid", "_from", "_sync")
 
     def __init__(self, from_: tuple[EventDispatcher, str], *tos):
         self._from = from_
@@ -322,7 +322,7 @@ class smooth_attr:
         it only has an effect between ``__enter__()`` and ``__exit__()`` calls.
         It is also now reusable (but not reentrant).
     '''
-    __slots__ = ("_trigger", "_target", "_bind_uid", )
+    __slots__ = ("_bind_uid", "_target", "_trigger")
     _NUMERIC_TYPES = (P.NumericProperty, P.BoundedNumericProperty, )
     _SEQUENCE_TYPES = (P.ColorProperty, P.ReferenceListProperty, P.ListProperty, )
 
@@ -335,7 +335,7 @@ class smooth_attr:
         elif isinstance(target_desc, self._SEQUENCE_TYPES):
             update = self._update_follower_ver_seq
         else:
-            raise ValueError(f"Unsupported target type: {target_desc}")
+            raise ValueError(f"Unsupported target type: {target_desc}")  # noqa: TRY004
         self._trigger = Clock.create_trigger(
             partial(update, *target, *follower, -speed, -min_diff, min_diff), 0, interval=True,
         )
@@ -462,8 +462,8 @@ def stencil_widget_mask(widget, *, canvas_layer="inner", relative=False) -> Iter
     '''
     rect = Rectangle()
     with (
-        sync_attr((widget, 'pos'), (rect, 'pos')) if (not relative) or canvas_layer == "outer" else nullcontext(),
-        sync_attr((widget, 'size'), (rect, 'size')),
+        sync_attr((widget, "pos"), (rect, "pos")) if (not relative) or canvas_layer == "outer" else nullcontext(),
+        sync_attr((widget, "size"), (rect, "size")),
         stencil_mask(widget, canvas_layer=canvas_layer) as drawable_area,
     ):
         drawable_area.add(rect)

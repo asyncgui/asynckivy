@@ -115,7 +115,7 @@ class event_freq:
           Prefer the synchronous form, as it has less overhead.
         * The ``free_to_await`` parameter was removed. You can treat it as if it were always set to True.
     '''
-    __slots__ = ("_disp", "_name", "_filter", "_stop", "_bind_id", )
+    __slots__ = ("_bind_id", "_disp", "_filter", "_name", "_stop")
 
     def __init__(self, event_dispatcher, event_name, *, filter=None, stop_dispatching=False):
         self._disp = event_dispatcher
@@ -169,7 +169,7 @@ class suppress_event:
             btn.bind(on_press=lambda __: print("pressed"))
             btn.dispatch('on_press')
     '''
-    __slots__ = ('_dispatcher', '_name', '_bind_uid', '_filter', )
+    __slots__ = ("_bind_uid", "_dispatcher", "_filter", "_name")
 
     def __init__(self, event_dispatcher, event_name, *, filter=lambda *args, **kwargs: True):
         self._dispatcher = event_dispatcher
@@ -210,7 +210,7 @@ class block_touch_events:
 
     .. versionadded:: 0.10.0
     '''
-    __slots__ = ('_dispatcher', '_filter', )
+    __slots__ = ("_dispatcher", "_filter", )
 
     def __init__(self, event_dispatcher, *, filter=lambda w, t: t.grab_current is None and w.collide_point(*t.pos)):
         self._dispatcher = event_dispatcher

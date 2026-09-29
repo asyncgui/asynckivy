@@ -43,7 +43,7 @@ TextInputDialog = Factory.TextInputDialog
 
 
 async def ask_input(
-    message: str, *, window: WindowBase=Window, ok_text='OK', cancel_text='Cancel',
+    message: str, *, window: WindowBase=Window, ok_text="OK", cancel_text="Cancel",
     input_filter=TextInput.input_filter.defaultvalue, input_type=TextInput.input_type.defaultvalue,
     transition=modal.FadeTransition(), auto_dismiss=True, _cache=[],
 ) -> Awaitable[None | str]:
@@ -63,7 +63,7 @@ async def ask_input(
         ids.ok_button.text = ok_text
         ids.cancel_button.text = cancel_text
         ti = ids.textinput
-        ti.text = ''
+        ti.text = ""
         ti.input_filter = input_filter
         ti.input_type = input_type
         ti.focus = True
@@ -71,9 +71,9 @@ async def ask_input(
             dialog, window=window, auto_dismiss=auto_dismiss, transition=transition
         ) as auto_dismissed:
             tasks = await ak.wait_any(
-                ak.event(ti, 'on_text_validate'),
-                ak.event(ids.ok_button, 'on_release'),
-                ak.event(ids.cancel_button, 'on_release'),
+                ak.event(ti, "on_text_validate"),
+                ak.event(ids.ok_button, "on_release"),
+                ak.event(ids.cancel_button, "on_release"),
             )
         if auto_dismissed or tasks[2].finished:
             return None
@@ -111,17 +111,17 @@ def main():
 
             q = "What's your name?"
             name = await ask_input(q)
-            print(q, '->', name)
+            print(q, "->", name)
 
             q = "How old are you?"
-            age = await ask_input(q, input_filter='int', input_type='number')
-            print(q, '->', age)
+            age = await ask_input(q, input_filter="int", input_type="number")
+            print(q, "->", age)
 
             q = "When is your birthday?"
-            birthday = await ask_input(q, input_type='datetime')
-            print(q, '->', birthday)
+            birthday = await ask_input(q, input_type="datetime")
+            print(q, "->", birthday)
     TestApp().run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

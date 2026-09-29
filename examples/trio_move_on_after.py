@@ -16,15 +16,15 @@ class TestApp(App):
         await ak.n_frames(2)
         async with ak.move_on_after(3):
             while True:
-                label.text = 'A'
+                label.text = "A"
                 await ak.sleep(.4)
-                label.text = 'B'
+                label.text = "B"
                 await ak.sleep(.4)
-                label.text = 'C'
+                label.text = "C"
                 await ak.sleep(.4)
         label.text = "fin"
         label.italic = True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     TestApp(title="trio.move_on_after()").run()

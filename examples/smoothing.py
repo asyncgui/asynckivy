@@ -41,5 +41,5 @@ class SampleApp(App):
         return root
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     SampleApp().run()

@@ -66,13 +66,13 @@ class SampleApp(App):
         sm = self.root.ids.screen_manager
         btn = self.root.ids.btn
         screens = itertools.cycle((
-            F.Label(text='Screen 1', font_size=64),
-            F.Button(text='Screen 2', font_size=64),
+            F.Label(text="Screen 1", font_size=64),
+            F.Button(text="Screen 2", font_size=64),
         ))
         cur_screen = next(screens)
         sm.add_widget(cur_screen)
         while True:
-            await ak.event(btn, 'on_release')
+            await ak.event(btn, "on_release")
             next_screen = next(screens)
             await switch_between_widgets(
                 sm, cur_screen, next_screen,
@@ -82,5 +82,5 @@ class SampleApp(App):
             cur_screen = next_screen
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     SampleApp().run()

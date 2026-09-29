@@ -1,5 +1,5 @@
 __all__ = (
-    'open', 'Transition', 'no_transition', 'FadeTransition', 'SlideTransition',
+    "open", "Transition", "no_transition", "FadeTransition", "SlideTransition",
 )
 
 from typing import TypeAlias, Literal
@@ -75,9 +75,9 @@ class SlideTransition:
             ...
     '''
     def __init__(self, *, in_duration=.2, out_duration=.2, background_color=DARK,
-                 in_curve='out_back', out_curve='in_back',
-                 in_direction: Literal['left', 'right', 'down', 'up']='down',
-                 out_direction: Literal['left', 'right', 'down', 'up']='up'):
+                 in_curve="out_back", out_curve="in_back",
+                 in_direction: Literal["left", "right", "down", "up"]="down",
+                 out_direction: Literal["left", "right", "down", "up"]="up"):
         self.in_duration = in_duration
         self.out_duration = out_duration
         self.background_color = background_color
@@ -100,16 +100,16 @@ class SlideTransition:
             with ak.transform(dialog, canvas_layer="outer") as ig:
                 x_dist = y_dist = 0.
                 match self.in_direction:
-                    case 'down':
+                    case "down":
                         y_dist = parent.height - dialog.y
-                    case 'up':
+                    case "up":
                         y_dist = -dialog.top
-                    case 'left':
+                    case "left":
                         x_dist = parent.width - dialog.x
-                    case 'right':
+                    case "right":
                         x_dist = -dialog.right
                     case _:
-                        raise ValueError(f'Invalid in_direction: {self.in_direction}')
+                        raise ValueError(f"Invalid in_direction: {self.in_direction}")
                 ig.add(mat := Translate(x_dist, y_dist))
                 parent.opacity = 1.
                 await ak.wait_all(
@@ -119,16 +119,16 @@ class SlideTransition:
                 yield
                 x_dist = y_dist = 0.
                 match self.out_direction:
-                    case 'up':
+                    case "up":
                         y_dist = parent.height - dialog.y
-                    case 'down':
+                    case "down":
                         y_dist = -dialog.top
-                    case 'right':
+                    case "right":
                         x_dist = parent.width - dialog.x
-                    case 'left':
+                    case "left":
                         x_dist = -dialog.right
                     case _:
-                        raise ValueError(f'Invalid out_direction: {self.out_direction}')
+                        raise ValueError(f"Invalid out_direction: {self.out_direction}")
                 await ak.wait_all(
                     anim_attrs(mat, d=self.out_duration, t=self.out_curve, x=x_dist, y=y_dist),
                     anim_attrs(bg_color, d=self.out_duration, a=0.),
@@ -158,7 +158,7 @@ class KXModalDialogParent(FloatLayout):
         dialog = self.children[0]
         # KXModalDialogParent is not a relative-type widget, no need for translation
         if dialog.collide_point(*touch.opos):
-            dialog.dispatch('on_touch_down', touch)
+            dialog.dispatch("on_touch_down", touch)
         elif (f := self.dismiss) is not None:
             f()
         return True
@@ -169,7 +169,7 @@ class KXModalDialogParent(FloatLayout):
         dialog = self.children[0]
         # KXModalDialogParent is not a relative ...
         if dialog.collide_point(*touch.pos):
-            dialog.dispatch('on_touch_move', touch)
+            dialog.dispatch("on_touch_move", touch)
         return True
 
     def on_touch_up(self, touch):
@@ -178,7 +178,7 @@ class KXModalDialogParent(FloatLayout):
         dialog = self.children[0]
         # KXModalDialogParent is not a relative ...
         if dialog.collide_point(*touch.pos):
-            dialog.dispatch('on_touch_up', touch)
+            dialog.dispatch("on_touch_up", touch)
         return True
 
 

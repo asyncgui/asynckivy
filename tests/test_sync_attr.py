@@ -1,7 +1,7 @@
 import pytest
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def human_cls():
     from kivy.event import EventDispatcher
     from kivy.properties import NumericProperty
@@ -22,7 +22,7 @@ def test_sync_attr_reuse(human):
     import asynckivy as ak
 
     obj = types.SimpleNamespace()
-    with ak.sync_attr(from_=(human, 'age'), to_=(obj, 'AGE')) as cm:
+    with ak.sync_attr(from_=(human, "age"), to_=(obj, "AGE")) as cm:
         assert not hasattr(obj, "AGE")
         human.age = 2
         assert obj.AGE == 2
@@ -53,7 +53,7 @@ def test_sync_attrs_reuse(human):
     import asynckivy as ak
 
     obj = types.SimpleNamespace()
-    with ak.sync_attrs((human, 'age'), (obj, 'AGE'), (obj, 'age')) as cm:
+    with ak.sync_attrs((human, "age"), (obj, "AGE"), (obj, "age")) as cm:
         assert not hasattr(obj, "AGE")
         assert not hasattr(obj, "age")
         human.age = 2

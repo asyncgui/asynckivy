@@ -46,10 +46,10 @@ class SampleApp(App):
         switch = ids.switch
         container = ids.container
         while True:
-            await ak.event(switch, 'active', filter=lambda _, active: active)
+            await ak.event(switch, "active", filter=lambda _, active: active)
             with closing(ak.start(enable_swipe_to_delete(container, delete_action=remove_corresponding_data))):
                 await ak.event(switch, "active")
 
 
-if __name__ == '__main__':
-    SampleApp(title='Swipe to Delete (RecycleView)').run()
+if __name__ == "__main__":
+    SampleApp(title="Swipe to Delete (RecycleView)").run()
