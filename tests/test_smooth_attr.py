@@ -22,7 +22,7 @@ def test_reenter(human):
 
     obj = types.SimpleNamespace()
     with ak.smooth_attr(target=(human, "age"), follower=(obj, "AGE")) as cm:
-        with pytest.raises(Exception):
+        with pytest.raises(ak.RecursiveActivationError):
             with cm:
                 pass
 

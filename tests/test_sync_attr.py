@@ -43,7 +43,7 @@ def test_sync_attr_reenter(human):
 
     obj = types.SimpleNamespace()
     with ak.sync_attr(from_=(human, "age"), to_=(obj, "AGE")) as cm:
-        with pytest.raises(Exception):
+        with pytest.raises(ak.RecursiveActivationError):
             with cm:
                 pass
 
@@ -79,6 +79,6 @@ def test_sync_attrs_reenter(human):
 
     obj = types.SimpleNamespace()
     with ak.sync_attrs((human, "age"), (obj, "AGE"), (obj, "age")) as cm:
-        with pytest.raises(Exception):
+        with pytest.raises(ak.RecursiveActivationError):
             with cm:
                 pass

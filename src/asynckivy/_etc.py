@@ -15,6 +15,12 @@ from kivy.graphics import (
 CanvasLayer: T.TypeAlias = T.Literal["inner", "outer", "inner_outer"]
 
 
+class RecursiveActivationError(Exception):
+    """
+    Raised when trying to enter a non-reentrant context manager that is already active.
+    """
+
+
 @contextmanager
 def sandwich_canvas(target: Canvas, top_bun: Instruction, bottom_bun: Instruction,
                     *, canvas_layer: CanvasLayer="inner"):
@@ -190,13 +196,12 @@ class sync_attr:
 
     def __enter__(self):
         if self._bind_uid is not None:
-            raise Exception("`sync_attr` context manager is already active")
+            raise RecursiveActivationError("`sync_attr` context manager is already active")
         self._bind_uid = self._from[0].fbind(self._from[1], self._sync)
         return self
 
     def __exit__(self, *__):
-        if self._bind_uid is None:
-            raise Exception("`sync_attr` context manager is not active")
+        assert self._bind_uid is not None
         self._from[0].unbind_uid(self._from[1], self._bind_uid)
         self._bind_uid = None
 
@@ -269,13 +274,12 @@ class sync_attrs:
 
     def __enter__(self):
         if self._bind_uid is not None:
-            raise Exception("`sync_attrs` context manager is already active")
+            raise RecursiveActivationError("`sync_attrs` context manager is already active")
         self._bind_uid = self._from[0].fbind(self._from[1], self._sync)
         return self
 
     def __exit__(self, *__):
-        if self._bind_uid is None:
-            raise Exception("`sync_attrs` context manager is not active")
+        assert self._bind_uid is not None
         self._from[0].unbind_uid(self._from[1], self._bind_uid)
         self._bind_uid = None
 
@@ -340,14 +344,13 @@ class smooth_attr:
 
     def __enter__(self):
         if self._bind_uid is not None:
-            raise Exception("`smooth_attr` context manager is already active")
+            raise RecursiveActivationError("`smooth_attr` context manager is already active")
         self._bind_uid = self._target[0].fbind(self._target[1], self._trigger)
         self._trigger()
         return self
 
     def __exit__(self, *__):
-        if self._bind_uid is None:
-            raise Exception("`smooth_attr` context manager is not active")
+        assert self._bind_uid is not None
         self._target[0].unbind_uid(self._target[1], self._bind_uid)
         self._bind_uid = None
         self._trigger.cancel()
