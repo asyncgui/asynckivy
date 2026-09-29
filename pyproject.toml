@@ -9,7 +9,6 @@ requires-python = ">=3.11,<4.0"
 keywords = ['async', 'kivy']
 classifiers=[
     'Development Status :: 5 - Production/Stable',
-    'License :: OSI Approved :: MIT License',
     'Intended Audience :: Developers',
     'Programming Language :: Python',
     'Topic :: Software Development :: Libraries',
@@ -26,8 +25,8 @@ Repository = "https://github.com/asyncgui/asynckivy"
 [dependency-groups]
 dev = [
     "pytest>=9.0.3,<10",
-    "flake8>=6.0.0,<7",
     "kivy",
+    "ruff>=0.16.9",
 ]
 doc = [
     "sphinx>=7.0.0,<8",
@@ -48,3 +47,24 @@ build-backend = "uv_build"
 [tool.pytest.ini_options]
 xfail_strict = true
 addopts = "--maxfail=4 --strict-markers"
+
+[tool.ruff]
+line-length = 119
+
+[tool.ruff.lint]
+ignore = [
+    "B006", "B008",
+    "E401", "E402", "I001",
+    # "PLW0211",
+    "PYI061",
+    "RUF010", "RUF013", "RUF022",
+    "SIM117",
+    "UP007",  # Unionを用いないとsphinxでエラーが起きる
+]
+extend-select = [
+    "E501", "Q000",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/conftest.py" = ["F401"]
+"tests/test_*.py" = ["E501"]

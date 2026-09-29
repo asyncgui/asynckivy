@@ -1,13 +1,8 @@
-PYTHON = python
-PYTEST = $(PYTHON) -m pytest
-FLAKE8 = $(PYTHON) -m flake8
-
 test:
-	env KCFG_GRAPHICS_MAXFPS=0 $(PYTEST) ./tests
+	env KCFG_GRAPHICS_MAXFPS=0 python -m pytest ./tests
 
 style:
-	$(FLAKE8) --count --select=E9,F63,F7,F82 --show-source --statistics ./tests ./src/asynckivy ./examples
-	$(FLAKE8) --count --max-complexity=10 --max-line-length=119 --statistics ./src/asynckivy ./examples
+	ruff check ./tests ./src ./examples
 
 html:
 	sphinx-build -b html ./sphinx ./docs
