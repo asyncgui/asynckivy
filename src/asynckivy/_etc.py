@@ -182,13 +182,18 @@ class sync_attr:
     .. versionchanged:: 0.12.0
         Reverted all the changes made in version 0.8.0.
         Also, the context manager is now reusable (but not reentrant).
-    '''
-    __slots__ = ("_bind_uid", "_from", "_sync")
 
-    def __init__(self, from_: tuple[EventDispatcher, str], to_: tuple[T.Any, str]):
+    .. versionadded:: 0.12.1
+        Added the ``eager`` parameter to control whether the synchronization happens immediately
+        upon entering the context.
+    '''
+    __slots__ = ("_bind_uid", "_from", "_sync", "eager")
+
+    def __init__(self, from_: tuple[EventDispatcher, str], to_: tuple[T.Any, str], *, eager=False):
         self._from = from_
         self._sync = partial(self._synchronize, setattr, *to_)
         self._bind_uid = None
+        self.eager = eager
 
     @staticmethod
     def _synchronize(setattr, to_obj, to_attr, from_obj, from_value):
@@ -197,7 +202,10 @@ class sync_attr:
     def __enter__(self):
         if self._bind_uid is not None:
             raise RecursiveActivationError("`sync_attr` context manager is already active")
-        self._bind_uid = self._from[0].fbind(self._from[1], self._sync)
+        from_obj, from_attr = self._from
+        self._bind_uid = from_obj.fbind(from_attr, self._sync)
+        if self.eager:
+            self._sync(from_obj, getattr(from_obj, from_attr))
         return self
 
     def __exit__(self, *__):
@@ -259,13 +267,18 @@ class sync_attrs:
     .. versionchanged:: 0.12.0
         Reverted all the changes made in version 0.8.0.
         Also, the context manager is now reusable (but not reentrant).
-    '''
-    __slots__ = ("_bind_uid", "_from", "_sync")
 
-    def __init__(self, from_: tuple[EventDispatcher, str], *tos):
+    .. versionadded:: 0.12.1
+        Added the ``eager`` parameter to control whether the synchronization happens immediately
+        upon entering the context.
+    '''
+    __slots__ = ("_bind_uid", "_from", "_sync", "eager")
+
+    def __init__(self, from_: tuple[EventDispatcher, str], *tos, eager=False):
         self._from = from_
         self._sync = partial(self._synchronize, setattr, tos)
         self._bind_uid = None
+        self.eager = eager
 
     @staticmethod
     def _synchronize(setattr, tos, from_obj, from_value):
@@ -275,7 +288,10 @@ class sync_attrs:
     def __enter__(self):
         if self._bind_uid is not None:
             raise RecursiveActivationError("`sync_attrs` context manager is already active")
-        self._bind_uid = self._from[0].fbind(self._from[1], self._sync)
+        from_obj, from_attr = self._from
+        self._bind_uid = from_obj.fbind(from_attr, self._sync)
+        if self.eager:
+            self._sync(from_obj, getattr(from_obj, from_attr))
         return self
 
     def __exit__(self, *__):
