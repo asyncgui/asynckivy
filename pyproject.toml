@@ -15,7 +15,7 @@ classifiers=[
     'Operating System :: OS Independent',
 ]
 dependencies = [
-    "asyncgui>=0.11.1,<0.12",
+    "asyncgui>=0.11.1,<2",
 ]
 
 [project.urls]
@@ -38,10 +38,10 @@ doc = [
 default-groups = ["dev", ]
 
 [tool.uv.sources]
-kivy = { git = "https://github.com/kivy/kivy", rev = "be90b9f4bdb28c734e1cc01d6e7a7e1440e5216e" }
+kivy = { git = "https://github.com/kivy/kivy", rev = "c8e1f5f25802924e92f4f7f41851c9669778359e" }
 
 [build-system]
-requires = ["uv_build>=0.9.2,<0.12.0"]
+requires = ["uv_build>=0.13.4,<0.14.0"]
 build-backend = "uv_build"
 
 [tool.pytest.ini_options]
