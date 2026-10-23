@@ -193,7 +193,7 @@ class sync_attr:
         self._from = from_
         self._sync = partial(self._synchronize, setattr, *to_)
         self._bind_uid = None
-        self.eager = eager
+        self.eager = eager  #:  :meta private:
 
     @staticmethod
     def _synchronize(setattr, to_obj, to_attr, from_obj, from_value):
@@ -278,7 +278,7 @@ class sync_attrs:
         self._from = from_
         self._sync = partial(self._synchronize, setattr, tos)
         self._bind_uid = None
-        self.eager = eager
+        self.eager = eager  #:  :meta private:
 
     @staticmethod
     def _synchronize(setattr, tos, from_obj, from_value):
