@@ -216,19 +216,22 @@ class sync_attr:
 
 class sync_attrs:
     '''
-    When multiple :class:`sync_attr` calls take the same ``from_`` argument, they can be merged into a single
-    :class:`sync_attrs` call. For instance, the following code:
+    When multiple :class:`sync_attr` calls use the same ``from_`` argument, they can be merged into a single
+    :class:`sync_attrs` call for better performance. For example, the following code:
 
     .. code-block::
 
-        with sync_attr((widget, 'x'), (obj1, 'x')), sync_attr((widget, 'x'), (obj2, 'xx')):
+        with (
+            sync_attr((widget, "x"), (obj1, "x")),
+            sync_attr((widget, "x"), (obj2, "xx")),
+        ):
             ...
 
-    can be replaced with the following one:
+    can be replaced with:
 
     .. code-block::
 
-        with sync_attrs((widget, 'x'), (obj1, 'x'), (obj2, 'xx')):
+        with sync_attrs((widget, "x"), (obj1, "x"), (obj2, "xx")):
             ...
 
     A real-world example:
