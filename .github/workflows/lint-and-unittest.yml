@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.11', '3.12', '3.13']
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     env:
       DISPLAY: ':99.0'
     steps:
@@ -36,7 +36,7 @@ jobs:
     - name: Install asynckivy and its dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pytest ruff "kivy>=2.3,<2.4" "asyncgui>=0.11,<0.12"
+        python -m pip install pytest ruff "kivy>=2.3,<2.4" "asyncgui>=1,<2"
         python -m pip install .
     - name: Lint with ruff
       run: make style
