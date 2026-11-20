@@ -427,9 +427,9 @@ def stencil_mask(widget, *, canvas_layer: CanvasLayer="inner") -> Iterator[Instr
         from kivy.graphics import Rectangle
         import asynckivy as ak
 
-        rect = Rectangle()
+        rect = Rectangle(size=widget.size)
         with (
-            ak.sync_attr(from_=(widget, 'pos'), to_=(rect, 'pos')),  # A
+            ak.sync_attr(from_=(widget, "pos"), to_=(rect, "pos"), eager=True),  # A
             ak.sync_attr(from_=(widget, 'size'), to_=(rect, 'size')),
             ak.stencil_mask(widget) as drawable_area,
         ):
@@ -471,7 +471,7 @@ def stencil_widget_mask(widget, *, canvas_layer="inner", relative=False) -> Iter
         with stencil_widget_mask(widget):
             ...
 
-    :param relative: Must be set to True if the ``widget`` is a relative-type widget.
+    :param relative: Must be set to True if the ``widget`` uses relative coordinates.
     :param canvas_layer: Controls which part of the widget's canvas is affected by the restriction.
         See :func:`sandwich_canvas` for details.
 
@@ -479,9 +479,12 @@ def stencil_widget_mask(widget, *, canvas_layer="inner", relative=False) -> Iter
     .. versionchanged:: 0.10.0
         The ``use_outer_canvas`` parameter was replaced with the ``canvas_layer`` parameter.
     '''
-    rect = Rectangle()
+    relative = relative and canvas_layer != "outer"
+    rect = Rectangle(size=widget.size)
+    if not relative:
+        rect.pos = widget.pos
     with (
-        sync_attr((widget, "pos"), (rect, "pos")) if (not relative) or canvas_layer == "outer" else nullcontext(),
+        nullcontext() if relative else sync_attr((widget, "pos"), (rect, "pos")),
         sync_attr((widget, "size"), (rect, "size")),
         stencil_mask(widget, canvas_layer=canvas_layer) as drawable_area,
     ):
